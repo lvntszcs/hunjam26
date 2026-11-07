@@ -1,0 +1,100 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" uid="uid://cmujiqt6t0ty6" path="res://assets/fomenu_background.png" id="2_2f3dj"]
+[ext_resource type="Texture2D" uid="uid://bhkuh032j8tqn" path="res://assets/menu_door.png" id="3_yq6so"]
+[ext_resource type="Script" uid="uid://baglovkgb0itc" path="res://scripts/door.gd" id="2_h2yge"]
+[ext_resource type="Texture2D" uid="uid://copepsfort1op" path="res://assets/logo.png" id="40_logo"]
+[ext_resource type="Texture2D" uid="uid://dg5a2aexle72h" path="res://assets/Tekerentyu/Tekerentyudoboz - 1.png" id="5_yq6so"]
+[ext_resource type="Script" uid="uid://bgvqk3humpawx" path="res://scripts/settings_crank.gd" id="33_crank"]
+[ext_resource type="Texture2D" uid="uid://b0nmb1qj7p4js" path="res://assets/Tekerentyu/Tekerentyudoboz - 2.png" id="34_crank_pressed"]
+[ext_resource type="Texture2D" uid="uid://cjdmx7il0rrop" path="res://assets/hanging_play_button.png" id="8_5q0nq"]
+[ext_resource type="Script" uid="uid://dq8girncta47s" path="res://scripts/pixel_button.gd" id="35_pixel_button"]
+[ext_resource type="Texture2D" uid="uid://cad7w57okipu" path="res://assets/button.png" id="9_dgi5k"]
+
+[node name="StartPage" type="CanvasLayer" unique_id=1951122962]
+
+[node name="Wall" type="TextureRect" parent="." unique_id=235883290]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_2f3dj")
+expand_mode = 1
+
+[node name="Door" type="TextureRect" parent="." unique_id=989525321]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 50.0
+offset_top = 60.0
+offset_right = 50.0
+offset_bottom = 60.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_yq6so")
+expand_mode = 1
+script = ExtResource("2_h2yge")
+
+[node name="Logo" type="TextureRect" parent="." unique_id=1951122970]
+offset_left = 311.0
+offset_top = -91.0
+offset_right = 1591.0
+offset_bottom = 629.0
+scale = Vector2(0.5, 0.5)
+mouse_filter = 2
+texture = ExtResource("40_logo")
+expand_mode = 1
+
+[node name="Settings" type="TextureRect" parent="." unique_id=1399988289 node_paths=PackedStringArray("buttons")]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_yq6so")
+expand_mode = 1
+script = ExtResource("33_crank")
+pressed_texture = ExtResource("34_crank_pressed")
+buttons = [NodePath("../Buttons")]
+
+[node name="Start" type="TextureRect" parent="." unique_id=411390436]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 50.0
+offset_top = 50.0
+offset_right = 50.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("8_5q0nq")
+expand_mode = 1
+script = ExtResource("35_pixel_button")
+
+[node name="Buttons" type="CanvasLayer" parent="." unique_id=2093959979]
+visible = false
+
+[node name="SoundButton" type="TextureRect" parent="Buttons" unique_id=857544715]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("9_dgi5k")
+expand_mode = 1
+script = ExtResource("35_pixel_button")
+
+[node name="MusicButton" type="TextureRect" parent="Buttons" unique_id=663893800]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 44.0
+offset_bottom = 44.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("9_dgi5k")
+expand_mode = 1
+script = ExtResource("35_pixel_button")
