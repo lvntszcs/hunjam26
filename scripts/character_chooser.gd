@@ -21,7 +21,7 @@ signal confirmed
 ## Seconds a picture takes to slide to the next slot.
 @export var move_time := 0.12
 ## Tint of a picture while its player has locked a character.
-@export var locked_color := Color(0.6, 1.0, 0.6)
+@export var locked_color := Color("#551822")
 
 ## The three slot x positions, left to right.
 var _slots: Array[float] = []
