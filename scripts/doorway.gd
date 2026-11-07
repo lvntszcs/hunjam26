@@ -19,16 +19,27 @@ signal closed
 @export var peephole_view: CanvasLayer
 @export var corridor_view: CanvasLayer
 @export var prank: CanvasItem
+@export var doorknob_target: Control
 
+@export var close_zoom := Vector2(10, 10)
+@export var close_zoom_knob := Vector2(2, 2)
 ## True from the start of opening until the door has fully closed.
 var is_open := false
 
 
 func approach_peephole() -> void:
-	await camera.go_close(peephole_target.get_global_rect().get_center()).finished
+	await camera.go_close(peephole_target.get_global_rect().get_center(),close_zoom).finished
 	await fader.fade_to(1.0)
 	peephole_view.show()
 	await fader.fade_to(0.0)
+
+## Zooms onto the door knob. Only a camera move: the door stays closed.
+func approach_doorknob() -> void:
+	await camera.go_close(doorknob_target.get_global_rect().get_center(), close_zoom_knob).finished
+
+
+func leave_doorknob() -> void:
+	await camera.go_back().finished
 
 
 func leave_peephole() -> void:

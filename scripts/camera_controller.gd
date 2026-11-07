@@ -2,27 +2,50 @@ class_name CameraController
 extends Camera2D
 ## Moves and zooms the room camera between the home view and close-ups.
 
-@export var close_zoom := Vector2(10, 10)
 @export var duration := 0.6
 
 var home_position: Vector2
 
 
 func _ready() -> void:
-	home_position = get_viewport_rect().size / 2
+	var view_size := get_viewport_rect().size
+	home_position = view_size / 2
 	position = home_position
+	# Never show anything outside the scene, even mid-zoom.
+	limit_left = 0
+	limit_top = 0
+	limit_right = int(view_size.x)
+	limit_bottom = int(view_size.y)
 
 
+## Moves and zooms together so [param target] travels in a straight line to
+## the centre of the screen (tweening position and zoom separately makes it arc).
 func move_to(target: Vector2, target_zoom: Vector2) -> Tween:
-	var tween := create_tween().set_parallel()
+	var start_pos := position
+	var start_zoom := zoom
+	var tween := create_tween()
 	tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(self, "position", target, duration)
-	tween.tween_property(self, "zoom", target_zoom, duration)
+	tween.tween_method(
+		func(t: float) -> void: _apply_move(t, start_pos, start_zoom, target, target_zoom),
+		0.0, 1.0, duration)
 	return tween
 
 
-func go_close(target: Vector2) -> Tween:
-	return move_to(target, close_zoom)
+func _apply_move(t: float, p0: Vector2, z0: Vector2, p1: Vector2, z1: Vector2) -> void:
+	# Geometric zoom: each step scales by the same factor, so it reads as steady.
+	zoom = Vector2(z0.x * pow(z1.x / z0.x, t), z0.y * pow(z1.y / z0.y, t))
+	# The close-up point (the more zoomed end) slides in a straight line on
+	# screen: towards the centre when zooming in, back out when zooming out.
+	if z1.x >= z0.x:
+		var offset_in := (p1 - p0) * z0 * (1.0 - t)
+		position = p1 - offset_in / zoom
+	else:
+		var offset_out := (p0 - p1) * z1 * t
+		position = p0 - offset_out / zoom
+
+
+func go_close(target: Vector2, close_zoom_target: Vector2) -> Tween:
+	return move_to(target, close_zoom_target)
 
 
 func go_back() -> Tween:
