@@ -25,6 +25,7 @@ signal closed
 @export var close_zoom_knob := Vector2(2, 2)
 ## True from the start of opening until the door has fully closed.
 var is_open := false
+var _close_timer: SceneTreeTimer
 
 
 func approach_peephole() -> void:
@@ -65,8 +66,14 @@ func place_prank() -> void:
 	prank.show()
 
 
+func close_time_left() -> float:
+	return _close_timer.time_left if _close_timer else 0.0
+
+
 func _close_after_delay() -> void:
-	await get_tree().create_timer(open_duration, false).timeout
+	_close_timer = get_tree().create_timer(open_duration, false)
+	await _close_timer.timeout
+	_close_timer = null
 	await fader.fade_to(1.0)
 	corridor_view.hide()
 	prank.hide()  # nyitás után a csali resetel
