@@ -12,7 +12,9 @@ signal role_changed(new_role: Role)
 ## The role this player plays. Can be reassigned at runtime.
 @export var role: Role:
 	set = set_role
-@export var joypad_id : int = -1
+## The gamepad device this player uses, or -1 for none (keyboard only).
+## Set by Main when a controller connects or presses its first button.
+@export var joypad_id: int = -1
 
 func _ready() -> void:
 	if model:
@@ -30,6 +32,10 @@ func set_role(new_role: Role) -> void:
 	if role:
 		role.player = model
 	role_changed.emit(role)
+
+
+func has_joypad() -> bool:
+	return joypad_id >= 0
 
 
 func _unhandled_input(event: InputEvent) -> void:

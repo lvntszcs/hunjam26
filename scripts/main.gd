@@ -23,6 +23,19 @@ func _ready() -> void:
 		if controller.model:
 			controller.model.defeated.connect(_on_player_defeated)
 	_assign_joypads()
+	Input.joy_connection_changed.connect(_on_joy_connection_changed)
+
+
+## A button press on a gamepad nobody owns gives it to the next free player.
+## Browsers only reveal a gamepad after its first button press, so on the web
+## this is how controllers join; the joining press itself is swallowed.
+## (_input runs before any PlayerController's _unhandled_input.)
+func _input(event: InputEvent) -> void:
+	var button := event as InputEventJoypadButton
+	if button == null or not button.pressed or _joypad_owner(button.device):
+		return
+	if _claim_joypad(button.device):
+		get_viewport().set_input_as_handled()
 
 
 ## Swaps the roles of the first two players. Meant to be called between
@@ -69,8 +82,35 @@ func _on_doorway_opening() -> void:
 	else:
 		print("Pranked")
 
-func _assign_joypads() -> void:
-	var joypads := Input.get_connected_joypads()
 
-	for i in range(mini(joypads.size(),players.size())):
-		players[i].joypad_id = joypads[i]
+## Hands out the gamepads already connected at startup (desktop builds).
+func _assign_joypads() -> void:
+	for device in Input.get_connected_joypads():
+		_claim_joypad(device)
+
+
+## Gives [param device] to the first player without a gamepad.
+## Returns false if every player already has one.
+func _claim_joypad(device: int) -> bool:
+	for controller in players:
+		if not controller.has_joypad():
+			controller.joypad_id = device
+			print("%s: controller %d" % [controller.model.display_name, device])
+			return true
+	return false
+
+
+func _joypad_owner(device: int) -> PlayerController:
+	for controller in players:
+		if controller.joypad_id == device:
+			return controller
+	return null
+
+
+func _on_joy_connection_changed(device: int, connected: bool) -> void:
+	var holder := _joypad_owner(device)
+	if connected:
+		if holder == null:
+			_claim_joypad(device)
+	elif holder:
+		holder.joypad_id = -1  # free the slot for the next controller
