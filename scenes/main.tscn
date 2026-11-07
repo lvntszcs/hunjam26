@@ -8,7 +8,13 @@
 [ext_resource type="Shader" uid="uid://c47ps4srjwaxe" path="res://shaders/peephole.gdshader" id="4_1bvp3"]
 [ext_resource type="Texture2D" uid="uid://gfourp23jtlw" path="res://assets/bob.jpg" id="4_lquwl"]
 [ext_resource type="Texture2D" uid="uid://ctdqqc2pmbet3" path="res://assets/jack_in_box.png" id="5_prank"]
-[ext_resource type="Script" uid="uid://dam3o2s402mve" path="res://scenes/knock_release_timer.gd" id="9_85g3d"]
+[ext_resource type="Script" uid="uid://bwaih7avvwvjy" path="res://scripts/screen_fader.gd" id="10_fader"]
+[ext_resource type="Script" uid="uid://cjws0wqniyo14" path="res://scripts/doorway.gd" id="11_doorway"]
+[ext_resource type="Script" uid="uid://b8o4dhj5v2778" path="res://scripts/roles/inside_role.gd" id="12_inside"]
+[ext_resource type="Script" uid="uid://bcd0vxxs02kv6" path="res://scripts/roles/outside_role.gd" id="13_outside"]
+[ext_resource type="Script" uid="uid://bpvvn563j3l5t" path="res://scripts/player/player_controller.gd" id="14_controller"]
+[ext_resource type="Script" uid="uid://bll14ayn8bqvc" path="res://scripts/player/player_model.gd" id="15_model"]
+[ext_resource type="Script" uid="uid://r6swcrjwau1p" path="res://scripts/player/input_profile.gd" id="16_profile"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -18,7 +24,18 @@ shader = ExtResource("4_1bvp3")
 shader_parameter/radius = 0.35
 shader_parameter/softness = 0.05
 
-[node name="Main" type="Control" unique_id=1249313363]
+[sub_resource type="Resource" id="PlayerModel_one"]
+script = ExtResource("15_model")
+display_name = "Player 1"
+
+[sub_resource type="Resource" id="PlayerModel_two"]
+script = ExtResource("15_model")
+display_name = "Player 2"
+
+[sub_resource type="Resource" id="InputProfile_keyboard"]
+script = ExtResource("16_profile")
+
+[node name="Main" type="Control" node_paths=PackedStringArray("doorway", "outside_role", "players") unique_id=1249313363]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -27,6 +44,9 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 4
 script = ExtResource("1_0xm2m")
+doorway = NodePath("Doorway")
+outside_role = NodePath("Roles/OutsideRole")
+players = [NodePath("Players/Player1"), NodePath("Players/Player2")]
 
 [node name="Wall" type="ColorRect" parent="." unique_id=806344602]
 layout_mode = 1
@@ -206,7 +226,40 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 1)
+script = ExtResource("10_fader")
 
-[node name="KnockReleaseTimer" type="Timer" parent="." unique_id=1906406133]
+[node name="Doorway" type="Node" parent="." node_paths=PackedStringArray("camera", "fader", "peephole_target", "peephole_view", "corridor_view", "prank")]
+script = ExtResource("11_doorway")
+camera = NodePath("../Camera2D")
+fader = NodePath("../Fade/Black")
+peephole_target = NodePath("../Hole")
+peephole_view = NodePath("../Peephole")
+corridor_view = NodePath("../Corridor")
+prank = NodePath("../Corridor/Prank")
+
+[node name="Roles" type="Node" parent="."]
+
+[node name="InsideRole" type="Node" parent="Roles" node_paths=PackedStringArray("doorway")]
+script = ExtResource("12_inside")
+doorway = NodePath("../../Doorway")
+
+[node name="OutsideRole" type="Node" parent="Roles" node_paths=PackedStringArray("doorway")]
+script = ExtResource("13_outside")
+doorway = NodePath("../../Doorway")
+
+[node name="ReleaseTimer" type="Timer" parent="Roles/OutsideRole"]
 one_shot = true
-script = ExtResource("9_85g3d")
+
+[node name="Players" type="Node" parent="."]
+
+[node name="Player1" type="Node" parent="Players" node_paths=PackedStringArray("role")]
+script = ExtResource("14_controller")
+model = SubResource("PlayerModel_one")
+input_profile = SubResource("InputProfile_keyboard")
+role = NodePath("../../Roles/InsideRole")
+
+[node name="Player2" type="Node" parent="Players" node_paths=PackedStringArray("role")]
+script = ExtResource("14_controller")
+model = SubResource("PlayerModel_two")
+input_profile = SubResource("InputProfile_keyboard")
+role = NodePath("../../Roles/OutsideRole")
