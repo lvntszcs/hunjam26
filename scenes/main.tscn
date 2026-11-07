@@ -16,6 +16,7 @@
 [ext_resource type="Script" uid="uid://b8o4dhj5v2778" path="res://scripts/roles/inside_role.gd" id="12_inside"]
 [ext_resource type="Texture2D" uid="uid://b5w3a22kioabl" path="res://assets/back_wall.png" id="12_pm3ni"]
 [ext_resource type="Script" uid="uid://bcd0vxxs02kv6" path="res://scripts/roles/outside_role.gd" id="13_outside"]
+[ext_resource type="Texture2D" uid="uid://bo3ii6x3vp1u2" path="res://assets/peephole.png" id="13_vxglm"]
 [ext_resource type="Script" uid="uid://bpvvn563j3l5t" path="res://scripts/player/player_controller.gd" id="14_controller"]
 [ext_resource type="Script" uid="uid://bll14ayn8bqvc" path="res://scripts/player/player_model.gd" id="15_model"]
 [ext_resource type="Script" uid="uid://r6swcrjwau1p" path="res://scripts/player/input_profile.gd" id="16_profile"]
@@ -211,6 +212,18 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="TextureRect3" type="TextureRect" parent="Peephole" unique_id=1735915481]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -4.0
+offset_right = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("13_vxglm")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Corridor" type="CanvasLayer" parent="." unique_id=1580244731]
 visible = false

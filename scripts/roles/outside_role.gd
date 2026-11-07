@@ -47,6 +47,8 @@ func set_release_delay(seconds: float) -> void:
 func press(command: StringName) -> void:
 	match command:
 		KNOCK:
+			if doorway.is_open:
+				return
 			_knock_held = true
 			_release_timer.stop()
 			if knocker:
