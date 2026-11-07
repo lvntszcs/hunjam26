@@ -22,10 +22,10 @@
 [ext_resource type="Texture2D" uid="uid://c72w2mj8fleqg" path="res://assets/Controls/Controls - 1.png" id="12_fuf3a"]
 [ext_resource type="Script" uid="uid://b8o4dhj5v2778" path="res://scripts/roles/inside_role.gd" id="12_inside"]
 [ext_resource type="Texture2D" uid="uid://b5w3a22kioabl" path="res://assets/back_wall.png" id="12_pm3ni"]
+[ext_resource type="Texture2D" uid="uid://bevctdqbm7g7c" path="res://assets/character_choose_door.png" id="13_5he1u"]
 [ext_resource type="Script" uid="uid://bcd0vxxs02kv6" path="res://scripts/roles/outside_role.gd" id="13_outside"]
 [ext_resource type="Texture2D" uid="uid://bo3ii6x3vp1u2" path="res://assets/peephole.png" id="13_vxglm"]
 [ext_resource type="Script" uid="uid://bpvvn563j3l5t" path="res://scripts/player/player_controller.gd" id="14_controller"]
-[ext_resource type="Texture2D" uid="uid://copepsfort1op" path="res://assets/logo.png" id="40_logo"]
 [ext_resource type="Script" uid="uid://bll14ayn8bqvc" path="res://scripts/player/player_model.gd" id="15_model"]
 [ext_resource type="Script" uid="uid://r6swcrjwau1p" path="res://scripts/player/input_profile.gd" id="16_profile"]
 [ext_resource type="Texture2D" uid="uid://dqyxo02hwnium" path="res://assets/door_02.png" id="17_door_half"]
@@ -39,6 +39,7 @@
 [ext_resource type="Texture2D" uid="uid://b0nmb1qj7p4js" path="res://assets/Tekerentyu/Tekerentyudoboz - 2.png" id="34_crank_pressed"]
 [ext_resource type="Script" uid="uid://dq8girncta47s" path="res://scripts/pixel_button.gd" id="35_pixel_button"]
 [ext_resource type="Script" uid="uid://cif4pfppfe7nq" path="res://scripts/character_chooser.gd" id="36_chooser"]
+[ext_resource type="Texture2D" uid="uid://copepsfort1op" path="res://assets/logo.png" id="40_logo"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -179,28 +180,34 @@ expand_mode = 1
 script = ExtResource("35_pixel_button")
 
 [node name="CharacterChoose" type="CanvasLayer" parent="." unique_id=1901739246]
-visible = false
 script = ExtResource("36_chooser")
 
-[node name="Wall" type="TextureRect" parent="CharacterChoose" unique_id=410991348]
+[node name="Wall" type="ColorRect" parent="CharacterChoose" unique_id=1592017613]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.76862746, 0.83137256, 0.8666667, 1)
+
+[node name="Door" type="TextureRect" parent="CharacterChoose" unique_id=883226614]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("2_2f3dj")
+texture = ExtResource("13_5he1u")
 expand_mode = 1
 
 [node name="CanvasLayer" type="CanvasLayer" parent="CharacterChoose" unique_id=405067325]
-visible = false
 
 [node name="Granny" type="TextureRect" parent="CharacterChoose/CanvasLayer" unique_id=2139848256]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 350.0
-offset_bottom = 350.0
+offset_top = 375.0
+offset_bottom = 375.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.5, 0.5)
@@ -208,16 +215,15 @@ texture = ExtResource("11_kmb1v")
 expand_mode = 1
 
 [node name="CanvasLayer2" type="CanvasLayer" parent="CharacterChoose" unique_id=1874395754]
-visible = false
 
-[node name="Granny" type="TextureRect" parent="CharacterChoose/CanvasLayer2" unique_id=1755128142]
+[node name="Knocker" type="TextureRect" parent="CharacterChoose/CanvasLayer2" unique_id=1755128142]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 900.0
-offset_top = 360.0
+offset_top = 375.0
 offset_right = 122.0
-offset_bottom = 316.0
+offset_bottom = 331.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.5, 0.5)
@@ -471,9 +477,6 @@ script = ExtResource("10_fader")
 
 [node name="Doorway" type="Node" parent="." unique_id=606465438 node_paths=PackedStringArray("camera", "fader", "peephole_target", "peephole_view", "corridor_view", "prank", "doorknob_target", "door", "hand")]
 script = ExtResource("11_doorway")
-door_closed_texture = ExtResource("3_jscy8")
-door_half_open_texture = ExtResource("17_door_half")
-door_open_texture = ExtResource("18_door_open")
 camera = NodePath("../Camera2D")
 fader = NodePath("../Fade/Cover")
 peephole_target = NodePath("../Hole")
@@ -482,6 +485,9 @@ corridor_view = NodePath("../Corridor")
 prank = NodePath("../Corridor/Prank")
 doorknob_target = NodePath("../Knob")
 door = NodePath("../Door")
+door_closed_texture = ExtResource("3_jscy8")
+door_half_open_texture = ExtResource("17_door_half")
+door_open_texture = ExtResource("18_door_open")
 hand = NodePath("../Hand")
 
 [node name="Knocker" type="Node" parent="." unique_id=1113584781 node_paths=PackedStringArray("figures", "room_figure", "doorway_wall")]
