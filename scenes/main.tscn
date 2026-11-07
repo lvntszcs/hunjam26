@@ -492,7 +492,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="HealthHud" parent="." instance=ExtResource("41_health_hud")]
+[node name="HealthHud" parent="." unique_id=177929259 instance=ExtResource("41_health_hud")]
 
 [node name="Fade" type="CanvasLayer" parent="." unique_id=1976015250]
 layer = 10
