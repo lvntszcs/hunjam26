@@ -28,14 +28,14 @@ shader_parameter/softness = 0.05
 script = ExtResource("15_model")
 display_name = "Player 1"
 
+[sub_resource type="Resource" id="InputProfile_keyboard"]
+script = ExtResource("16_profile")
+
 [sub_resource type="Resource" id="PlayerModel_two"]
 script = ExtResource("15_model")
 display_name = "Player 2"
 
-[sub_resource type="Resource" id="InputProfile_keyboard"]
-script = ExtResource("16_profile")
-
-[node name="Main" type="Control" node_paths=PackedStringArray("doorway", "outside_role", "players") unique_id=1249313363]
+[node name="Main" type="Control" unique_id=1249313363 node_paths=PackedStringArray("doorway", "outside_role", "players")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -228,7 +228,7 @@ grow_vertical = 2
 color = Color(0, 0, 0, 1)
 script = ExtResource("10_fader")
 
-[node name="Doorway" type="Node" parent="." node_paths=PackedStringArray("camera", "fader", "peephole_target", "peephole_view", "corridor_view", "prank")]
+[node name="Doorway" type="Node" parent="." unique_id=606465438 node_paths=PackedStringArray("camera", "fader", "peephole_target", "peephole_view", "corridor_view", "prank")]
 script = ExtResource("11_doorway")
 camera = NodePath("../Camera2D")
 fader = NodePath("../Fade/Black")
@@ -237,28 +237,28 @@ peephole_view = NodePath("../Peephole")
 corridor_view = NodePath("../Corridor")
 prank = NodePath("../Corridor/Prank")
 
-[node name="Roles" type="Node" parent="."]
+[node name="Roles" type="Node" parent="." unique_id=863425788]
 
-[node name="InsideRole" type="Node" parent="Roles" node_paths=PackedStringArray("doorway")]
+[node name="InsideRole" type="Node" parent="Roles" unique_id=201516575 node_paths=PackedStringArray("doorway")]
 script = ExtResource("12_inside")
 doorway = NodePath("../../Doorway")
 
-[node name="OutsideRole" type="Node" parent="Roles" node_paths=PackedStringArray("doorway")]
+[node name="OutsideRole" type="Node" parent="Roles" unique_id=409835860 node_paths=PackedStringArray("doorway")]
 script = ExtResource("13_outside")
 doorway = NodePath("../../Doorway")
 
-[node name="ReleaseTimer" type="Timer" parent="Roles/OutsideRole"]
+[node name="ReleaseTimer" type="Timer" parent="Roles/OutsideRole" unique_id=247840856]
 one_shot = true
 
-[node name="Players" type="Node" parent="."]
+[node name="Players" type="Node" parent="." unique_id=1634670261]
 
-[node name="Player1" type="Node" parent="Players" node_paths=PackedStringArray("role")]
+[node name="Player1" type="Node" parent="Players" unique_id=1479579382 node_paths=PackedStringArray("role")]
 script = ExtResource("14_controller")
 model = SubResource("PlayerModel_one")
 input_profile = SubResource("InputProfile_keyboard")
 role = NodePath("../../Roles/InsideRole")
 
-[node name="Player2" type="Node" parent="Players" node_paths=PackedStringArray("role")]
+[node name="Player2" type="Node" parent="Players" unique_id=143842637 node_paths=PackedStringArray("role")]
 script = ExtResource("14_controller")
 model = SubResource("PlayerModel_two")
 input_profile = SubResource("InputProfile_keyboard")
