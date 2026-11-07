@@ -18,6 +18,8 @@
 [ext_resource type="Script" uid="uid://bpvvn563j3l5t" path="res://scripts/player/player_controller.gd" id="14_controller"]
 [ext_resource type="Script" uid="uid://bll14ayn8bqvc" path="res://scripts/player/player_model.gd" id="15_model"]
 [ext_resource type="Script" uid="uid://r6swcrjwau1p" path="res://scripts/player/input_profile.gd" id="16_profile"]
+[ext_resource type="Script" uid="uid://ced6clvkhamtf" path="res://scripts/post_fx.gd" id="17_postfx"]
+[ext_resource type="Shader" uid="uid://b2eeeyq2soeyy" path="res://shaders/pixel_wobble.gdshader" id="18_wobble"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -33,6 +35,9 @@ display_name = "Player 1"
 
 [sub_resource type="Resource" id="InputProfile_keyboard"]
 script = ExtResource("16_profile")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wobble"]
+shader = ExtResource("18_wobble")
 
 [sub_resource type="Resource" id="PlayerModel_two"]
 script = ExtResource("15_model")
@@ -233,6 +238,19 @@ anchor_right = 1.0
 anchor_bottom = 0.06
 grow_horizontal = 2
 color = Color(0.9653986, 0.6455708, 0.4345745, 1)
+
+[node name="PostFx" type="CanvasLayer" parent="."]
+layer = 5
+script = ExtResource("17_postfx")
+
+[node name="Effect" type="ColorRect" parent="PostFx"]
+material = SubResource("ShaderMaterial_wobble")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [node name="Fade" type="CanvasLayer" parent="." unique_id=1976015250]
 layer = 10
