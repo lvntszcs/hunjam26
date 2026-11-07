@@ -96,6 +96,9 @@ func play_release() -> void:
 	_playing_open = true
 	_start(frames, false)
 	await open_finished
+	# open_finished fires as the last frame appears; show it for a full frame
+	# too, or the hand would jump straight from the grab to idle.
+	await get_tree().create_timer(1.0 / open_fps).timeout
 	play_idle()
 
 
