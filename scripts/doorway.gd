@@ -29,6 +29,8 @@ signal peephole_left
 @export var door_closed_texture: Texture2D
 @export var door_half_open_texture: Texture2D
 @export var door_open_texture: Texture2D
+## The inside player's hand; reaches for the handle before the door opens.
+@export var hand: Hand
 ## Ennyi másodpercig áll félig nyitva az ajtó.
 @export var half_open_duration := 0.3
 ## Ennyi másodpercig látszik a folyosó a nyitott ajtón át, mielőtt kimegyünk.
@@ -80,11 +82,17 @@ func open(skip_half_open := false) -> void:
 		await fader.fade_to(0.0)
 	elif camera.zoom != Vector2.ONE:
 		await camera.go_back().finished
+	# The hand reaches and grabs the handle (OPEN frames); its last frame pulls
+	# the handle and is drawn for the half-open door, so they switch together.
+	if hand:
+		await hand.play_open()
 	# Closed -> (half open) -> open; the corridor shows through the opening...
 	if not skip_half_open:
 		door.texture = door_half_open_texture
 		await get_tree().create_timer(half_open_duration).timeout
 	door.texture = door_open_texture
+	if hand:
+		hand.play_idle()  # the handle swung away with the door: let go
 	await get_tree().create_timer(reveal_duration).timeout
 	# ...and only then do we step out.
 	await fader.fade_to(1.0)
@@ -109,6 +117,8 @@ func _close_after_delay() -> void:
 	corridor_view.hide()
 	prank.hide()  # nyitás után a csali resetel
 	door.texture = door_closed_texture
+	if hand:
+		hand.play_idle()
 	camera.snap_back()  # ha kukucskálásból nyitottunk, a kamera még ráközelített
 	await fader.fade_to(0.0)
 	is_open = false
