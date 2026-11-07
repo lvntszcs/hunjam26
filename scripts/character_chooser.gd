@@ -22,6 +22,11 @@ signal confirmed
 @export var move_time := 0.12
 ## Tint of a picture while its player has locked a character.
 @export var locked_color := Color("#551822")
+## The character pictures standing in the left and right slots.
+@export var characters: Array[TextureRect] = []
+## Per character (same order): the picture shown while it is locked
+## (selected). Its normal texture comes back when it is unlocked.
+@export var selected_textures: Array[Texture2D] = []
 
 ## The three slot x positions, left to right.
 var _slots: Array[float] = []
@@ -30,6 +35,8 @@ var _slot_of: Array[int] = [0, 2]
 var _tweens: Array[Tween] = [null, null]
 ## Whether each player has locked the character under their picture.
 var _locked: Array[bool] = [false, false]
+## Each character's texture from the scene, restored on unlock.
+var _idle_textures: Array[Texture2D] = []
 
 
 func _ready() -> void:
@@ -38,6 +45,8 @@ func _ready() -> void:
 	if controller_two == null:
 		controller_two = get_node_or_null("Controller2") as Control
 	set_process_unhandled_input(false)
+	for character in characters:
+		_idle_textures.append(character.texture if character else null)
 	if controller_one == null or controller_two == null:
 		push_warning("CharacterChooser: Controller and Controller2 are both needed")
 		return
@@ -117,6 +126,19 @@ func _set_locked(player: int, locked: bool) -> void:
 	_locked[player] = locked
 	var picture := controller_one if player == 0 else controller_two
 	picture.modulate = locked_color if locked else Color.WHITE
+	_show_selected(_slot_of[player], locked)
+
+
+## Swaps the character in [param slot] (0 = left, 2 = right) to its
+## selected picture, or back to its normal one.
+func _show_selected(slot: int, selected: bool) -> void:
+	var index := 0 if slot == 0 else 1
+	if index >= characters.size() or characters[index] == null:
+		return
+	var texture: Texture2D = null
+	if selected and index < selected_textures.size():
+		texture = selected_textures[index]
+	characters[index].texture = texture if texture else _idle_textures[index]
 
 
 ## Moves [param player]'s picture one slot in [param direction] (-1 or 1).
