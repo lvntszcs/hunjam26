@@ -50,6 +50,13 @@ bg_color = Color(0.33333334, 0.09411765, 0.13333334, 1)
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_separator"]
 color = Color(0.76862746, 0.83137256, 0.8666667, 1)
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_scroll"]
+content_margin_left = 4.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_grabber"]
+content_margin_left = 3.0
+bg_color = Color(0.76862746, 0.83137256, 0.8666667, 1)
+
 [sub_resource type="Theme" id="Theme_debug"]
 default_font_size = 12
 Button/colors/font_color = Color(0.76862746, 0.83137256, 0.8666667, 1)
@@ -67,6 +74,11 @@ HSeparator/constants/separation = 6
 HSeparator/styles/separator = SubResource("StyleBoxLine_separator")
 Label/colors/font_color = Color(0.76862746, 0.83137256, 0.8666667, 1)
 PanelContainer/styles/panel = SubResource("StyleBoxFlat_panel")
+VScrollBar/styles/grabber = SubResource("StyleBoxFlat_grabber")
+VScrollBar/styles/grabber_highlight = SubResource("StyleBoxFlat_grabber")
+VScrollBar/styles/grabber_pressed = SubResource("StyleBoxFlat_grabber")
+VScrollBar/styles/scroll = SubResource("StyleBoxEmpty_scroll")
+VScrollBar/styles/scroll_focus = SubResource("StyleBoxEmpty_scroll")
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_phase"]
 
@@ -78,38 +90,50 @@ script = ExtResource("1_menu")
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -228.0
+offset_left = -236.0
 offset_top = 8.0
 offset_right = -8.0
 offset_bottom = 8.0
 grow_horizontal = 0
 theme = SubResource("Theme_debug")
 
-[node name="Content" type="VBoxContainer" parent="Panel"]
+[node name="Layout" type="VBoxContainer" parent="Panel"]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="Title" type="Label" parent="Panel/Content"]
+[node name="Scroll" type="ScrollContainer" parent="Panel/Layout"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+horizontal_scroll_mode = 0
+
+[node name="Content" type="VBoxContainer" parent="Panel/Layout/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="Title" type="Label" parent="Panel/Layout/Scroll/Content"]
 layout_mode = 2
 text = "DEBUG"
 
-[node name="Status" type="Label" parent="Panel/Content"]
+[node name="Status" type="Label" parent="Panel/Layout/Scroll/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 autowrap_mode = 3
 
-[node name="Separator" type="HSeparator" parent="Panel/Content"]
+[node name="Separator" type="HSeparator" parent="Panel/Layout/Scroll/Content"]
 layout_mode = 2
 
-[node name="PhaseRow" type="HBoxContainer" parent="Panel/Content"]
+[node name="PhaseRow" type="HBoxContainer" parent="Panel/Layout/Scroll/Content"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Panel/Content/PhaseRow"]
+[node name="Label" type="Label" parent="Panel/Layout/Scroll/Content/PhaseRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Phase"
 
-[node name="PhaseIdle" type="Button" parent="Panel/Content/PhaseRow"]
+[node name="PhaseIdle" type="Button" parent="Panel/Layout/Scroll/Content/PhaseRow"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
@@ -117,7 +141,7 @@ toggle_mode = true
 button_group = SubResource("ButtonGroup_phase")
 text = "IDLE"
 
-[node name="PhaseKnocking" type="Button" parent="Panel/Content/PhaseRow"]
+[node name="PhaseKnocking" type="Button" parent="Panel/Layout/Scroll/Content/PhaseRow"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
@@ -125,68 +149,95 @@ toggle_mode = true
 button_group = SubResource("ButtonGroup_phase")
 text = "KNOCKING"
 
-[node name="DelayRow" type="HBoxContainer" parent="Panel/Content"]
+[node name="DelayRow" type="HBoxContainer" parent="Panel/Layout/Scroll/Content"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Panel/Content/DelayRow"]
+[node name="Label" type="Label" parent="Panel/Layout/Scroll/Content/DelayRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Release delay"
 
-[node name="DelayDown" type="Button" parent="Panel/Content/DelayRow"]
+[node name="DelayDown" type="Button" parent="Panel/Layout/Scroll/Content/DelayRow"]
 layout_mode = 2
 focus_mode = 0
 text = "−"
 
-[node name="ReleaseDelay" type="Label" parent="Panel/Content/DelayRow"]
+[node name="ReleaseDelay" type="Label" parent="Panel/Layout/Scroll/Content/DelayRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
 horizontal_alignment = 1
 
-[node name="DelayUp" type="Button" parent="Panel/Content/DelayRow"]
+[node name="DelayUp" type="Button" parent="Panel/Layout/Scroll/Content/DelayRow"]
 layout_mode = 2
 focus_mode = 0
 text = "+"
 
-[node name="SeparatorPacing" type="HSeparator" parent="Panel/Content"]
+[node name="SeparatorPacing" type="HSeparator" parent="Panel/Layout/Scroll/Content"]
 layout_mode = 2
 
-[node name="PacingTitle" type="Label" parent="Panel/Content"]
+[node name="PacingTitle" type="Label" parent="Panel/Layout/Scroll/Content"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Door pacing"
 
-[node name="Pacing" type="VBoxContainer" parent="Panel/Content"]
+[node name="Pacing" type="VBoxContainer" parent="Panel/Layout/Scroll/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="Separator2" type="HSeparator" parent="Panel/Content"]
+[node name="SeparatorTransition" type="HSeparator" parent="Panel/Layout/Scroll/Content"]
 layout_mode = 2
 
-[node name="Timers" type="Label" parent="Panel/Content"]
+[node name="TransitionTitle" type="Label" parent="Panel/Layout/Scroll/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Transition"
+
+[node name="Transition" type="VBoxContainer" parent="Panel/Layout/Scroll/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="SeparatorLens" type="HSeparator" parent="Panel/Layout/Scroll/Content"]
+layout_mode = 2
+
+[node name="LensTitle" type="Label" parent="Panel/Layout/Scroll/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Peephole lens"
+
+[node name="Lens" type="VBoxContainer" parent="Panel/Layout/Scroll/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Separator2" type="HSeparator" parent="Panel/Layout"]
+layout_mode = 2
+
+[node name="Timers" type="Label" parent="Panel/Layout"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="Buttons" type="HBoxContainer" parent="Panel/Content"]
+[node name="Buttons" type="HBoxContainer" parent="Panel/Layout"]
 layout_mode = 2
 
-[node name="TestKnock" type="Button" parent="Panel/Content/Buttons"]
+[node name="TestKnock" type="Button" parent="Panel/Layout/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
 text = "Test knock"
 
-[node name="ResetRound" type="Button" parent="Panel/Content/Buttons"]
+[node name="ResetRound" type="Button" parent="Panel/Layout/Buttons"]
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
 text = "Reset round"
 
-[connection signal="pressed" from="Panel/Content/PhaseRow/PhaseIdle" to="." method="_on_phase_pressed" binds= [0]]
-[connection signal="pressed" from="Panel/Content/PhaseRow/PhaseKnocking" to="." method="_on_phase_pressed" binds= [1]]
-[connection signal="pressed" from="Panel/Content/DelayRow/DelayDown" to="." method="_change_release_delay" binds= [-0.1]]
-[connection signal="pressed" from="Panel/Content/DelayRow/DelayUp" to="." method="_change_release_delay" binds= [0.1]]
-[connection signal="pressed" from="Panel/Content/Buttons/TestKnock" to="." method="_activate_knock"]
-[connection signal="pressed" from="Panel/Content/Buttons/ResetRound" to="." method="_reset_round"]
+[connection signal="pressed" from="Panel/Layout/Scroll/Content/PhaseRow/PhaseIdle" to="." method="_on_phase_pressed" binds= [0]]
+[connection signal="pressed" from="Panel/Layout/Scroll/Content/PhaseRow/PhaseKnocking" to="." method="_on_phase_pressed" binds= [1]]
+[connection signal="pressed" from="Panel/Layout/Scroll/Content/DelayRow/DelayDown" to="." method="_change_release_delay" binds= [-0.1]]
+[connection signal="pressed" from="Panel/Layout/Scroll/Content/DelayRow/DelayUp" to="." method="_change_release_delay" binds= [0.1]]
+[connection signal="pressed" from="Panel/Layout/Buttons/TestKnock" to="." method="_activate_knock"]
+[connection signal="pressed" from="Panel/Layout/Buttons/ResetRound" to="." method="_reset_round"]

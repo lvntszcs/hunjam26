@@ -126,7 +126,7 @@ func is_in_doorway() -> bool:
 	return false
 
 
-func _slide_to(target: float, full_duration: float, ease: Tween.EaseType) -> void:
+func _slide_to(target: float, full_duration: float, easing: Tween.EaseType) -> void:
 	if _frozen:
 		return
 	if _tween:
@@ -137,7 +137,7 @@ func _slide_to(target: float, full_duration: float, ease: Tween.EaseType) -> voi
 	if duration <= 0.0:
 		presence = target
 		return
-	_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(ease)
+	_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(easing)
 	_tween.tween_property(self, "presence", target, duration)
 
 

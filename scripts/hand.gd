@@ -17,7 +17,7 @@ const IDLE_DIR := "res://assets/hand/idle"
 const OPEN_DIR := "res://assets/hand/open"
 
 ## Frames per second of the looping idle animation.
-@export_range(1.0, 30.0, 0.5) var idle_fps := 6.0
+@export_range(1.0, 30.0, 0.5) var idle_fps := 3.0
 ## Frames per second of the one-shot open animation.
 @export_range(1.0, 30.0, 0.5) var open_fps := 10.0
 
@@ -50,9 +50,9 @@ static func load_frames(dir: String) -> Array[Texture2D]:
 	files.sort()
 	for file: String in files:
 		if file.get_extension().to_lower() in ["png", "webp", "jpg", "jpeg"]:
-			var texture := load(dir.path_join(file)) as Texture2D
-			if texture:
-				frames.append(texture)
+			var frame := load(dir.path_join(file)) as Texture2D
+			if frame:
+				frames.append(frame)
 	return frames
 
 
