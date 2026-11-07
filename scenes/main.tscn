@@ -42,6 +42,9 @@
 [ext_resource type="Texture2D" uid="uid://copepsfort1op" path="res://assets/logo.png" id="40_logo"]
 [ext_resource type="Texture2D" uid="uid://c10qva5f8g6w2" path="res://assets/Tuja/tuja_1.png" id="37_tuja1"]
 [ext_resource type="Texture2D" uid="uid://ch5qbyj40o54k" path="res://assets/Tuja/tuja_2.png" id="38_tuja2"]
+[ext_resource type="Texture2D" uid="uid://c6gxumewowitt" path="res://assets/KopogoGep/kopogo-gep - 1.png" id="41_kopogo1"]
+[ext_resource type="Texture2D" uid="uid://u37gb0arwvow" path="res://assets/KopogoGep/kopogo-gep - 2.png" id="42_kopogo2"]
+[ext_resource type="Script" path="res://scripts/knocking_machine.gd" id="43_machine"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -286,6 +289,18 @@ texture = ExtResource("10_jscy8")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="Prank" type="TextureRect" parent="RoomCorridor" unique_id=1580244744]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("41_kopogo1")
+expand_mode = 1
+
 [node name="Wall" type="TextureRect" parent="." unique_id=634147687]
 layout_mode = 1
 anchors_preset = 15
@@ -439,16 +454,22 @@ texture = ExtResource("10_jscy8")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Prank" type="TextureRect" parent="Corridor" unique_id=1580244742]
+[node name="Prank" type="TextureRect" parent="Corridor" unique_id=1580244742 node_paths=PackedStringArray("copies")]
 visible = false
-anchors_preset = -1
-anchor_left = 0.4
-anchor_top = 0.55
-anchor_right = 0.6
-anchor_bottom = 0.92
-texture = ExtResource("5_prank")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("41_kopogo1")
 expand_mode = 1
-stretch_mode = 5
+script = ExtResource("43_machine")
+frames = Array[Texture2D]([ExtResource("41_kopogo1"), ExtResource("42_kopogo2")])
+copies = [NodePath("../../RoomCorridor/Prank")]
+
+[node name="KnockPlayer" type="Node" parent="Corridor/Prank" unique_id=1580244743]
+script = ExtResource("30_knock_player")
 
 [node name="PostFx" type="CanvasLayer" parent="." unique_id=2119104863]
 layer = 5
