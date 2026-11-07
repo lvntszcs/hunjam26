@@ -1,77 +1,130 @@
 extends Control
+## Wires players, roles and the doorway together and owns the round rules.
+##
+## Scene layout:
+##   Doorway  - presentation and door state
+##   Roles    - InsideRole, OutsideRole (one per side of the door)
+##   Players  - PlayerController per player, each holding a PlayerModel and a Role
 
-enum State { FAR, MOVING, PEEKING, OPEN }
-var state := State.FAR
+@export var doorway: Doorway
+@export var outside_role: OutsideRole
+@export var players: Array[PlayerController] = []
+## Szerepcsere után ennyi másodpercig nem fogadunk inputot.
+@export var swap_wait := 2.0
 
-## Ki lehet-e nyitni az ajtót a szoba közepéről (messziről).
-@export var can_open_from_far := true
-## Ki lehet-e nyitni az ajtót kukucskálás közben (azonnal, hátralépés nélkül).
-@export var can_open_from_peephole := true
-## Ennyi másodperc után csukódik be magától a nyitott ajtó.
-@export var open_duration := 2.0
+## Set when the knocker runs out of health; the swap waits until the door closes.
+var _swap_pending := false
+var _input_lock_timer: SceneTreeTimer
 
-@onready var cam = $Camera2D
-@onready var hole = $Hole
-@onready var peephole = $Peephole
-@onready var corridor = $Corridor
-@onready var black = $Fade/Black
-@onready var prank = $Corridor/Prank
 
-var door_open := false  # nyitástól a csukás végéig igaz
+func _ready() -> void:
+	doorway.swung_open.connect(_on_doorway_swung_open)
+	doorway.closed.connect(_on_doorway_closed)
+	for controller in players:
+		if controller.model:
+			controller.model.defeated.connect(_on_player_defeated)
+	_assign_joypads()
+	Input.joy_connection_changed.connect(_on_joy_connection_changed)
+	if OS.is_debug_build():
+		var debug_menu := preload("res://scenes/debug_menu.tscn").instantiate()
+		debug_menu.setup(doorway, outside_role, players, _input_lock_time_left)
+		add_child(debug_menu)
 
-func _unhandled_input(event):
-	if event.is_action_pressed("place_prank") and not door_open:
-		prank.visible = true  # placeholder csali: csak a nyitott ajtón át látszik
+
+## A button press on a gamepad nobody owns gives it to the next free player.
+## Browsers only reveal a gamepad after its first button press, so on the web
+## this is how controllers join; the joining press itself is swallowed.
+## (_input runs before any PlayerController's _unhandled_input.)
+func _input(event: InputEvent) -> void:
+	var button := event as InputEventJoypadButton
+	if button == null or not button.pressed or _joypad_owner(button.device):
 		return
-	if state == State.MOVING or state == State.OPEN:
-		return  # animáció / nyitott ajtó közben nem reagálunk
-	if event.is_action_pressed("open_door"):
-		if (state == State.FAR and can_open_from_far) \
-				or (state == State.PEEKING and can_open_from_peephole):
-			open_door()
-	elif event.is_action_pressed("approach") and state == State.FAR:
-		enter_peephole()
-	elif event.is_action_pressed("step_back") and state == State.PEEKING:
-		exit_peephole()
+	if _claim_joypad(button.device):
+		get_viewport().set_input_as_handled()
 
-func enter_peephole():
-	state = State.MOVING
-	await cam.go_close(hole.get_center()).finished
-	await fade_to(1.0)
-	peephole.visible = true
-	await fade_to(0.0)
-	state = State.PEEKING
 
-func exit_peephole():
-	state = State.MOVING
-	await fade_to(1.0)
-	peephole.visible = false
-	await fade_to(0.0)
-	await cam.go_back().finished
-	state = State.FAR
+## Swaps the roles of the first two players. Meant to be called between
+## rounds, while nobody is mid-action.
+func swap_roles() -> void:
+	assert(players.size() >= 2, "swap_roles() needs two players")
+	var first_role := players[0].role
+	players[0].role = players[1].role
+	players[1].role = first_role
+	for controller in players:
+		if controller.role:
+			controller.role.reset_state()
+	# Only the knocker has health, so the new one starts from full.
+	if outside_role.player:
+		outside_role.player.reset()
+	print("swap")
 
-func open_door():
-	state = State.MOVING
-	door_open = true
-	await fade_to(1.0)
-	peephole.visible = false
-	corridor.visible = true
-	await fade_to(0.0)
-	state = State.OPEN
-	await get_tree().create_timer(open_duration).timeout
-	close_door()
 
-func close_door():
-	state = State.MOVING
-	await fade_to(1.0)
-	corridor.visible = false
-	prank.visible = false  # nyitás után a csali resetel
-	cam.snap_back()  # ha kukucskálásból nyitottunk, a kamera még ráközelített
-	await fade_to(0.0)
-	door_open = false
-	state = State.FAR
+func _on_player_defeated() -> void:
+	_swap_pending = true
 
-func fade_to(alpha: float, time := 0.3):
-	var t = create_tween()
-	t.tween_property(black, "modulate:a", alpha, time)
-	await t.finished
+
+func _on_doorway_closed() -> void:
+	outside_role.let_go()
+	if _swap_pending:
+		_swap_pending = false
+		swap_roles()
+		await _block_input(swap_wait)
+
+
+## Ignores every player's input for [param seconds].
+func _block_input(seconds: float) -> void:
+	for controller in players:
+		controller.set_process_unhandled_input(false)
+	_input_lock_timer = get_tree().create_timer(seconds, false)
+	await _input_lock_timer.timeout
+	_input_lock_timer = null
+	for controller in players:
+		controller.set_process_unhandled_input(true)
+
+
+func _input_lock_time_left() -> float:
+	return _input_lock_timer.time_left if _input_lock_timer else 0.0
+
+
+## Caught if even one pixel of the knocker shows in the opened doorway.
+func _on_doorway_swung_open() -> void:
+	if outside_role.is_in_doorway():
+		outside_role.freeze()
+		if outside_role.player:
+			outside_role.player.take_damage(1)
+		print("Elkapva")
+	else:
+		print("Pranked")
+
+
+## Hands out the gamepads already connected at startup (desktop builds).
+func _assign_joypads() -> void:
+	for device in Input.get_connected_joypads():
+		_claim_joypad(device)
+
+
+## Gives [param device] to the first player without a gamepad.
+## Returns false if every player already has one.
+func _claim_joypad(device: int) -> bool:
+	for controller in players:
+		if not controller.has_joypad():
+			controller.joypad_id = device
+			print("%s: controller %d" % [controller.model.display_name, device])
+			return true
+	return false
+
+
+func _joypad_owner(device: int) -> PlayerController:
+	for controller in players:
+		if controller.joypad_id == device:
+			return controller
+	return null
+
+
+func _on_joy_connection_changed(device: int, connected: bool) -> void:
+	var holder := _joypad_owner(device)
+	if connected:
+		if holder == null:
+			_claim_joypad(device)
+	elif holder:
+		holder.joypad_id = -1  # free the slot for the next controller
