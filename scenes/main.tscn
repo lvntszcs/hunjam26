@@ -15,6 +15,7 @@
 [ext_resource type="Texture2D" uid="uid://cg2n016th3gek" path="res://assets/back_wall.png" id="11_0ld40"]
 [ext_resource type="Script" uid="uid://cjws0wqniyo14" path="res://scripts/doorway.gd" id="11_doorway"]
 [ext_resource type="Script" uid="uid://b8o4dhj5v2778" path="res://scripts/roles/inside_role.gd" id="12_inside"]
+[ext_resource type="Texture2D" uid="uid://b5w3a22kioabl" path="res://assets/back_wall2.png" id="12_pm3ni"]
 [ext_resource type="Script" uid="uid://bcd0vxxs02kv6" path="res://scripts/roles/outside_role.gd" id="13_outside"]
 [ext_resource type="Script" uid="uid://bpvvn563j3l5t" path="res://scripts/player/player_controller.gd" id="14_controller"]
 [ext_resource type="Script" uid="uid://bll14ayn8bqvc" path="res://scripts/player/player_model.gd" id="15_model"]
@@ -192,7 +193,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("11_0ld40")
+texture = ExtResource("12_pm3ni")
 
 [node name="Prank" type="TextureRect" parent="Corridor" unique_id=1580244742]
 visible = false
