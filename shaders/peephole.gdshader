@@ -13,6 +13,8 @@ uniform vec4 outside_color : source_color = vec4(0.333, 0.094, 0.133, 1.0);
 // Barrel strength: the centre stays 1:1 and sharp, the rim bends and looks
 // further out (0 = flat, 0.8 = the rim shows 1.8x as far).
 uniform float strength : hint_range(0.0, 3.0) = 0.4;
+// Light level inside the lens (1 = normal). Driven by the peephole event.
+uniform float brightness = 1.0;
 // Darkening towards the rim of the lens.
 uniform float vignette : hint_range(0.0, 1.0) = 0.5;
 
@@ -32,6 +34,7 @@ void fragment() {
 	// Same full-screen rect, so shift SCREEN_UV by the UV offset.
 	vec3 col = texture(screen_tex, SCREEN_UV + (src_uv - UV)).rgb;
 
+	col *= brightness;
 	col *= 1.0 - vignette * r * r;
 	float outside = smoothstep(radius, radius + softness, d);
 	COLOR = vec4(mix(col, outside_color.rgb, outside), 1.0);

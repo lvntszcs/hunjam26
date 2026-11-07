@@ -22,6 +22,8 @@
 [ext_resource type="Shader" uid="uid://b2eeeyq2soeyy" path="res://shaders/pixel_wobble.gdshader" id="18_wobble"]
 [ext_resource type="Texture2D" uid="uid://dqyxo02hwnium" path="res://assets/door_02.png" id="17_door_half"]
 [ext_resource type="Texture2D" uid="uid://cslkusniy4l7m" path="res://assets/door_03.png" id="18_door_open"]
+[ext_resource type="Script" path="res://scripts/peephole_event.gd" id="19_peephole_event"]
+[ext_resource type="Texture2D" uid="uid://gfourp23jtlw" path="res://assets/bob.jpg" id="20_apparition"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -161,6 +163,17 @@ texture = ExtResource("11_0ld40")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="Apparition" type="TextureRect" parent="Peephole"]
+visible = false
+anchors_preset = -1
+anchor_left = 0.4
+anchor_top = 0.3
+anchor_right = 0.6
+anchor_bottom = 0.75
+texture = ExtResource("20_apparition")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="Mask" type="ColorRect" parent="Peephole" unique_id=330920548]
 material = SubResource("ShaderMaterial_h2yge")
 anchors_preset = 15
@@ -230,6 +243,13 @@ peephole_view = NodePath("../Peephole")
 corridor_view = NodePath("../Corridor")
 prank = NodePath("../Corridor/Prank")
 doorknob_target = NodePath("../Knob")
+
+[node name="PeepholeEvent" type="Node" parent="." node_paths=PackedStringArray("doorway", "inside_role", "apparition", "lens")]
+script = ExtResource("19_peephole_event")
+doorway = NodePath("../Doorway")
+inside_role = NodePath("../Roles/InsideRole")
+apparition = NodePath("../Peephole/Apparition")
+lens = NodePath("../Peephole/Mask")
 
 [node name="Roles" type="Node" parent="." unique_id=863425788]
 

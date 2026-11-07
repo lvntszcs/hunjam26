@@ -9,6 +9,10 @@ extends Node
 signal opening
 ## Emitted once the door has fully closed again.
 signal closed
+## Emitted once the peephole view is fully shown.
+signal peephole_entered
+## Emitted when leaving the peephole view starts.
+signal peephole_left
 
 ## Ennyi másodperc után csukódik be magától a nyitott ajtó.
 @export var open_duration := 2.0
@@ -42,6 +46,7 @@ func approach_peephole() -> void:
 	await fader.fade_to(1.0)
 	peephole_view.show()
 	await fader.fade_to(0.0)
+	peephole_entered.emit()
 
 ## Zooms onto the door knob. Only a camera move: the door stays closed.
 func approach_doorknob() -> void:
@@ -53,6 +58,7 @@ func leave_doorknob() -> void:
 
 
 func leave_peephole() -> void:
+	peephole_left.emit()
 	await fader.fade_to(1.0)
 	peephole_view.hide()
 	await fader.fade_to(0.0)

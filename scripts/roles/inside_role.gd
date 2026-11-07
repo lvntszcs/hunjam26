@@ -43,6 +43,13 @@ func press(command: StringName) -> void:
 				_enter_doorknob()
 
 
+## Pushes the player back from the peephole, as if they pressed step back.
+## Does nothing unless they are currently peeking.
+func force_step_back() -> void:
+	if state == State.PEEKING:
+		_exit_peephole()
+
+
 func _can_open_door() -> bool:
 	return (state == State.FAR and can_open_from_far) \
 			or (state == State.PEEKING and can_open_from_peephole) \
