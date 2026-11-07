@@ -10,9 +10,16 @@ extends Control
 @export var outside_role: OutsideRole
 @export var players: Array[PlayerController] = []
 
+## Set when the knocker runs out of health; the swap waits until the door closes.
+var _swap_pending := false
+
 
 func _ready() -> void:
 	doorway.opening.connect(_on_doorway_opening)
+	doorway.closed.connect(_on_doorway_closed)
+	for controller in players:
+		if controller.model:
+			controller.model.defeated.connect(_on_player_defeated)
 	_assign_joypads()
 
 
@@ -23,6 +30,23 @@ func swap_roles() -> void:
 	var first_role := players[0].role
 	players[0].role = players[1].role
 	players[1].role = first_role
+	for controller in players:
+		if controller.role:
+			controller.role.reset_state()
+	# Only the knocker has health, so the new one starts from full.
+	if outside_role.player:
+		outside_role.player.reset()
+	print("swap")
+
+
+func _on_player_defeated() -> void:
+	_swap_pending = true
+
+
+func _on_doorway_closed() -> void:
+	if _swap_pending:
+		_swap_pending = false
+		swap_roles()
 
 
 func _on_doorway_opening() -> void:

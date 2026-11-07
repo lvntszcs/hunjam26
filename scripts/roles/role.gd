@@ -22,3 +22,9 @@ func press(_command: StringName) -> void:
 ## Called when the action bound to [param command] is released.
 func release(_command: StringName) -> void:
 	pass
+
+
+## Drops any in-progress input state (e.g. a held key). Called when the role
+## changes hands, since the old player's key releases no longer reach it.
+func reset_state() -> void:
+	pass
