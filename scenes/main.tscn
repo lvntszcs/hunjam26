@@ -8,6 +8,7 @@
 [ext_resource type="Shader" uid="uid://c47ps4srjwaxe" path="res://shaders/peephole.gdshader" id="4_1bvp3"]
 [ext_resource type="Texture2D" uid="uid://gfourp23jtlw" path="res://assets/bob.jpg" id="4_lquwl"]
 [ext_resource type="Texture2D" uid="uid://ctdqqc2pmbet3" path="res://assets/jack_in_box.png" id="5_prank"]
+[ext_resource type="Script" uid="uid://dam3o2s402mve" path="res://scenes/knock_release_timer.gd" id="9_85g3d"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -205,3 +206,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 1)
+
+[node name="KnockReleaseTimer" type="Timer" parent="." unique_id=1906406133]
+one_shot = true
+script = ExtResource("9_85g3d")
