@@ -47,6 +47,8 @@
 [ext_resource type="Script" path="res://scripts/knocking_machine.gd" id="43_machine"]
 [ext_resource type="Script" uid="uid://dqo7bnrd5cnpn" path="res://scripts/peephole_skeleton.gd" id="41_skeleton"]
 [ext_resource type="PackedScene" path="res://scenes/health_hud.tscn" id="41_health_hud"]
+[ext_resource type="Texture2D" uid="uid://ddogpv0qlb884" path="res://assets/Granny/granny2.png" id="41_granny2"]
+[ext_resource type="Texture2D" uid="uid://beg41v0upul02" path="res://assets/Knocker/knocker1.png" id="42_knocker1"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -187,8 +189,10 @@ texture = ExtResource("9_dgi5k")
 expand_mode = 1
 script = ExtResource("35_pixel_button")
 
-[node name="CharacterChoose" type="CanvasLayer" parent="." unique_id=1901739246]
+[node name="CharacterChoose" type="CanvasLayer" parent="." unique_id=1901739246 node_paths=PackedStringArray("characters")]
 script = ExtResource("36_chooser")
+characters = [NodePath("CanvasLayer/Granny"), NodePath("CanvasLayer2/Knocker")]
+selected_textures = [ExtResource("41_granny2"), ExtResource("42_knocker1")]
 
 [node name="Wall" type="ColorRect" parent="CharacterChoose" unique_id=1592017613]
 anchors_preset = 15
@@ -228,14 +232,14 @@ expand_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 900.0
-offset_top = 375.0
-offset_right = 122.0
-offset_bottom = 331.0
+offset_left = 640.0
+offset_top = 360.0
+offset_right = 640.0
+offset_bottom = 360.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.5, 0.5)
-texture = ExtResource("10_jscy8")
+texture = ExtResource("42_knocker1")
 expand_mode = 1
 
 [node name="Controller" type="TextureRect" parent="CharacterChoose" unique_id=172830134]
