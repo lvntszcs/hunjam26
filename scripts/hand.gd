@@ -24,7 +24,6 @@ const OPEN_DIR := "res://assets/hand/open"
 var _idle_frames: Array[Texture2D] = []
 var _open_frames: Array[Texture2D] = []
 var _frames: Array[Texture2D] = []
-var _fps := 1.0
 var _loop := true
 var _frame := 0
 var _frame_time := 0.0
@@ -72,7 +71,7 @@ func is_playing_open() -> bool:
 ## Loops the idle animation (from its first frame).
 func play_idle() -> void:
 	_playing_open = false
-	_start(_idle_frames, idle_fps, true)
+	_start(_idle_frames, true)
 
 
 ## Plays the open animation once and returns when its last frame is shown.
@@ -80,13 +79,12 @@ func play_open() -> void:
 	if _open_frames.is_empty():
 		return
 	_playing_open = true
-	_start(_open_frames, open_fps, false)
+	_start(_open_frames, false)
 	await open_finished
 
 
-func _start(frames: Array[Texture2D], fps: float, loop: bool) -> void:
+func _start(frames: Array[Texture2D], loop: bool) -> void:
 	_frames = frames
-	_fps = fps
 	_loop = loop
 	_frame = 0
 	_frame_time = 0.0
@@ -100,7 +98,8 @@ func _process(delta: float) -> void:
 	if _frames.size() < 2 or _open_done:
 		return
 	_frame_time += delta
-	var frame_length := 1.0 / _fps
+	# Read every frame, so speed changes (e.g. from the debug menu) apply at once.
+	var frame_length := 1.0 / (idle_fps if _loop else open_fps)
 	while _frame_time >= frame_length:
 		_frame_time -= frame_length
 		if _frame < _frames.size() - 1:
