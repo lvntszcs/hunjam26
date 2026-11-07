@@ -86,12 +86,13 @@ func open(skip_half_open := false) -> void:
 	is_open = true
 	opening.emit()
 	# Back to the room view first, so the opening door is actually visible.
+	# From the knob we are already at the door: open it from right there.
 	if peephole_view.visible:
 		await fader.fade_to(1.0)
 		peephole_view.hide()
 		camera.snap_back()
 		await fader.fade_to(0.0)
-	elif camera.zoom != Vector2.ONE:
+	elif camera.zoom != Vector2.ONE and not skip_half_open:
 		await camera.go_back().finished
 	# The hand reaches and grabs the handle (OPEN frames); its last frame pulls
 	# the handle and is drawn for the half-open door, so they switch together.
