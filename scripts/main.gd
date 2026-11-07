@@ -13,6 +13,7 @@ extends Control
 
 func _ready() -> void:
 	doorway.opening.connect(_on_doorway_opening)
+	_assign_joypads()
 
 
 ## Swaps the roles of the first two players. Meant to be called between
@@ -31,3 +32,9 @@ func _on_doorway_opening() -> void:
 		print("Elkapva")
 	else:
 		print("Pranked")
+
+func _assign_joypads() -> void:
+	var joypads := Input.get_connected_joypads()
+
+	for i in range(mini(joypads.size(),players.size())):
+		players[i].joypad_id = joypads[i]

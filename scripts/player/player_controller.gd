@@ -12,7 +12,7 @@ signal role_changed(new_role: Role)
 ## The role this player plays. Can be reassigned at runtime.
 @export var role: Role:
 	set = set_role
-
+@export var joypad_id : int = -1
 
 func _ready() -> void:
 	if model:
@@ -35,10 +35,14 @@ func set_role(new_role: Role) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if role == null or input_profile == null or event.is_echo():
 		return
+	if event is InputEventJoypadButton or event is InputEventJoypadMotion:
+		if event.device != joypad_id:
+			return
 	for command in role.get_commands():
 		var action := input_profile.action_for(command)
 		if action.is_empty() or not InputMap.has_action(action):
 			continue
+			
 		if event.is_action_pressed(action):
 			role.press(command)
 		elif event.is_action_released(action):
