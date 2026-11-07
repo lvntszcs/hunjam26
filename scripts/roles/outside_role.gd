@@ -78,8 +78,36 @@ func _on_release_timer_timeout() -> void:
 		print("Outer-IDLE")
 
 
+## True if any of the knocker shows in the doorway right now.
+func is_in_doorway() -> bool:
+	return knocker != null and knocker.is_in_doorway()
+
+
+## Caught in the doorway: the knocker stops where it is and the knocking
+## phase holds until [method let_go].
+func freeze() -> void:
+	_release_timer.paused = true
+	if knocker:
+		knocker.freeze()
+
+
+## The door has closed again: carry on from where the knocker was frozen.
+func let_go() -> void:
+	_release_timer.paused = false
+	if knocker == null or not knocker.is_frozen():
+		return
+	knocker.unfreeze()
+	if _knock_held:
+		knocker.slide_in()
+	elif not _release_timer.is_stopped():
+		knocker.slide_out(_release_timer.time_left / maxf(knocker.presence, 0.01))
+	else:
+		knocker.slide_out(release_delay)
+
+
 func reset_state() -> void:
 	_knock_held = false
+	_release_timer.paused = false
 	_release_timer.stop()
 	_knock_player.stop()
 	if knocker:

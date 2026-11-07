@@ -83,9 +83,9 @@ grow_vertical = 2
 texture = ExtResource("12_pm3ni")
 expand_mode = 1
 
-[node name="Knocker" type="TextureRect" parent="RoomCorridor"]
+[node name="Knocker" type="TextureRect" parent="RoomCorridor" unique_id=1683870814]
 visible = false
-anchors_preset = -1
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 334.0
@@ -156,7 +156,7 @@ pivot_offset_ratio = Vector2(0.5, 0.5)
 color = Color(0, 0, 0, 1)
 script = ExtResource("6_muem4")
 
-[node name="Hand" type="TextureRect" parent="."]
+[node name="Hand" type="TextureRect" parent="." unique_id=1765161049]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -203,7 +203,7 @@ offset_bottom = 4.0
 texture = ExtResource("10_jscy8")
 expand_mode = 1
 
-[node name="Knocker" type="TextureRect" parent="Peephole"]
+[node name="Knocker" type="TextureRect" parent="Peephole" unique_id=1474770962]
 visible = false
 anchors_preset = -1
 anchor_right = 1.0
@@ -236,7 +236,7 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("12_pm3ni")
 
-[node name="Knocker" type="TextureRect" parent="Corridor"]
+[node name="Knocker" type="TextureRect" parent="Corridor" unique_id=395020958]
 visible = false
 anchors_preset = -1
 anchor_right = 1.0
@@ -309,9 +309,11 @@ inside_role = NodePath("../Roles/InsideRole")
 apparition = NodePath("../Peephole/Apparition")
 background = NodePath("../Peephole/TextureRect")
 
-[node name="Knocker" type="Node" parent="." node_paths=PackedStringArray("figures")]
+[node name="Knocker" type="Node" parent="." unique_id=1113584781 node_paths=PackedStringArray("figures", "room_figure", "doorway_wall")]
 script = ExtResource("32_knocker")
 figures = [NodePath("../RoomCorridor/Knocker"), NodePath("../Peephole/Knocker"), NodePath("../Corridor/Knocker")]
+room_figure = NodePath("../RoomCorridor/Knocker")
+doorway_wall = NodePath("../Wall")
 
 [node name="Roles" type="Node" parent="." unique_id=863425788]
 

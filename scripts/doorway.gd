@@ -7,6 +7,9 @@ extends Node
 
 ## Emitted the moment the door starts to open.
 signal opening
+## Emitted when the opening first shows (the door swings half or fully open):
+## from here on, whatever stands in the doorway is seen.
+signal swung_open
 ## Emitted once the door has fully closed again.
 signal closed
 ## Emitted once the peephole view is fully shown.
@@ -89,8 +92,11 @@ func open(skip_half_open := false) -> void:
 	# Closed -> (half open) -> open; the corridor shows through the opening...
 	if not skip_half_open:
 		door.texture = door_half_open_texture
+		swung_open.emit()
 		await get_tree().create_timer(half_open_duration).timeout
 	door.texture = door_open_texture
+	if skip_half_open:
+		swung_open.emit()
 	if hand:
 		hand.play_idle()  # the handle swung away with the door: let go
 	await get_tree().create_timer(reveal_duration).timeout
