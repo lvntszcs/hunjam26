@@ -40,7 +40,11 @@ signal peephole_left
 @export var reveal_duration := 0.8
 
 @export var close_zoom := Vector2(10, 10)
-@export var close_zoom_knob := Vector2(2, 2)
+@export var close_zoom_knob := Vector2(1, 1)
+## Kilincstől nyitva ennyi pixellel néz fel a kamera a nyitott ajtóra.
+@export var knob_look_up := 280.0
+## Ennyi másodperc alatt néz fel a kamera kilincstől nyitáskor.
+@export var knob_look_up_duration := 0.6
 ## True from the start of opening until the door has fully closed.
 var is_open := false
 var _close_timer: SceneTreeTimer
@@ -53,12 +57,20 @@ func approach_peephole() -> void:
 	await fader.fade_to(0.0)
 	peephole_entered.emit()
 
-## Zooms onto the door knob. Only a camera move: the door stays closed.
+## Zooms onto the door knob while the hand reaches for it and keeps holding
+## the handle. The door stays closed until [method open] or
+## [method leave_doorknob].
 func approach_doorknob() -> void:
-	await camera.go_close(doorknob_target.get_global_rect().get_center(), close_zoom_knob).finished
+	var move := camera.go_close(doorknob_target.get_global_rect().get_center(), close_zoom_knob)
+	if hand:
+		await hand.play_grab()
+	if move.is_running():
+		await move.finished
 
 
 func leave_doorknob() -> void:
+	if hand:
+		hand.play_idle()  # let go of the handle
 	await camera.go_back().finished
 
 
@@ -72,34 +84,43 @@ func leave_peephole() -> void:
 
 ## Opens the door; returns once the corridor is visible. The door then closes
 ## by itself after [member open_duration] and emits [signal closed].
-## With [param skip_half_open] (hand already on the knob) the door goes
-## straight from closed to fully open.
-func open(skip_half_open := false) -> void:
+## With [param from_knob] the hand already holds the handle: it just pulls,
+## the camera stays close and looks up into the doorway.
+func open(from_knob := false) -> void:
 	is_open = true
 	opening.emit()
 	# Back to the room view first, so the opening door is actually visible.
+	# From the knob we are already at the door: open it from right there.
 	if peephole_view.visible:
 		await fader.fade_to(1.0)
 		peephole_view.hide()
 		camera.snap_back()
 		await fader.fade_to(0.0)
-	elif camera.zoom != Vector2.ONE:
+	elif camera.zoom != Vector2.ONE and not from_knob:
 		await camera.go_back().finished
 	# The hand reaches and grabs the handle (OPEN frames); its last frame pulls
 	# the handle and is drawn for the half-open door, so they switch together.
+	# From the knob the hand is already holding the handle: it just pulls.
 	if hand:
-		await hand.play_open()
-	# Closed -> (half open) -> open; the corridor shows through the opening...
-	if not skip_half_open:
-		door.texture = door_half_open_texture
-		swung_open.emit()
-		await get_tree().create_timer(half_open_duration).timeout
+		if from_knob:
+			hand.play_pull()
+		else:
+			await hand.play_open()
+	# Closed -> half open -> open; the corridor shows through the opening...
+	door.texture = door_half_open_texture
+	swung_open.emit()
+	await get_tree().create_timer(half_open_duration).timeout
 	door.texture = door_open_texture
-	if skip_half_open:
-		swung_open.emit()
 	if hand:
 		hand.play_idle()  # the handle swung away with the door: let go
+	# Opened from the knob close-up: look up from the handle into the doorway.
+	var tilt: Tween = null
+	if from_knob and camera.zoom != Vector2.ONE:
+		tilt = camera.move_to(camera.position + Vector2(0.0, -knob_look_up), camera.zoom,
+				knob_look_up_duration)
 	await get_tree().create_timer(reveal_duration).timeout
+	if tilt and tilt.is_running():
+		await tilt.finished
 	# ...and only then do we step out.
 	await fader.fade_to(1.0)
 	corridor_view.show()

@@ -7,8 +7,10 @@ const MIN_RELEASE_DELAY := 0.1
 const MAX_RELEASE_DELAY := 30.0
 
 ## Door opening / hand animation pacing rows:
-## [label, target ("doorway" or "hand"), property, step, min, max, value format].
+## [label, target ("doorway", "hand" or "camera"), property, step, min, max, value format].
 const PACING_ROWS := [
+	["Camera move", "camera", "duration", 0.1, 0.1, 5.0, "%.1f s"],
+	["Knob look-up", "doorway", "knob_look_up_duration", 0.1, 0.1, 5.0, "%.1f s"],
 	["Hand reach", "hand", "open_fps", 1.0, 1.0, 30.0, "%.0f fps"],
 	["Half-open hold", "doorway", "half_open_duration", 0.05, 0.0, 3.0, "%.2f s"],
 	["Corridor reveal", "doorway", "reveal_duration", 0.1, 0.0, 5.0, "%.1f s"],
@@ -51,7 +53,7 @@ func _ready() -> void:
 
 func _build_pacing_rows() -> void:
 	var container: VBoxContainer = %Pacing
-	var targets := {"doorway": _doorway, "hand": _doorway.hand}
+	var targets := {"doorway": _doorway, "hand": _doorway.hand, "camera": _doorway.camera}
 	for row: Array in PACING_ROWS:
 		var target: Object = targets[row[1]]
 		if target == null:

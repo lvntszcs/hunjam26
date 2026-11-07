@@ -32,14 +32,15 @@ func _fit_to_viewport() -> void:
 
 ## Moves and zooms together so [param target] travels in a straight line to
 ## the centre of the screen (tweening position and zoom separately makes it arc).
-func move_to(target: Vector2, target_zoom: Vector2) -> Tween:
+## [param time] overrides [member duration] when not negative.
+func move_to(target: Vector2, target_zoom: Vector2, time := -1.0) -> Tween:
 	var start_pos := position
 	var start_zoom := zoom
 	var tween := create_tween()
 	tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	tween.tween_method(
 		func(t: float) -> void: _apply_move(t, start_pos, start_zoom, target, target_zoom),
-		0.0, 1.0, duration)
+		0.0, 1.0, duration if time < 0.0 else time)
 	return tween
 
 
