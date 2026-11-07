@@ -126,15 +126,15 @@ func _sync_health_hud_visibility() -> void:
 	_health_hud.visible = not (in_start_menu or in_character_menu)
 
 
-## A button press on a gamepad nobody owns gives it to the next free player.
-## Browsers only reveal a gamepad after its first button press, so on the web
-## this is how controllers join; the joining press itself is swallowed.
+## A button or trigger press on an unassigned gamepad joins the next free player.
+## The joining button press itself is swallowed.
 ## (_input runs before any PlayerController's _unhandled_input.)
 func _input(event: InputEvent) -> void:
-	var button := event as InputEventJoypadButton
-	if button == null or not button.pressed or _joypad_owner(button.device):
-		return
-	if _claim_joypad(button.device):
+	var joining := event is InputEventJoypadButton and event.pressed
+	if event is InputEventJoypadMotion:
+		joining = (event.axis == JOY_AXIS_TRIGGER_LEFT or event.axis == JOY_AXIS_TRIGGER_RIGHT) \
+				and event.axis_value >= PlayerController.TRIGGER_PRESS_THRESHOLD
+	if joining and not _joypad_owner(event.device) and _claim_joypad(event.device):
 		get_viewport().set_input_as_handled()
 
 

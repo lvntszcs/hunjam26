@@ -5,9 +5,10 @@ extends Role
 enum Phase { IDLE, KNOCKING }
 
 const KNOCK := &"knock"
+const KNOCK_AT_DOOR := &"knock_at_door"
 const PLACE_PRANK := &"place_prank"
 const DISGUISE := &"disguise"
-const COMMANDS: Array[StringName] = [KNOCK, PLACE_PRANK, DISGUISE]
+const COMMANDS: Array[StringName] = [KNOCK, KNOCK_AT_DOOR, PLACE_PRANK, DISGUISE]
 
 ## Knocking state-ben töltött idő kopogás után (másodperc).
 @export var release_delay := 1.5
@@ -17,6 +18,7 @@ const COMMANDS: Array[StringName] = [KNOCK, PLACE_PRANK, DISGUISE]
 
 var phase := Phase.IDLE
 var _knock_held := false
+var _trigger_held := false
 
 @onready var _release_timer: Timer = $ReleaseTimer
 @onready var _knock_player: KnockPlayer = $KnockPlayer
@@ -45,6 +47,17 @@ func set_release_delay(seconds: float) -> void:
 		_release_timer.start(release_delay)
 
 
+func set_trigger_held(held: bool) -> void:
+	_trigger_held = held
+	if held:
+		if knocker and not doorway.is_open:
+			knocker.slide_in()
+	elif not _knock_held:
+		_stop_knocking()
+		if knocker:
+			knocker.slide_out(knocker.slide_in_duration)
+
+
 func press(command: StringName) -> void:
 	match command:
 		KNOCK:
@@ -56,9 +69,12 @@ func press(command: StringName) -> void:
 				knocker.set_disguised(false)  # knocking again drops the disguise
 				knocker.slide_in()
 			if phase != Phase.KNOCKING:
-				phase = Phase.KNOCKING
-				_knock_player.play_random_pattern()
-				print("Outer-KNOCKING")
+				_start_knocking()
+		KNOCK_AT_DOOR:
+			if not doorway.is_open and _trigger_held and is_in_doorway():
+				_start_knocking()
+				if not _knock_held:
+					_release_timer.start(release_delay)
 		PLACE_PRANK:
 			if not doorway.is_open:
 				doorway.place_prank()  # placeholder csali: csak a nyitott ajtón át látszik
@@ -76,12 +92,24 @@ func release(command: StringName) -> void:
 			_release_timer.start(release_delay)
 			# Gone exactly when the knocking phase ends: while it is still
 			# visible, opening the door catches it.
-			if knocker:
+			if knocker and not _trigger_held:
 				knocker.slide_out(release_delay)
 
 
 func _on_release_timer_timeout() -> void:
-	if phase == Phase.KNOCKING and not _knock_held:
+	if not _knock_held:
+		_stop_knocking()
+
+
+func _start_knocking() -> void:
+	phase = Phase.KNOCKING
+	_knock_player.play_random_pattern()
+	print("Outer-KNOCKING")
+
+
+func _stop_knocking() -> void:
+	_release_timer.stop()
+	if phase == Phase.KNOCKING:
 		phase = Phase.IDLE
 		_knock_player.stop()  # no knocking heard once the knocker is idle
 		print("Outer-IDLE")
@@ -105,10 +133,10 @@ func let_go() -> void:
 	_release_timer.paused = false
 	if knocker:
 		knocker.set_disguised(false)  # the inside player is back in the room
-	if knocker == null or not knocker.is_frozen():
+	if knocker == null or (not knocker.is_frozen() and not _trigger_held):
 		return
 	knocker.unfreeze()
-	if _knock_held:
+	if _trigger_held or _knock_held:
 		knocker.slide_in()
 	elif not _release_timer.is_stopped():
 		knocker.slide_out(_release_timer.time_left / maxf(knocker.presence, 0.01))
@@ -118,6 +146,7 @@ func let_go() -> void:
 
 func reset_state() -> void:
 	_knock_held = false
+	_trigger_held = false
 	_release_timer.paused = false
 	_release_timer.stop()
 	_knock_player.stop()
