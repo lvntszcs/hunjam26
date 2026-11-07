@@ -8,14 +8,26 @@ var home_position: Vector2
 
 
 func _ready() -> void:
+	# The window can change size after startup (resizing, fullscreen, the
+	# editor's embedded game view); with stretch aspect "expand" the visible
+	# area changes with it, so the home view and limits must follow.
+	get_viewport().size_changed.connect(_fit_to_viewport)
+	_fit_to_viewport()
+	position = home_position
+
+
+## Recentres the home view on the visible area and limits the camera to it.
+func _fit_to_viewport() -> void:
+	var at_home := zoom.is_equal_approx(Vector2.ONE) and position.is_equal_approx(home_position)
 	var view_size := get_viewport_rect().size
 	home_position = view_size / 2
-	position = home_position
 	# Never show anything outside the scene, even mid-zoom.
 	limit_left = 0
 	limit_top = 0
 	limit_right = int(view_size.x)
 	limit_bottom = int(view_size.y)
+	if at_home:
+		position = home_position
 
 
 ## Moves and zooms together so [param target] travels in a straight line to
