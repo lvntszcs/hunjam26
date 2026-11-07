@@ -4,7 +4,7 @@ extends CanvasLayer
 ## shaders/pixel_wobble.gdshader). Proof of concept: the toggle key switches it
 ## on and off so it can be compared in the running game.
 
-@export var toggle_key: Key = KEY_F1
+@export var toggle_key: Key = KEY_F2
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

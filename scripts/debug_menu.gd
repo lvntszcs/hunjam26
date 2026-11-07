@@ -1,5 +1,5 @@
 extends CanvasLayer
-## Always-visible debug panel docked to the right edge (debug builds only).
+## Debug panel docked to the right edge. F1 toggles it in debug builds.
 ## Mouse-only: its controls never take keyboard/gamepad focus, so gameplay
 ## keys like Space can't trigger them.
 
@@ -208,6 +208,8 @@ func _action_button(text: String, action: Callable) -> Button:
 
 
 func _process(_delta: float) -> void:
+	if not visible:
+		return
 	_refresh()
 	_fit_to_screen()
 
@@ -225,6 +227,12 @@ func _fit_to_screen() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	var key := event as InputEventKey
+	if key and key.pressed and not key.echo and key.physical_keycode == KEY_F1:
+		visible = not visible
+		get_viewport().set_input_as_handled()
+		return
+
 	var button := event as InputEventJoypadButton
 	if button:
 		var action := "pressed" if button.pressed else "released"

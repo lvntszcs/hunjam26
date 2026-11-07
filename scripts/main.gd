@@ -6,8 +6,11 @@ extends Control
 ##   Roles    - InsideRole, OutsideRole (one per side of the door)
 ##   Players  - PlayerController per player, each holding a PlayerModel and a Role
 
+const HealthHud := preload("res://scripts/health_hud.gd")
+
 @export var doorway: Doorway
 @export var outside_role: OutsideRole
+@export var inside_role: InsideRole
 @export var players: Array[PlayerController] = []
 ## Szerepcsere után ennyi másodpercig nem fogadunk inputot.
 @export var swap_wait := 2.0
@@ -36,7 +39,7 @@ extends Control
 ## Seconds to ease back to opaque after the last blink.
 @export var see_through_fade_back := 0.4
 
-## Set when the knocker runs out of health; the swap waits until the door closes.
+## Set when either player runs out of health; the swap waits until the door closes.
 var _swap_pending := false
 var _input_lock_timer: SceneTreeTimer
 ## True while a menu transition runs; repeated presses are ignored meanwhile.
@@ -44,6 +47,8 @@ var _transitioning := false
 ## False while the start page or the character choose screen is up.
 var _in_game := true
 var _see_through_tween: Tween
+
+@onready var _health_hud: HealthHud = $HealthHud
 
 
 func _ready() -> void:
@@ -81,6 +86,8 @@ func _ready() -> void:
 			var item := get_node_or_null(node_name) as CanvasItem
 			if item:
 				see_through.append(item)
+	_health_hud.setup(players)
+	_sync_health_hud_visibility()
 	if OS.is_debug_build():
 		var debug_menu := preload("res://scenes/debug_menu.tscn").instantiate()
 		debug_menu.setup(doorway, outside_role, players, _input_lock_time_left)
@@ -108,8 +115,15 @@ func _menu_transition(tint: Color, swap: Callable) -> void:
 	_transitioning = true
 	await doorway.fader.fade_to(1.0, menu_transition_duration, tint)
 	swap.call()
+	_sync_health_hud_visibility()
 	await doorway.fader.fade_to(0.0, menu_transition_duration)
 	_transitioning = false
+
+
+func _sync_health_hud_visibility() -> void:
+	var in_start_menu := start_page != null and start_page.visible
+	var in_character_menu := character_chooser != null and character_chooser.visible
+	_health_hud.visible = not (in_start_menu or in_character_menu)
 
 
 ## A button press on a gamepad nobody owns gives it to the next free player.
@@ -172,9 +186,10 @@ func swap_roles() -> void:
 	for controller in players:
 		if controller.role:
 			controller.role.reset_state()
-	# Only the knocker has health, so the new one starts from full.
-	if outside_role.player:
-		outside_role.player.reset()
+		# The new knocker starts at full health; a defeated player also needs
+		# full health if they are moving inside.
+		if controller.model and (controller.role == outside_role or controller.model.is_defeated()):
+			controller.model.reset()
 	print("swap")
 
 
@@ -248,6 +263,8 @@ func _on_doorway_swung_open() -> void:
 			outside_role.player.take_damage(1)
 		print("Elkapva")
 	else:
+		if inside_role and inside_role.player:
+			inside_role.player.take_damage(1)
 		print("Pranked")
 
 

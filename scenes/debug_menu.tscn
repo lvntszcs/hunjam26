@@ -115,7 +115,7 @@ theme_override_constants/separation = 4
 
 [node name="Title" type="Label" parent="Panel/Layout/Scroll/Content"]
 layout_mode = 2
-text = "DEBUG"
+text = "DEBUG  ·  F1"
 
 [node name="Status" type="Label" parent="Panel/Layout/Scroll/Content"]
 unique_name_in_owner = true

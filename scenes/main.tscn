@@ -46,6 +46,7 @@
 [ext_resource type="Texture2D" uid="uid://u37gb0arwvow" path="res://assets/KopogoGep/kopogo-gep - 2.png" id="42_kopogo2"]
 [ext_resource type="Script" path="res://scripts/knocking_machine.gd" id="43_machine"]
 [ext_resource type="Script" uid="uid://dqo7bnrd5cnpn" path="res://scripts/peephole_skeleton.gd" id="41_skeleton"]
+[ext_resource type="PackedScene" path="res://scenes/health_hud.tscn" id="41_health_hud"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -81,7 +82,7 @@ script = ExtResource("16_profile")
 script = ExtResource("15_model")
 display_name = "Player 2"
 
-[node name="Main" type="Control" unique_id=1249313363 node_paths=PackedStringArray("doorway", "outside_role", "players", "start_page", "start_button", "character_chooser")]
+[node name="Main" type="Control" unique_id=1249313363 node_paths=PackedStringArray("doorway", "outside_role", "inside_role", "players", "start_page", "start_button", "character_chooser")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -92,6 +93,7 @@ size_flags_horizontal = 4
 script = ExtResource("1_0xm2m")
 doorway = NodePath("Doorway")
 outside_role = NodePath("Roles/OutsideRole")
+inside_role = NodePath("Roles/InsideRole")
 players = [NodePath("Players/Player1"), NodePath("Players/Player2")]
 start_page = NodePath("StartPage")
 start_button = NodePath("StartPage/Start")
@@ -489,6 +491,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="HealthHud" parent="." unique_id=177929259 instance=ExtResource("41_health_hud")]
 
 [node name="Fade" type="CanvasLayer" parent="." unique_id=1976015250]
 layer = 10
