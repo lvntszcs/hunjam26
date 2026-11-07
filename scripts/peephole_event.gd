@@ -16,16 +16,16 @@ extends Node
 @export var background: CanvasItem
 
 ## Ekkora eséllyel történik meg egy belenézéskor (0 = soha, 1 = mindig).
-@export_range(0.0, 1.0) var chance := 1.0
+@export_range(0.0, 1.0) var chance := 0.3
 ## A belenézés után véletlenszerűen ennyi idő között jelenik meg (másodperc).
 @export var min_delay := 0.5
-@export var max_delay := 3.0
+@export var max_delay := 1.5
 ## Ennyi ideig tart, utána visszadob a szoba közepére.
 @export var duration := 2.0
 ## Fényerő a pislákolás sötét pillanataiban (0 = teljes sötét).
-@export_range(0.0, 1.0) var dim_brightness := 0.15
+@export_range(0.0, 1.0) var dim_brightness := 0.4
 ## Mennyit kap a kép a háttér sötétedéséből (0 = semmit, 1 = ugyanannyit).
-@export_range(0.0, 1.0) var apparition_shade := 0.5
+@export_range(0.0, 1.0) var apparition_shade := 0.8
 ## Egy pislákolási lépés hossza ezek között (másodperc).
 @export var flicker_min := 0.04
 @export var flicker_max := 0.18
