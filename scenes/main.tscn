@@ -10,7 +10,6 @@
 [ext_resource type="Texture2D" uid="uid://blvigclr60cfs" path="res://assets/door.png" id="3_jscy8"]
 [ext_resource type="Texture2D" uid="uid://bhkuh032j8tqn" path="res://assets/menu_door.png" id="3_yq6so"]
 [ext_resource type="Shader" uid="uid://c47ps4srjwaxe" path="res://shaders/peephole.gdshader" id="4_1bvp3"]
-[ext_resource type="Texture2D" uid="uid://ctdqqc2pmbet3" path="res://assets/jack_in_box.png" id="5_prank"]
 [ext_resource type="Texture2D" uid="uid://dg5a2aexle72h" path="res://assets/Tekerentyu/Tekerentyudoboz - 1.png" id="5_yq6so"]
 [ext_resource type="Script" uid="uid://bsxswm1u5tak6" path="res://scenes/knob.gd" id="6_muem4"]
 [ext_resource type="Texture2D" uid="uid://cjdmx7il0rrop" path="res://assets/hanging_play_button.png" id="8_5q0nq"]
@@ -39,12 +38,12 @@
 [ext_resource type="Texture2D" uid="uid://b0nmb1qj7p4js" path="res://assets/Tekerentyu/Tekerentyudoboz - 2.png" id="34_crank_pressed"]
 [ext_resource type="Script" uid="uid://dq8girncta47s" path="res://scripts/pixel_button.gd" id="35_pixel_button"]
 [ext_resource type="Script" uid="uid://cif4pfppfe7nq" path="res://scripts/character_chooser.gd" id="36_chooser"]
-[ext_resource type="Texture2D" uid="uid://copepsfort1op" path="res://assets/logo.png" id="40_logo"]
 [ext_resource type="Texture2D" uid="uid://c10qva5f8g6w2" path="res://assets/Tuja/tuja_1.png" id="37_tuja1"]
 [ext_resource type="Texture2D" uid="uid://ch5qbyj40o54k" path="res://assets/Tuja/tuja_2.png" id="38_tuja2"]
+[ext_resource type="Texture2D" uid="uid://copepsfort1op" path="res://assets/logo.png" id="40_logo"]
 [ext_resource type="Texture2D" uid="uid://c6gxumewowitt" path="res://assets/KopogoGep/kopogo-gep - 1.png" id="41_kopogo1"]
 [ext_resource type="Texture2D" uid="uid://u37gb0arwvow" path="res://assets/KopogoGep/kopogo-gep - 2.png" id="42_kopogo2"]
-[ext_resource type="Script" path="res://scripts/knocking_machine.gd" id="43_machine"]
+[ext_resource type="Script" uid="uid://5xjnxmmlge5a" path="res://scripts/knocking_machine.gd" id="43_machine"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -500,6 +499,9 @@ script = ExtResource("10_fader")
 
 [node name="Doorway" type="Node" parent="." unique_id=606465438 node_paths=PackedStringArray("camera", "fader", "peephole_target", "peephole_view", "corridor_view", "prank", "doorknob_target", "door", "hand")]
 script = ExtResource("11_doorway")
+door_closed_texture = ExtResource("3_jscy8")
+door_half_open_texture = ExtResource("17_door_half")
+door_open_texture = ExtResource("18_door_open")
 camera = NodePath("../Camera2D")
 fader = NodePath("../Fade/Cover")
 peephole_target = NodePath("../Hole")
@@ -508,9 +510,6 @@ corridor_view = NodePath("../Corridor")
 prank = NodePath("../Corridor/Prank")
 doorknob_target = NodePath("../Knob")
 door = NodePath("../Door")
-door_closed_texture = ExtResource("3_jscy8")
-door_half_open_texture = ExtResource("17_door_half")
-door_open_texture = ExtResource("18_door_open")
 hand = NodePath("../Hand")
 
 [node name="Knocker" type="Node" parent="." unique_id=1113584781 node_paths=PackedStringArray("figures", "room_figure", "doorway_wall")]
