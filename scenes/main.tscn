@@ -23,7 +23,6 @@
 [ext_resource type="Script" uid="uid://ced6clvkhamtf" path="res://scripts/post_fx.gd" id="17_postfx"]
 [ext_resource type="Texture2D" uid="uid://cslkusniy4l7m" path="res://assets/door_03.png" id="18_door_open"]
 [ext_resource type="Shader" uid="uid://b2eeeyq2soeyy" path="res://shaders/pixel_wobble.gdshader" id="18_wobble"]
-[ext_resource type="Script" uid="uid://c8whefiwduaec" path="res://scripts/peephole_event.gd" id="19_peephole_event"]
 [ext_resource type="Script" uid="uid://3j51kls7et06" path="res://scripts/audio/knock_player.gd" id="30_knock_player"]
 [ext_resource type="Script" uid="uid://5vuhc8rkaa0" path="res://scripts/hand.gd" id="31_hand"]
 [ext_resource type="Script" uid="uid://cb077rd6ii7dr" path="res://scripts/knocker.gd" id="32_knocker"]
@@ -191,18 +190,6 @@ texture = ExtResource("12_pm3ni")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Apparition" type="TextureRect" parent="Peephole" unique_id=1458360144]
-visible = false
-anchors_preset = -1
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 334.0
-offset_top = 7.0
-offset_right = -320.0
-offset_bottom = 4.0
-texture = ExtResource("10_jscy8")
-expand_mode = 1
-
 [node name="Knocker" type="TextureRect" parent="Peephole" unique_id=1474770962]
 visible = false
 anchors_preset = -1
@@ -301,13 +288,6 @@ door_closed_texture = ExtResource("3_jscy8")
 door_half_open_texture = ExtResource("17_door_half")
 door_open_texture = ExtResource("18_door_open")
 hand = NodePath("../Hand")
-
-[node name="PeepholeEvent" type="Node" parent="." unique_id=2099581207 node_paths=PackedStringArray("doorway", "inside_role", "apparition", "background")]
-script = ExtResource("19_peephole_event")
-doorway = NodePath("../Doorway")
-inside_role = NodePath("../Roles/InsideRole")
-apparition = NodePath("../Peephole/Apparition")
-background = NodePath("../Peephole/TextureRect")
 
 [node name="Knocker" type="Node" parent="." unique_id=1113584781 node_paths=PackedStringArray("figures", "room_figure", "doorway_wall")]
 script = ExtResource("32_knocker")
