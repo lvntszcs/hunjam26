@@ -9,13 +9,14 @@ extends Node
 
 @export var doorway: Doorway
 @export var inside_role: InsideRole
-## The image that appears inside the peephole view (starts hidden).
+## The image that appears inside the peephole view (starts hidden). It is
+## drawn above the background, so it does not flicker.
 @export var apparition: CanvasItem
-## The peephole Mask; its shader's "brightness" is flickered.
-@export var lens: CanvasItem
+## The peephole background; only this flickers.
+@export var background: CanvasItem
 
 ## Ekkora eséllyel történik meg egy belenézéskor (0 = soha, 1 = mindig).
-@export_range(0.0, 1.0) var chance := 0.3
+@export_range(0.0, 1.0) var chance := 1.0
 ## A belenézés után véletlenszerűen ennyi idő között jelenik meg (másodperc).
 @export var min_delay := 0.5
 @export var max_delay := 3.0
@@ -69,6 +70,4 @@ func _reset() -> void:
 
 
 func _set_brightness(value: float) -> void:
-	var material := lens.material as ShaderMaterial
-	if material:
-		material.set_shader_parameter("brightness", value)
+	background.modulate = Color(value, value, value, 1.0)

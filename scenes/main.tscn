@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://ctdqqc2pmbet3" path="res://assets/jack_in_box.png" id="5_prank"]
 [ext_resource type="Script" uid="uid://bsxswm1u5tak6" path="res://scenes/knob.gd" id="6_muem4"]
 [ext_resource type="Script" uid="uid://bwaih7avvwvjy" path="res://scripts/screen_fader.gd" id="10_fader"]
+[ext_resource type="Texture2D" uid="uid://b4bof8xbwl1yy" path="res://assets/snowleopard_nobg.png" id="10_jscy8"]
 [ext_resource type="Texture2D" uid="uid://cg2n016th3gek" path="res://assets/back_wall.png" id="11_0ld40"]
 [ext_resource type="Script" uid="uid://cjws0wqniyo14" path="res://scripts/doorway.gd" id="11_doorway"]
 [ext_resource type="Script" uid="uid://b8o4dhj5v2778" path="res://scripts/roles/inside_role.gd" id="12_inside"]
@@ -22,8 +23,7 @@
 [ext_resource type="Shader" uid="uid://b2eeeyq2soeyy" path="res://shaders/pixel_wobble.gdshader" id="18_wobble"]
 [ext_resource type="Texture2D" uid="uid://dqyxo02hwnium" path="res://assets/door_02.png" id="17_door_half"]
 [ext_resource type="Texture2D" uid="uid://cslkusniy4l7m" path="res://assets/door_03.png" id="18_door_open"]
-[ext_resource type="Script" path="res://scripts/peephole_event.gd" id="19_peephole_event"]
-[ext_resource type="Texture2D" uid="uid://gfourp23jtlw" path="res://assets/bob.jpg" id="20_apparition"]
+[ext_resource type="Script" uid="uid://c8whefiwduaec" path="res://scripts/peephole_event.gd" id="19_peephole_event"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -70,7 +70,7 @@ doorway = NodePath("Doorway")
 outside_role = NodePath("Roles/OutsideRole")
 players = [NodePath("Players/Player1"), NodePath("Players/Player2")]
 
-[node name="RoomCorridor" type="TextureRect" parent="."]
+[node name="RoomCorridor" type="TextureRect" parent="." unique_id=652725466]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -163,14 +163,16 @@ texture = ExtResource("11_0ld40")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Apparition" type="TextureRect" parent="Peephole"]
+[node name="Apparition" type="TextureRect" parent="Peephole" unique_id=1458360144]
 visible = false
 anchors_preset = -1
-anchor_left = 0.4
-anchor_top = 0.3
-anchor_right = 0.6
-anchor_bottom = 0.75
-texture = ExtResource("20_apparition")
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 420.0
+offset_top = 99.0
+offset_right = -412.0
+offset_bottom = -50.0
+texture = ExtResource("10_jscy8")
 expand_mode = 1
 stretch_mode = 5
 
@@ -232,10 +234,6 @@ script = ExtResource("10_fader")
 
 [node name="Doorway" type="Node" parent="." unique_id=606465438 node_paths=PackedStringArray("camera", "fader", "peephole_target", "peephole_view", "corridor_view", "prank", "doorknob_target", "door")]
 script = ExtResource("11_doorway")
-door = NodePath("../Door")
-door_closed_texture = ExtResource("3_dp3eg")
-door_half_open_texture = ExtResource("17_door_half")
-door_open_texture = ExtResource("18_door_open")
 camera = NodePath("../Camera2D")
 fader = NodePath("../Fade/Black")
 peephole_target = NodePath("../Hole")
@@ -243,13 +241,17 @@ peephole_view = NodePath("../Peephole")
 corridor_view = NodePath("../Corridor")
 prank = NodePath("../Corridor/Prank")
 doorknob_target = NodePath("../Knob")
+door = NodePath("../Door")
+door_closed_texture = ExtResource("3_dp3eg")
+door_half_open_texture = ExtResource("17_door_half")
+door_open_texture = ExtResource("18_door_open")
 
-[node name="PeepholeEvent" type="Node" parent="." node_paths=PackedStringArray("doorway", "inside_role", "apparition", "lens")]
+[node name="PeepholeEvent" type="Node" parent="." unique_id=2099581207 node_paths=PackedStringArray("doorway", "inside_role", "apparition", "background")]
 script = ExtResource("19_peephole_event")
 doorway = NodePath("../Doorway")
 inside_role = NodePath("../Roles/InsideRole")
 apparition = NodePath("../Peephole/Apparition")
-lens = NodePath("../Peephole/Mask")
+background = NodePath("../Peephole/TextureRect")
 
 [node name="Roles" type="Node" parent="." unique_id=863425788]
 
