@@ -43,6 +43,8 @@ signal peephole_left
 @export var close_zoom_knob := Vector2(2, 2)
 ## Kilincstől nyitva ennyi pixellel néz fel a kamera a nyitott ajtóra.
 @export var knob_look_up := 280.0
+## Ennyi másodperc alatt néz fel a kamera kilincstől nyitáskor.
+@export var knob_look_up_duration := 0.6
 ## True from the start of opening until the door has fully closed.
 var is_open := false
 var _close_timer: SceneTreeTimer
@@ -114,7 +116,8 @@ func open(from_knob := false) -> void:
 	# Opened from the knob close-up: look up from the handle into the doorway.
 	var tilt: Tween = null
 	if from_knob and camera.zoom != Vector2.ONE:
-		tilt = camera.move_to(camera.position + Vector2(0.0, -knob_look_up), camera.zoom)
+		tilt = camera.move_to(camera.position + Vector2(0.0, -knob_look_up), camera.zoom,
+				knob_look_up_duration)
 	await get_tree().create_timer(reveal_duration).timeout
 	if tilt and tilt.is_running():
 		await tilt.finished
