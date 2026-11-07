@@ -53,12 +53,20 @@ func approach_peephole() -> void:
 	await fader.fade_to(0.0)
 	peephole_entered.emit()
 
-## Zooms onto the door knob. Only a camera move: the door stays closed.
+## Zooms onto the door knob while the hand reaches for it and keeps holding
+## the handle. The door stays closed until [method open] or
+## [method leave_doorknob].
 func approach_doorknob() -> void:
-	await camera.go_close(doorknob_target.get_global_rect().get_center(), close_zoom_knob).finished
+	var move := camera.go_close(doorknob_target.get_global_rect().get_center(), close_zoom_knob)
+	if hand:
+		await hand.play_grab()
+	if move.is_running():
+		await move.finished
 
 
 func leave_doorknob() -> void:
+	if hand:
+		hand.play_idle()  # let go of the handle
 	await camera.go_back().finished
 
 
@@ -87,7 +95,8 @@ func open(skip_half_open := false) -> void:
 		await camera.go_back().finished
 	# The hand reaches and grabs the handle (OPEN frames); its last frame pulls
 	# the handle and is drawn for the half-open door, so they switch together.
-	if hand:
+	# From the knob the hand is already holding the handle: no reach again.
+	if hand and not skip_half_open:
 		await hand.play_open()
 	# Closed -> (half open) -> open; the corridor shows through the opening...
 	if not skip_half_open:

@@ -74,6 +74,17 @@ func play_idle() -> void:
 	_start(_idle_frames, true)
 
 
+## Plays the open animation up to the frame that grabs the closed door's
+## handle (the next-to-last one) and holds it there, until [method play_idle]
+## or [method play_open] is called. Returns once the handle is grabbed.
+func play_grab() -> void:
+	if _open_frames.size() < 2:
+		return  # no separate grab frame to hold
+	_playing_open = true
+	_start(_open_frames.slice(0, _open_frames.size() - 1), false)
+	await open_finished
+
+
 ## Plays the open animation once and returns when its last frame is shown.
 func play_open() -> void:
 	if _open_frames.is_empty():
