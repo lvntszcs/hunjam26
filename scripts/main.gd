@@ -9,6 +9,8 @@ extends Control
 @export var doorway: Doorway
 @export var outside_role: OutsideRole
 @export var players: Array[PlayerController] = []
+## Szerepcsere után ennyi másodpercig nem fogadunk inputot.
+@export var swap_wait := 2.0
 
 ## Set when the knocker runs out of health; the swap waits until the door closes.
 var _swap_pending := false
@@ -47,6 +49,16 @@ func _on_doorway_closed() -> void:
 	if _swap_pending:
 		_swap_pending = false
 		swap_roles()
+		await _block_input(swap_wait)
+
+
+## Ignores every player's input for [param seconds].
+func _block_input(seconds: float) -> void:
+	for controller in players:
+		controller.set_process_unhandled_input(false)
+	await get_tree().create_timer(seconds).timeout
+	for controller in players:
+		controller.set_process_unhandled_input(true)
 
 
 func _on_doorway_opening() -> void:
