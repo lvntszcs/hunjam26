@@ -39,7 +39,7 @@ signal peephole_left
 ## Ennyi másodpercig látszik a folyosó a nyitott ajtón át, mielőtt kimegyünk.
 @export var reveal_duration := 0.8
 
-@export var close_zoom := Vector2(10, 10)
+@export var close_zoom := Vector2(15, 15)
 @export var close_zoom_knob := Vector2(1, 1)
 ## Kilincstől nyitva ennyi pixellel néz fel a kamera a nyitott ajtóra.
 @export var knob_look_up := 280.0
@@ -51,8 +51,8 @@ var _close_timer: SceneTreeTimer
 
 
 func approach_peephole() -> void:
-	await camera.go_close(peephole_target.get_global_rect().get_center(),close_zoom).finished
-	await fader.fade_to(1.0)
+	camera.go_close(peephole_target.get_global_rect().get_center(),close_zoom).finished
+	await fader.fade_to(1)
 	peephole_view.show()
 	await fader.fade_to(0.0)
 	peephole_entered.emit()
@@ -82,7 +82,7 @@ func leave_peephole() -> void:
 	peephole_left.emit()
 	await fader.fade_to(1.0)
 	peephole_view.hide()
-	await fader.fade_to(0.0)
+	fader.fade_to(0.0)
 	await camera.go_back().finished
 
 
