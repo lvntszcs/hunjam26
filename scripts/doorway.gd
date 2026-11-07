@@ -66,7 +66,7 @@ func place_prank() -> void:
 
 
 func _close_after_delay() -> void:
-	await get_tree().create_timer(open_duration).timeout
+	await get_tree().create_timer(open_duration, false).timeout
 	await fader.fade_to(1.0)
 	corridor_view.hide()
 	prank.hide()  # nyitás után a csali resetel

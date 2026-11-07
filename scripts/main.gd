@@ -24,6 +24,10 @@ func _ready() -> void:
 			controller.model.defeated.connect(_on_player_defeated)
 	_assign_joypads()
 	Input.joy_connection_changed.connect(_on_joy_connection_changed)
+	if OS.is_debug_build():
+		var debug_menu := preload("res://scenes/debug_menu.tscn").instantiate()
+		debug_menu.setup(doorway, outside_role, players)
+		add_child(debug_menu)
 
 
 ## A button press on a gamepad nobody owns gives it to the next free player.
@@ -69,7 +73,7 @@ func _on_doorway_closed() -> void:
 func _block_input(seconds: float) -> void:
 	for controller in players:
 		controller.set_process_unhandled_input(false)
-	await get_tree().create_timer(seconds).timeout
+	await get_tree().create_timer(seconds, false).timeout
 	for controller in players:
 		controller.set_process_unhandled_input(true)
 

@@ -45,7 +45,7 @@ func press(command: StringName) -> void:
 
 
 func release(command: StringName) -> void:
-	if command == KNOCK:
+	if command == KNOCK and _knock_held:
 		_knock_held = false
 		if phase == Phase.KNOCKING:
 			_release_timer.start(release_delay)
