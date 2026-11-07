@@ -8,10 +8,10 @@
 [ext_resource type="Shader" uid="uid://b0suws2i47pts" path="res://shaders/holeShape.gdshader" id="3_272bh"]
 [ext_resource type="Texture2D" uid="uid://dncijq83ccsh1" path="res://assets/door.png" id="3_dp3eg"]
 [ext_resource type="Shader" uid="uid://c47ps4srjwaxe" path="res://shaders/peephole.gdshader" id="4_1bvp3"]
-[ext_resource type="Texture2D" uid="uid://gfourp23jtlw" path="res://assets/bob.jpg" id="4_lquwl"]
 [ext_resource type="Texture2D" uid="uid://ctdqqc2pmbet3" path="res://assets/jack_in_box.png" id="5_prank"]
 [ext_resource type="Script" uid="uid://bsxswm1u5tak6" path="res://scenes/knob.gd" id="6_muem4"]
 [ext_resource type="Script" uid="uid://bwaih7avvwvjy" path="res://scripts/screen_fader.gd" id="10_fader"]
+[ext_resource type="Texture2D" uid="uid://cg2n016th3gek" path="res://assets/back_wall.png" id="11_0ld40"]
 [ext_resource type="Script" uid="uid://cjws0wqniyo14" path="res://scripts/doorway.gd" id="11_doorway"]
 [ext_resource type="Script" uid="uid://b8o4dhj5v2778" path="res://scripts/roles/inside_role.gd" id="12_inside"]
 [ext_resource type="Script" uid="uid://bcd0vxxs02kv6" path="res://scripts/roles/outside_role.gd" id="13_outside"]
@@ -26,6 +26,9 @@ shader = ExtResource("3_272bh")
 shader = ExtResource("4_1bvp3")
 shader_parameter/radius = 0.35
 shader_parameter/softness = 0.05
+shader_parameter/outside_color = Color(0.333, 0.094, 0.133, 1)
+shader_parameter/strength = 0.8
+shader_parameter/vignette = 0.5
 
 [sub_resource type="Resource" id="PlayerModel_one"]
 script = ExtResource("15_model")
@@ -129,7 +132,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("4_lquwl")
+texture = ExtResource("11_0ld40")
 expand_mode = 1
 stretch_mode = 5
 
@@ -144,61 +147,13 @@ grow_vertical = 2
 [node name="Corridor" type="CanvasLayer" parent="." unique_id=1580244731]
 visible = false
 
-[node name="BackWall" type="ColorRect" parent="Corridor" unique_id=1580244732]
+[node name="BackWall" type="TextureRect" parent="Corridor" unique_id=1713333470]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.55, 0.5, 0.42, 1)
-
-[node name="Ceiling" type="ColorRect" parent="Corridor" unique_id=1580244733]
-anchors_preset = -1
-anchor_right = 1.0
-anchor_bottom = 0.15
-grow_horizontal = 2
-color = Color(0.82, 0.8, 0.74, 1)
-
-[node name="Floor" type="ColorRect" parent="Corridor" unique_id=1580244734]
-anchors_preset = -1
-anchor_top = 0.78
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 0
-color = Color(0.3, 0.22, 0.17, 1)
-
-[node name="Baseboard" type="ColorRect" parent="Corridor" unique_id=1580244735]
-anchors_preset = -1
-anchor_top = 0.76
-anchor_right = 1.0
-anchor_bottom = 0.78
-grow_horizontal = 2
-color = Color(0.2, 0.15, 0.12, 1)
-
-[node name="OppositeDoorLeft" type="ColorRect" parent="Corridor" unique_id=1580244736]
-anchors_preset = -1
-anchor_left = 0.12
-anchor_top = 0.32
-anchor_right = 0.26
-anchor_bottom = 0.76
-color = Color(0.45, 0.28, 0.18, 1)
-
-[node name="OppositeDoorRight" type="ColorRect" parent="Corridor" unique_id=1580244737]
-anchors_preset = -1
-anchor_left = 0.74
-anchor_top = 0.32
-anchor_right = 0.88
-anchor_bottom = 0.76
-color = Color(0.45, 0.28, 0.18, 1)
-
-[node name="Lamp" type="ColorRect" parent="Corridor" unique_id=1580244738]
-anchors_preset = -1
-anchor_left = 0.46
-anchor_top = 0.15
-anchor_right = 0.54
-anchor_bottom = 0.18
-color = Color(1, 0.95, 0.7, 1)
+texture = ExtResource("11_0ld40")
 
 [node name="Prank" type="TextureRect" parent="Corridor" unique_id=1580244742]
 visible = false
@@ -210,29 +165,6 @@ anchor_bottom = 0.92
 texture = ExtResource("5_prank")
 expand_mode = 1
 stretch_mode = 5
-
-[node name="FrameLeft" type="ColorRect" parent="Corridor" unique_id=1580244739]
-anchors_preset = -1
-anchor_right = 0.05
-anchor_bottom = 1.0
-grow_vertical = 2
-color = Color(0.9653986, 0.6455708, 0.4345745, 1)
-
-[node name="FrameRight" type="ColorRect" parent="Corridor" unique_id=1580244740]
-anchors_preset = -1
-anchor_left = 0.95
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 0
-grow_vertical = 2
-color = Color(0.9653986, 0.6455708, 0.4345745, 1)
-
-[node name="FrameTop" type="ColorRect" parent="Corridor" unique_id=1580244741]
-anchors_preset = -1
-anchor_right = 1.0
-anchor_bottom = 0.06
-grow_horizontal = 2
-color = Color(0.9653986, 0.6455708, 0.4345745, 1)
 
 [node name="Fade" type="CanvasLayer" parent="." unique_id=1976015250]
 layer = 10
