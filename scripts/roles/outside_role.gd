@@ -16,6 +16,7 @@ var phase := Phase.IDLE
 var _knock_held := false
 
 @onready var _release_timer: Timer = $ReleaseTimer
+@onready var _knock_player: KnockPlayer = $KnockPlayer
 
 
 func _ready() -> void:
@@ -48,6 +49,7 @@ func press(command: StringName) -> void:
 			_release_timer.stop()
 			if phase != Phase.KNOCKING:
 				phase = Phase.KNOCKING
+				_knock_player.play_random_pattern()
 				print("Outer-KNOCKING")
 		PLACE_PRANK:
 			if not doorway.is_open:
@@ -64,10 +66,12 @@ func release(command: StringName) -> void:
 func _on_release_timer_timeout() -> void:
 	if phase == Phase.KNOCKING and not _knock_held:
 		phase = Phase.IDLE
+		_knock_player.stop()  # no knocking heard once the knocker is idle
 		print("Outer-IDLE")
 
 
 func reset_state() -> void:
 	_knock_held = false
 	_release_timer.stop()
+	_knock_player.stop()
 	phase = Phase.IDLE
