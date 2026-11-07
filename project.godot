@@ -13,6 +13,8 @@ config_version=5
 config/name="hunjam26"
 run/main_scene="uid://c6cihrf11y440"
 config/features=PackedStringArray("4.7", "Forward Plus")
+boot_splash/bg_color=Color(0.76862746, 0.83137256, 0.8666667, 1)
+boot_splash/image="uid://copepsfort1op"
 config/icon="res://icon.svg"
 
 [display]
