@@ -10,11 +10,11 @@ extends ColorRect
 const DISSOLVE_SHADER := preload("res://shaders/pixel_dissolve.gdshader")
 
 ## Seconds for every pixel to flip to the cover colour.
-@export var cover_duration := 0.3
+@export var cover_duration := 0.2
 ## Seconds for every pixel to fade to the new view.
-@export var reveal_duration := 0.3
+@export var reveal_duration := 0.2
 ## Per-pixel fade length while covering (0 = hard flip).
-@export_range(0.0, 1.0) var cover_softness := 0.0
+@export_range(0.0, 1.0) var cover_softness := 0.35
 ## Per-pixel fade length while revealing (0 = hard flip).
 @export_range(0.0, 1.0) var reveal_softness := 0.5
 ## Cell size in design pixels (1 = every pixel on its own).
