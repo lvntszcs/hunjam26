@@ -168,6 +168,7 @@ expand_mode = 1
 script = ExtResource("35_pixel_button")
 
 [node name="CharacterChoose" type="CanvasLayer" parent="." unique_id=1901739246]
+visible = false
 script = ExtResource("36_chooser")
 
 [node name="Wall" type="TextureRect" parent="CharacterChoose" unique_id=410991348]
@@ -181,6 +182,7 @@ texture = ExtResource("2_2f3dj")
 expand_mode = 1
 
 [node name="CanvasLayer" type="CanvasLayer" parent="CharacterChoose" unique_id=405067325]
+visible = false
 
 [node name="Granny" type="TextureRect" parent="CharacterChoose/CanvasLayer" unique_id=2139848256]
 anchors_preset = 15
@@ -195,6 +197,7 @@ texture = ExtResource("11_kmb1v")
 expand_mode = 1
 
 [node name="CanvasLayer2" type="CanvasLayer" parent="CharacterChoose" unique_id=1874395754]
+visible = false
 
 [node name="Granny" type="TextureRect" parent="CharacterChoose/CanvasLayer2" unique_id=1755128142]
 anchors_preset = 15
@@ -457,6 +460,9 @@ script = ExtResource("10_fader")
 
 [node name="Doorway" type="Node" parent="." unique_id=606465438 node_paths=PackedStringArray("camera", "fader", "peephole_target", "peephole_view", "corridor_view", "prank", "doorknob_target", "door", "hand")]
 script = ExtResource("11_doorway")
+door_closed_texture = ExtResource("3_jscy8")
+door_half_open_texture = ExtResource("17_door_half")
+door_open_texture = ExtResource("18_door_open")
 camera = NodePath("../Camera2D")
 fader = NodePath("../Fade/Cover")
 peephole_target = NodePath("../Hole")
@@ -465,9 +471,6 @@ corridor_view = NodePath("../Corridor")
 prank = NodePath("../Corridor/Prank")
 doorknob_target = NodePath("../Knob")
 door = NodePath("../Door")
-door_closed_texture = ExtResource("3_jscy8")
-door_half_open_texture = ExtResource("17_door_half")
-door_open_texture = ExtResource("18_door_open")
 hand = NodePath("../Hand")
 
 [node name="Knocker" type="Node" parent="." unique_id=1113584781 node_paths=PackedStringArray("figures", "room_figure", "doorway_wall")]
