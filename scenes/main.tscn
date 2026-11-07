@@ -25,6 +25,7 @@
 [ext_resource type="Shader" uid="uid://b2eeeyq2soeyy" path="res://shaders/pixel_wobble.gdshader" id="18_wobble"]
 [ext_resource type="Script" uid="uid://c8whefiwduaec" path="res://scripts/peephole_event.gd" id="19_peephole_event"]
 [ext_resource type="Script" uid="uid://3j51kls7et06" path="res://scripts/audio/knock_player.gd" id="30_knock_player"]
+[ext_resource type="Script" uid="uid://5vuhc8rkaa0" path="res://scripts/hand.gd" id="31_hand"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -140,6 +141,17 @@ pivot_offset_ratio = Vector2(0.5, 0.5)
 color = Color(0, 0, 0, 1)
 script = ExtResource("6_muem4")
 
+[node name="Hand" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+script = ExtResource("31_hand")
+
 [node name="Camera2D" type="Camera2D" parent="." unique_id=435261660]
 script = ExtResource("1_ig7tw")
 
@@ -232,7 +244,7 @@ grow_vertical = 2
 color = Color(0, 0, 0, 1)
 script = ExtResource("10_fader")
 
-[node name="Doorway" type="Node" parent="." unique_id=606465438 node_paths=PackedStringArray("camera", "fader", "peephole_target", "peephole_view", "corridor_view", "prank", "doorknob_target", "door")]
+[node name="Doorway" type="Node" parent="." unique_id=606465438 node_paths=PackedStringArray("camera", "fader", "peephole_target", "peephole_view", "corridor_view", "prank", "doorknob_target", "door", "hand")]
 script = ExtResource("11_doorway")
 camera = NodePath("../Camera2D")
 fader = NodePath("../Fade/Black")
@@ -245,6 +257,7 @@ door = NodePath("../Door")
 door_closed_texture = ExtResource("3_jscy8")
 door_half_open_texture = ExtResource("17_door_half")
 door_open_texture = ExtResource("18_door_open")
+hand = NodePath("../Hand")
 
 [node name="PeepholeEvent" type="Node" parent="." unique_id=2099581207 node_paths=PackedStringArray("doorway", "inside_role", "apparition", "background")]
 script = ExtResource("19_peephole_event")
