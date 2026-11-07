@@ -9,8 +9,8 @@ extends Node
 
 @export var doorway: Doorway
 @export var inside_role: InsideRole
-## The image that appears inside the peephole view (starts hidden). It is
-## drawn above the background, so it does not flicker.
+## The image that appears inside the peephole view (starts hidden). It gets
+## only part of the background's dimming, so it is shaded but never vanishes.
 @export var apparition: CanvasItem
 ## The peephole background; only this flickers.
 @export var background: CanvasItem
@@ -24,6 +24,8 @@ extends Node
 @export var duration := 2.0
 ## Fényerő a pislákolás sötét pillanataiban (0 = teljes sötét).
 @export_range(0.0, 1.0) var dim_brightness := 0.15
+## Mennyit kap a kép a háttér sötétedéséből (0 = semmit, 1 = ugyanannyit).
+@export_range(0.0, 1.0) var apparition_shade := 0.5
 ## Egy pislákolási lépés hossza ezek között (másodperc).
 @export var flicker_min := 0.04
 @export var flicker_max := 0.18
@@ -71,3 +73,5 @@ func _reset() -> void:
 
 func _set_brightness(value: float) -> void:
 	background.modulate = Color(value, value, value, 1.0)
+	var shade := lerpf(1.0, value, apparition_shade)
+	apparition.modulate = Color(shade, shade, shade, 1.0)
