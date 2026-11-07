@@ -17,6 +17,14 @@ const PACING_ROWS := [
 	["Door stays open", "doorway", "open_duration", 0.5, 0.5, 15.0, "%.1f s"],
 	["Hand idle", "hand", "idle_fps", 1.0, 1.0, 30.0, "%.0f fps"],
 ]
+## Pixel dissolve transition rows (same format, all on the ScreenFader).
+const TRANSITION_ROWS := [
+	["Flip to red", "fader", "cover_duration", 0.05, 0.0, 3.0, "%.2f s"],
+	["Fade to view", "fader", "reveal_duration", 0.05, 0.0, 3.0, "%.2f s"],
+	["Flip softness", "fader", "cover_softness", 0.05, 0.0, 1.0, "%.2f"],
+	["Fade softness", "fader", "reveal_softness", 0.05, 0.0, 1.0, "%.2f"],
+	["Pixel size", "fader", "pixel_size", 1.0, 1.0, 32.0, "%.0f px"],
+]
 
 ## Peephole lens (fisheye) shader rows: [label, shader parameter, step, min, max, value format].
 const LENS_ROWS := [
@@ -35,6 +43,8 @@ const LENS_PRESETS := {
 	"Bulge": {"strength": 3.0, "curve": 3.5, "zoom": 1.6, "vignette": 0.7},
 }
 
+const LIGHT := Color(0.76862746, 0.83137256, 0.8666667)
+
 var _doorway: Doorway
 var _outside_role: OutsideRole
 var _players: Array[PlayerController]
@@ -44,6 +54,8 @@ var _last_joypad_events: Dictionary[int, String]
 var _live_values: Dictionary[Label, Array]
 ## The peephole lens material and its values as loaded from the scene.
 var _lens: ShaderMaterial
+## Collapsible section header -> [body, title]; at most one open at a time.
+var _sections: Dictionary[Button, Array]
 var _lens_scene_values: Dictionary[String, float]
 
 @onready var _status: Label = %Status
@@ -68,18 +80,50 @@ func setup(
 
 func _ready() -> void:
 	Input.joy_connection_changed.connect(_on_joy_connection_changed)
-	_build_pacing_rows()
+	_build_property_rows(%Pacing, PACING_ROWS)
+	_build_property_rows(%Transition, TRANSITION_ROWS)
 	_build_lens_rows()
+	_make_collapsible(%PacingTitle, %Pacing)
+	_make_collapsible(%TransitionTitle, %Transition)
+	_make_collapsible(%LensTitle, %Lens)
 
 
-func _build_pacing_rows() -> void:
-	var targets := {"doorway": _doorway, "hand": _doorway.hand, "camera": _doorway.camera}
-	for row: Array in PACING_ROWS:
+## Turns a section title into a header button that folds its rows away.
+## All sections start closed; opening one closes the others.
+func _make_collapsible(title: Label, body: Control) -> void:
+	var header := Button.new()
+	header.flat = true
+	header.toggle_mode = true
+	header.focus_mode = Control.FOCUS_NONE
+	header.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	for color in [&"font_hover_color", &"font_pressed_color", &"font_hover_pressed_color"]:
+		header.add_theme_color_override(color, LIGHT)
+	title.add_sibling(header)
+	title.hide()
+	_sections[header] = [body, title.text]
+	header.toggled.connect(func(open: bool) -> void: _open_section(header if open else null))
+	_open_section(null)
+
+
+func _open_section(open_header: Button) -> void:
+	for header: Button in _sections:
+		var open := header == open_header
+		var entry: Array = _sections[header]
+		header.set_pressed_no_signal(open)
+		header.text = ("▾ " if open else "▸ ") + entry[1]
+		(entry[0] as Control).visible = open
+
+
+## Rows of [label, target, property, step, min, max, format] stepping a property.
+func _build_property_rows(container: Container, rows: Array) -> void:
+	var targets := {"doorway": _doorway, "hand": _doorway.hand, "fader": _doorway.fader,
+			"camera": _doorway.camera}
+	for row: Array in rows:
 		var target: Object = targets[row[1]]
 		if target == null:
 			continue  # e.g. no Hand node in the scene
 		var property: StringName = row[2]
-		_add_stepper(%Pacing, row[0],
+		_add_stepper(container, row[0],
 				func() -> float: return float(target.get(property)),
 				func(value: float) -> void: target.set(property, value),
 				row[3], row[4], row[5], row[6])
@@ -165,6 +209,19 @@ func _action_button(text: String, action: Callable) -> Button:
 
 func _process(_delta: float) -> void:
 	_refresh()
+	_fit_to_screen()
+
+
+## The panel grows with its content; past the screen height the middle part
+## scrolls (the footer with the timers and buttons always stays visible).
+func _fit_to_screen() -> void:
+	var scroll: ScrollContainer = %Scroll
+	var panel: Control = $Panel
+	var others := panel.get_combined_minimum_size().y - scroll.custom_minimum_size.y
+	var room := get_viewport().get_visible_rect().size.y - 16.0 - others
+	var height := minf(%Content.get_combined_minimum_size().y, maxf(room, 40.0))
+	if not is_equal_approx(scroll.custom_minimum_size.y, height):
+		scroll.custom_minimum_size.y = height
 
 
 func _input(event: InputEvent) -> void:
