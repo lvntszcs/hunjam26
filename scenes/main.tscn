@@ -37,6 +37,8 @@ shader_parameter/radius = 0.35
 shader_parameter/softness = 0.05
 shader_parameter/outside_color = Color(0.333, 0.094, 0.133, 1)
 shader_parameter/strength = 0.8
+shader_parameter/curve = 2.0
+shader_parameter/zoom = 1.0
 shader_parameter/vignette = 0.5
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_wobble"]
@@ -277,20 +279,21 @@ mouse_filter = 2
 [node name="Fade" type="CanvasLayer" parent="." unique_id=1976015250]
 layer = 10
 
-[node name="Black" type="ColorRect" parent="Fade" unique_id=973507871]
-modulate = Color(1, 1, 1, 0)
+[node name="Cover" type="ColorRect" parent="Fade" unique_id=973507871]
+visible = false
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 1)
+mouse_filter = 2
+color = Color(0.333, 0.094, 0.133, 1)
 script = ExtResource("10_fader")
 
 [node name="Doorway" type="Node" parent="." unique_id=606465438 node_paths=PackedStringArray("camera", "fader", "peephole_target", "peephole_view", "corridor_view", "prank", "doorknob_target", "door", "hand")]
 script = ExtResource("11_doorway")
 camera = NodePath("../Camera2D")
-fader = NodePath("../Fade/Black")
+fader = NodePath("../Fade/Cover")
 peephole_target = NodePath("../Hole")
 peephole_view = NodePath("../Peephole")
 corridor_view = NodePath("../Corridor")

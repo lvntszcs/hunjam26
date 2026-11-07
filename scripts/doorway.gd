@@ -18,7 +18,7 @@ signal peephole_entered
 signal peephole_left
 
 ## Ennyi másodperc után csukódik be magától a nyitott ajtó.
-@export var open_duration := 2.0
+@export var open_duration := 0.5
 @export var camera: CameraController
 @export var fader: ScreenFader
 ## The camera zooms onto the centre of this control when approaching the peephole.
@@ -35,9 +35,9 @@ signal peephole_left
 ## The inside player's hand; reaches for the handle before the door opens.
 @export var hand: Hand
 ## Ennyi másodpercig áll félig nyitva az ajtó.
-@export var half_open_duration := 0.3
+@export var half_open_duration := 0.05
 ## Ennyi másodpercig látszik a folyosó a nyitott ajtón át, mielőtt kimegyünk.
-@export var reveal_duration := 0.8
+@export var reveal_duration := 0.1
 
 @export var close_zoom := Vector2(15, 15)
 @export var close_zoom_knob := Vector2(1, 1)
