@@ -18,13 +18,33 @@ const PACING_ROWS := [
 	["Hand idle", "hand", "idle_fps", 1.0, 1.0, 30.0, "%.0f fps"],
 ]
 
+## Peephole lens (fisheye) shader rows: [label, shader parameter, step, min, max, value format].
+const LENS_ROWS := [
+	["Radius", "radius", 0.01, 0.05, 1.0, "%.2f"],
+	["Edge softness", "softness", 0.01, 0.0, 0.5, "%.2f"],
+	["Bend strength", "strength", 0.1, 0.0, 3.0, "%.1f"],
+	["Bend curve", "curve", 0.25, 0.5, 6.0, "%.2f"],
+	["Centre zoom", "zoom", 0.05, 0.25, 4.0, "%.2fx"],
+	["Vignette", "vignette", 0.05, 0.0, 1.0, "%.2f"],
+]
+## Lens presets to compare quickly; "Scene" restores what main.tscn has.
+const LENS_PRESETS := {
+	"Flat": {"strength": 0.0, "curve": 2.0, "zoom": 1.0, "vignette": 0.2},
+	"Subtle": {"strength": 0.4, "curve": 2.0, "zoom": 1.0, "vignette": 0.4},
+	"Fisheye": {"strength": 1.5, "curve": 2.0, "zoom": 1.25, "vignette": 0.6},
+	"Bulge": {"strength": 3.0, "curve": 3.5, "zoom": 1.6, "vignette": 0.7},
+}
+
 var _doorway: Doorway
 var _outside_role: OutsideRole
 var _players: Array[PlayerController]
 var _input_lock_time_left: Callable
 var _last_joypad_events: Dictionary[int, String]
-## Value label -> [target object, property, format], refreshed every frame.
-var _pacing_values: Dictionary[Label, Array]
+## Value label -> [getter Callable, format], refreshed every frame.
+var _live_values: Dictionary[Label, Array]
+## The peephole lens material and its values as loaded from the scene.
+var _lens: ShaderMaterial
+var _lens_scene_values: Dictionary[String, float]
 
 @onready var _status: Label = %Status
 @onready var _timers: Label = %Timers
@@ -49,39 +69,97 @@ func setup(
 func _ready() -> void:
 	Input.joy_connection_changed.connect(_on_joy_connection_changed)
 	_build_pacing_rows()
+	_build_lens_rows()
 
 
 func _build_pacing_rows() -> void:
-	var container: VBoxContainer = %Pacing
 	var targets := {"doorway": _doorway, "hand": _doorway.hand, "camera": _doorway.camera}
 	for row: Array in PACING_ROWS:
 		var target: Object = targets[row[1]]
 		if target == null:
 			continue  # e.g. no Hand node in the scene
 		var property: StringName = row[2]
-		var line := HBoxContainer.new()
-		var name_label := Label.new()
-		name_label.text = row[0]
-		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		var value_label := Label.new()
-		value_label.custom_minimum_size.x = 52
-		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		line.add_child(name_label)
-		line.add_child(_step_button("−", target, property, -row[3], row[4], row[5]))
-		line.add_child(value_label)
-		line.add_child(_step_button("+", target, property, row[3], row[4], row[5]))
-		container.add_child(line)
-		_pacing_values[value_label] = [target, property, row[6]]
+		_add_stepper(%Pacing, row[0],
+				func() -> float: return float(target.get(property)),
+				func(value: float) -> void: target.set(property, value),
+				row[3], row[4], row[5], row[6])
 
 
-func _step_button(text: String, target: Object, property: StringName,
-		step: float, min_value: float, max_value: float) -> Button:
+## Live controls for the peephole fisheye shader (the Peephole/Mask material).
+func _build_lens_rows() -> void:
+	var mask := _doorway.peephole_view.get_node_or_null("Mask") as CanvasItem
+	_lens = mask.material as ShaderMaterial if mask else null
+	if _lens == null:
+		%LensTitle.text = "Peephole lens (not found)"
+		return
+	for row: Array in LENS_ROWS:
+		var parameter: String = row[1]
+		_lens_scene_values[parameter] = _lens_value(parameter)
+		_add_stepper(%Lens, row[0],
+				func() -> float: return _lens_value(parameter),
+				func(value: float) -> void: _lens.set_shader_parameter(parameter, value),
+				row[2], row[3], row[4], row[5])
+
+	var presets := HFlowContainer.new()
+	presets.add_child(_action_button("Scene", _apply_lens.bind(_lens_scene_values)))
+	for preset_name: String in LENS_PRESETS:
+		presets.add_child(_action_button(preset_name, _apply_lens.bind(LENS_PRESETS[preset_name])))
+	presets.add_child(_action_button("Copy", _copy_lens_values))
+	%Lens.add_child(presets)
+
+
+## Falls back to the shader's own default when the material doesn't set it.
+func _lens_value(parameter: String) -> float:
+	var value: Variant = _lens.get_shader_parameter(parameter)
+	if value == null:
+		value = RenderingServer.shader_get_parameter_default(_lens.shader.get_rid(), parameter)
+	return float(value) if value is float or value is int else 0.0  # null when headless
+
+
+func _apply_lens(values: Dictionary) -> void:
+	for parameter: String in values:
+		_lens.set_shader_parameter(parameter, values[parameter])
+
+
+## Puts the current lens values on the clipboard in .tscn form, ready to paste
+## over the Peephole/Mask material lines in main.tscn (also printed).
+func _copy_lens_values() -> void:
+	var lines := PackedStringArray()
+	for row: Array in LENS_ROWS:
+		lines.append("shader_parameter/%s = %s" % [row[1], snappedf(_lens_value(row[1]), 0.001)])
+	var text := "\n".join(lines)
+	DisplayServer.clipboard_set(text)
+	print("Peephole lens:\n" + text)
+
+
+## A "label  −  value  +" row; the value label refreshes every frame.
+func _add_stepper(container: Container, text: String, getter: Callable,
+		setter: Callable, step: float, min_value: float, max_value: float,
+		value_format: String) -> void:
+	var line := HBoxContainer.new()
+	var name_label := Label.new()
+	name_label.text = text
+	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var value_label := Label.new()
+	value_label.custom_minimum_size.x = 52
+	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var change := func(delta: float) -> void:
+		setter.call(clampf(snappedf(getter.call() + delta, step), min_value, max_value))
+	line.add_child(name_label)
+	line.add_child(_action_button("−", change.bind(-step)))
+	line.add_child(value_label)
+	line.add_child(_action_button("+", change.bind(step)))
+	container.add_child(line)
+	_live_values[value_label] = [getter, value_format]
+
+
+func _action_button(text: String, action: Callable) -> Button:
 	var button := Button.new()
 	button.text = text
 	button.focus_mode = Control.FOCUS_NONE
-	button.pressed.connect(func() -> void:
-		var value := snappedf(float(target.get(property)) + step, absf(step))
-		target.set(property, clampf(value, min_value, max_value)))
+	if text.length() > 1:
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.pressed.connect(action)
 	return button
 
 
@@ -112,9 +190,9 @@ func _refresh() -> void:
 	_phase_idle.set_pressed_no_signal(not knocking)
 	_phase_knocking.set_pressed_no_signal(knocking)
 	_release_delay.text = "%.1f s" % _outside_role.release_delay
-	for label: Label in _pacing_values:
-		var entry: Array = _pacing_values[label]
-		label.text = entry[2] % float(entry[0].get(entry[1]))
+	for label: Label in _live_values:
+		var entry: Array = _live_values[label]
+		label.text = entry[1] % float(entry[0].call())
 	_knock_button.disabled = _doorway.is_open
 	_timers.text = "Knock release  %s\nDoor close  %s\nInput lock  %s" % [
 		_format_timer(_outside_role.release_time_left()),

@@ -161,6 +161,19 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 4
 
+[node name="SeparatorLens" type="HSeparator" parent="Panel/Content"]
+layout_mode = 2
+
+[node name="LensTitle" type="Label" parent="Panel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Peephole lens"
+
+[node name="Lens" type="VBoxContainer" parent="Panel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+
 [node name="Separator2" type="HSeparator" parent="Panel/Content"]
 layout_mode = 2
 
