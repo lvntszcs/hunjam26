@@ -11,6 +11,8 @@ const COMMANDS: Array[StringName] = [KNOCK, PLACE_PRANK]
 ## Knocking state-ben töltött idő kopogás után (másodperc).
 @export var release_delay := 1.5
 @export var doorway: Doorway
+## The figure outside the door: slides in while knocking.
+@export var knocker: Knocker
 
 var phase := Phase.IDLE
 var _knock_held := false
@@ -47,6 +49,8 @@ func press(command: StringName) -> void:
 		KNOCK:
 			_knock_held = true
 			_release_timer.stop()
+			if knocker:
+				knocker.slide_in()
 			if phase != Phase.KNOCKING:
 				phase = Phase.KNOCKING
 				_knock_player.play_random_pattern()
@@ -61,6 +65,10 @@ func release(command: StringName) -> void:
 		_knock_held = false
 		if phase == Phase.KNOCKING:
 			_release_timer.start(release_delay)
+			# Gone exactly when the knocking phase ends: while it is still
+			# visible, opening the door catches it.
+			if knocker:
+				knocker.slide_out(release_delay)
 
 
 func _on_release_timer_timeout() -> void:
@@ -74,4 +82,6 @@ func reset_state() -> void:
 	_knock_held = false
 	_release_timer.stop()
 	_knock_player.stop()
+	if knocker:
+		knocker.hide_now()
 	phase = Phase.IDLE
