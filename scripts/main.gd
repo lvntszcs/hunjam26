@@ -1,6 +1,6 @@
 extends Control
 
-enum State { FAR, MOVING, PEEKING, OPEN }
+enum State { FAR, MOVING, PEEKING, OPEN, KNOCKING }
 var state := State.FAR
 
 ## Ki lehet-e nyitni az ajtót a szoba közepéről (messziről).
@@ -16,8 +16,16 @@ var state := State.FAR
 @onready var corridor = $Corridor
 @onready var black = $Fade/Black
 @onready var prank = $Corridor/Prank
+@onready var release_timer: Timer = $KnockReleaseTimer
+
+var release_delay: float = 1.5 #knocking state-ben toltott ido kopogas utan
 
 var door_open := false  # nyitástól a csukás végéig igaz
+
+func _ready():
+	release_timer.one_shot = true
+	release_timer.timeout.connect(_knock_release_timer)
+	
 
 func _unhandled_input(event):
 	if event.is_action_pressed("place_prank") and not door_open:
@@ -29,10 +37,24 @@ func _unhandled_input(event):
 		if (state == State.FAR and can_open_from_far) \
 				or (state == State.PEEKING and can_open_from_peephole):
 			open_door()
-	elif event.is_action_pressed("approach") and state == State.FAR:
+	if event.is_action_pressed("approach") and state == State.FAR:
 		enter_peephole()
-	elif event.is_action_pressed("step_back") and state == State.PEEKING:
+	if event.is_action_pressed("step_back") and state == State.PEEKING:
 		exit_peephole()
+	if event.is_action_pressed("knock") and not event.is_echo():
+		release_timer.stop()
+		if state != State.KNOCKING:
+			state = State.KNOCKING
+			print("KNOCKING")
+	if event.is_action_released("knock"):
+		if state == State.KNOCKING:
+			release_timer.start(release_delay)
+			
+			
+func _knock_release_timer():
+	if state == State.KNOCKING and not Input.is_action_pressed("knock"):
+		state = State.FAR
+		print("IDLE")
 
 func enter_peephole():
 	state = State.MOVING
