@@ -1,7 +1,10 @@
 extends Control
 
-enum State { FAR, MOVING, PEEKING, OPEN, KNOCKING }
+enum State { FAR, MOVING, PEEKING, OPEN }
+enum Outer_phase {IDLE, KNOCKING}
 var state := State.FAR
+var phase := Outer_phase.IDLE
+var outer_hp := 3
 
 ## Ki lehet-e nyitni az ajtót a szoba közepéről (messziről).
 @export var can_open_from_far := true
@@ -36,25 +39,30 @@ func _unhandled_input(event):
 	if event.is_action_pressed("open_door"):
 		if (state == State.FAR and can_open_from_far) \
 				or (state == State.PEEKING and can_open_from_peephole):
-			open_door()
+					if (phase == Outer_phase.KNOCKING):
+						health_reduce(outer_hp)
+						print("Elkapva")
+					elif (phase == Outer_phase.IDLE):
+						print("Pranked")
+					open_door()
 	if event.is_action_pressed("approach") and state == State.FAR:
 		enter_peephole()
 	if event.is_action_pressed("step_back") and state == State.PEEKING:
 		exit_peephole()
 	if event.is_action_pressed("knock") and not event.is_echo():
 		release_timer.stop()
-		if state != State.KNOCKING:
-			state = State.KNOCKING
-			print("KNOCKING")
+		if phase != Outer_phase.KNOCKING:
+			phase = Outer_phase.KNOCKING
+			print("Outer-KNOCKING")
 	if event.is_action_released("knock"):
-		if state == State.KNOCKING:
+		if phase == Outer_phase.KNOCKING:
 			release_timer.start(release_delay)
 			
 			
 func _knock_release_timer():
-	if state == State.KNOCKING and not Input.is_action_pressed("knock"):
-		state = State.FAR
-		print("IDLE")
+	if phase == Outer_phase.KNOCKING and not Input.is_action_pressed("knock"):
+		phase = Outer_phase.IDLE
+		print("Outer-IDLE")
 
 func enter_peephole():
 	state = State.MOVING
@@ -97,3 +105,8 @@ func fade_to(alpha: float, time := 0.3):
 	var t = create_tween()
 	t.tween_property(black, "modulate:a", alpha, time)
 	await t.finished
+
+func health_reduce(health : int):
+	health -= 1
+	
+	
