@@ -46,6 +46,7 @@
 [ext_resource type="Texture2D" uid="uid://u37gb0arwvow" path="res://assets/KopogoGep/kopogo-gep - 2.png" id="42_kopogo2"]
 [ext_resource type="Script" path="res://scripts/knocking_machine.gd" id="43_machine"]
 [ext_resource type="Script" uid="uid://dqo7bnrd5cnpn" path="res://scripts/peephole_skeleton.gd" id="41_skeleton"]
+[ext_resource type="PackedScene" path="res://scenes/health_hud.tscn" id="41_health_hud"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -489,6 +490,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="HealthHud" parent="." instance=ExtResource("41_health_hud")]
 
 [node name="Fade" type="CanvasLayer" parent="." unique_id=1976015250]
 layer = 10

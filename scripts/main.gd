@@ -6,6 +6,8 @@ extends Control
 ##   Roles    - InsideRole, OutsideRole (one per side of the door)
 ##   Players  - PlayerController per player, each holding a PlayerModel and a Role
 
+const HealthHud := preload("res://scripts/health_hud.gd")
+
 @export var doorway: Doorway
 @export var outside_role: OutsideRole
 @export var players: Array[PlayerController] = []
@@ -45,6 +47,8 @@ var _transitioning := false
 var _in_game := true
 var _see_through_tween: Tween
 
+@onready var _health_hud: HealthHud = $HealthHud
+
 
 func _ready() -> void:
 	doorway.swung_open.connect(_on_doorway_swung_open)
@@ -81,6 +85,8 @@ func _ready() -> void:
 			var item := get_node_or_null(node_name) as CanvasItem
 			if item:
 				see_through.append(item)
+	_health_hud.setup(players)
+	_sync_health_hud_visibility()
 	if OS.is_debug_build():
 		var debug_menu := preload("res://scenes/debug_menu.tscn").instantiate()
 		debug_menu.setup(doorway, outside_role, players, _input_lock_time_left)
@@ -108,8 +114,15 @@ func _menu_transition(tint: Color, swap: Callable) -> void:
 	_transitioning = true
 	await doorway.fader.fade_to(1.0, menu_transition_duration, tint)
 	swap.call()
+	_sync_health_hud_visibility()
 	await doorway.fader.fade_to(0.0, menu_transition_duration)
 	_transitioning = false
+
+
+func _sync_health_hud_visibility() -> void:
+	var in_start_menu := start_page != null and start_page.visible
+	var in_character_menu := character_chooser != null and character_chooser.visible
+	_health_hud.visible = not (in_start_menu or in_character_menu)
 
 
 ## A button press on a gamepad nobody owns gives it to the next free player.
