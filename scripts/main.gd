@@ -20,12 +20,30 @@ extends Control
 ## Seconds for each half (cover / reveal) of the dissolve between the boot
 ## splash, the start page, the character select and the game.
 @export var menu_transition_duration := 0.5
+## Pressing [member see_through_key] in the game makes these blink softly
+## (sine) between opaque and [member see_through_alpha] for
+## [member see_through_duration] seconds, faster and faster.
+## Defaults to the Wall and Door nodes.
+@export var see_through: Array[CanvasItem] = []
+@export var see_through_key: Key = KEY_X
+## The most transparent the blink gets.
+@export_range(0.0, 1.0) var see_through_alpha := 0.5
+@export var see_through_duration := 3.0
+## Blinks per second at the start of the effect.
+@export var see_through_start_rate := 0.3
+## Blinks per second at the end of the effect.
+@export var see_through_end_rate := 1.5
+## Seconds to ease back to opaque after the last blink.
+@export var see_through_fade_back := 0.4
 
 ## Set when the knocker runs out of health; the swap waits until the door closes.
 var _swap_pending := false
 var _input_lock_timer: SceneTreeTimer
 ## True while a menu transition runs; repeated presses are ignored meanwhile.
 var _transitioning := false
+## False while the start page or the character choose screen is up.
+var _in_game := true
+var _see_through_tween: Tween
 
 
 func _ready() -> void:
@@ -50,12 +68,19 @@ func _ready() -> void:
 	# The menus visible in the editor decide where the game starts:
 	# start page -> character choose -> game.
 	if start_page and start_page.visible:
+		_in_game = false
 		_set_player_input(false)
 		if character_chooser:
 			character_chooser.close()
 	elif character_chooser and character_chooser.visible:
+		_in_game = false
 		_set_player_input(false)
 		character_chooser.open()
+	if see_through.is_empty():
+		for node_name in ["Wall", "Door"]:
+			var item := get_node_or_null(node_name) as CanvasItem
+			if item:
+				see_through.append(item)
 	if OS.is_debug_build():
 		var debug_menu := preload("res://scenes/debug_menu.tscn").instantiate()
 		debug_menu.setup(doorway, outside_role, players, _input_lock_time_left)
@@ -99,6 +124,44 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
+## [member see_through_key] starts the wall and door blink (in game only).
+## Pressing it again mid-blink starts it over.
+func _unhandled_key_input(event: InputEvent) -> void:
+	var key := event as InputEventKey
+	if not _in_game or key == null or not key.pressed or key.echo:
+		return
+	if key.physical_keycode != see_through_key:
+		return
+	if _see_through_tween:
+		_see_through_tween.kill()
+	_see_through_tween = create_tween()
+	_see_through_tween.tween_method(_set_see_through_time, 0.0, see_through_duration, see_through_duration)
+	# The last wave may stop halfway; ease back to opaque instead of popping.
+	_see_through_tween.tween_method(_set_see_through_alpha, _see_through_alpha_at(see_through_duration), 1.0, see_through_fade_back) \
+			.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	get_viewport().set_input_as_handled()
+
+
+## Blink at [param t] seconds into the effect. The rate grows linearly from
+## [member see_through_start_rate] to [member see_through_end_rate], so the
+## phase is its integral; (1 - cos) starts and ends each wave at opaque.
+func _set_see_through_time(t: float) -> void:
+	_set_see_through_alpha(_see_through_alpha_at(t))
+
+
+func _see_through_alpha_at(t: float) -> float:
+	var rate_growth := (see_through_end_rate - see_through_start_rate) / maxf(see_through_duration, 0.001)
+	var phase := TAU * (see_through_start_rate * t + 0.5 * rate_growth * t * t)
+	var depth := (1.0 - cos(phase)) / 2.0  # 0 = opaque, 1 = most transparent
+	return lerpf(1.0, see_through_alpha, depth)
+
+
+func _set_see_through_alpha(alpha: float) -> void:
+	for item in see_through:
+		if item:
+			item.modulate.a = alpha
+
+
 ## Swaps the roles of the first two players. Meant to be called between
 ## rounds, while nobody is mid-action.
 func swap_roles() -> void:
@@ -137,6 +200,7 @@ func _on_start_pressed() -> void:
 			character_chooser.open())
 	else:
 		await _menu_transition(doorway.fader.cover_color, _hide_start_page)
+		_in_game = true
 		_set_player_input(true)
 
 
@@ -147,6 +211,7 @@ func _on_character_confirmed() -> void:
 		return
 	character_chooser.set_process_unhandled_input(false)  # no second Enter
 	await _menu_transition(doorway.fader.cover_color, character_chooser.close)
+	_in_game = true
 	_set_player_input(true)
 
 
