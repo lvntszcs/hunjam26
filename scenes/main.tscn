@@ -36,6 +36,8 @@
 [ext_resource type="PackedScene" path="res://scenes/health_hud.tscn" id="41_health_hud"]
 [ext_resource type="PackedScene" path="res://scenes/start_page.tscn" id="44_start_page"]
 [ext_resource type="PackedScene" path="res://scenes/character_choose.tscn" id="45_character_choose"]
+[ext_resource type="Texture2D" uid="uid://bgk45u7sd52mk" path="res://assets/Cards/kartya_1.png" id="44_card"]
+[ext_resource type="Script" path="res://scripts/card_chooser.gd" id="45_card_chooser"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -71,7 +73,7 @@ script = ExtResource("16_profile")
 script = ExtResource("15_model")
 display_name = "Player 2"
 
-[node name="Main" type="Control" unique_id=1249313363 node_paths=PackedStringArray("doorway", "outside_role", "inside_role", "players", "start_page", "start_button", "character_chooser")]
+[node name="Main" type="Control" unique_id=1249313363 node_paths=PackedStringArray("doorway", "outside_role", "inside_role", "players", "start_page", "start_button", "character_chooser", "card_chooser")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -87,10 +89,92 @@ players = [NodePath("Players/Player1"), NodePath("Players/Player2")]
 start_page = NodePath("StartPage")
 start_button = NodePath("StartPage/Start")
 character_chooser = NodePath("CharacterChoose")
+card_chooser = NodePath("CardChoose")
 
 [node name="StartPage" parent="." unique_id=1951122962 instance=ExtResource("44_start_page")]
 
 [node name="CharacterChoose" parent="." unique_id=1901739246 instance=ExtResource("45_character_choose")]
+
+[node name="CardChoose" type="CanvasLayer" parent="." unique_id=1901739250]
+visible = false
+script = ExtResource("45_card_chooser")
+
+[node name="Wall" type="ColorRect" parent="CardChoose" unique_id=1901739251]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.76862746, 0.83137256, 0.8666667, 1)
+
+[node name="Cards" type="Control" parent="CardChoose" unique_id=1901739252]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Card1" type="TextureRect" parent="CardChoose/Cards" unique_id=1901739253]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("44_card")
+expand_mode = 1
+
+[node name="Card2" type="TextureRect" parent="CardChoose/Cards" unique_id=1901739254]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("44_card")
+expand_mode = 1
+
+[node name="Card3" type="TextureRect" parent="CardChoose/Cards" unique_id=1901739255]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("44_card")
+expand_mode = 1
+
+[node name="Card4" type="TextureRect" parent="CardChoose/Cards" unique_id=1901739256]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("44_card")
+expand_mode = 1
+
+[node name="Card5" type="TextureRect" parent="CardChoose/Cards" unique_id=1901739257]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("44_card")
+expand_mode = 1
+
+[node name="Card6" type="TextureRect" parent="CardChoose/Cards" unique_id=1901739258]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("44_card")
+expand_mode = 1
 
 [node name="RoomCorridor" type="TextureRect" parent="." unique_id=652725466]
 layout_mode = 1

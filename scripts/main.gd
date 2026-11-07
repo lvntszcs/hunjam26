@@ -20,6 +20,8 @@ const HealthHud := preload("res://scripts/health_hud.gd")
 @export var start_button: PixelButton
 ## Shown after the start page; Enter on it starts the game.
 @export var character_chooser: CharacterChooser
+## Shown after the character select; Enter on it starts the game.
+@export var card_chooser: CardChooser
 ## Seconds for each half (cover / reveal) of the dissolve between the boot
 ## splash, the start page, the character select and the game.
 @export var menu_transition_duration := 0.5
@@ -68,19 +70,31 @@ func _ready() -> void:
 		character_chooser = get_node_or_null("CharacterChoose") as CharacterChooser
 	if character_chooser:
 		character_chooser.confirmed.connect(_on_character_confirmed)
+	if card_chooser == null:
+		card_chooser = get_node_or_null("CardChoose") as CardChooser
+	if card_chooser:
+		card_chooser.confirmed.connect(_on_card_confirmed)
 	if start_button:
 		start_button.pressed.connect(_on_start_pressed)
 	# The menus visible in the editor decide where the game starts:
-	# start page -> character choose -> game.
+	# start page -> character choose -> card choose -> game.
 	if start_page and start_page.visible:
 		_in_game = false
 		_set_player_input(false)
 		if character_chooser:
 			character_chooser.close()
+		if card_chooser:
+			card_chooser.close()
 	elif character_chooser and character_chooser.visible:
 		_in_game = false
 		_set_player_input(false)
 		character_chooser.open()
+		if card_chooser:
+			card_chooser.close()
+	elif card_chooser and card_chooser.visible:
+		_in_game = false
+		_set_player_input(false)
+		card_chooser.open()
 	if see_through.is_empty():
 		for node_name in ["Wall", "Door"]:
 			var item := get_node_or_null(node_name) as CanvasItem
@@ -220,13 +234,32 @@ func _on_start_pressed() -> void:
 		_set_player_input(true)
 
 
-## Enter on the character choose screen: through the dark red into the game,
-## then hand the controls to the players.
+## Enter on the character choose screen: through the light colour to the
+## card choose screen (or straight into the game without one).
 func _on_character_confirmed() -> void:
 	if _transitioning:
 		return
 	character_chooser.set_process_unhandled_input(false)  # no second Enter
+	if card_chooser:
+		await _menu_transition(_splash_color(), func() -> void:
+			character_chooser.close()
+			card_chooser.open())
+		return
 	await _menu_transition(doorway.fader.cover_color, character_chooser.close)
+	_start_game()
+
+
+## Enter on the card choose screen: through the dark red into the game.
+func _on_card_confirmed() -> void:
+	if _transitioning:
+		return
+	card_chooser.set_process_unhandled_input(false)  # no second Enter
+	await _menu_transition(doorway.fader.cover_color, card_chooser.close)
+	_start_game()
+
+
+## Hands the controls to the players.
+func _start_game() -> void:
 	_in_game = true
 	_set_player_input(true)
 
