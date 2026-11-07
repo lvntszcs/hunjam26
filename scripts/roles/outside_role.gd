@@ -31,6 +31,16 @@ func is_knocking() -> bool:
 	return phase == Phase.KNOCKING
 
 
+func release_time_left() -> float:
+	return _release_timer.time_left
+
+
+func set_release_delay(seconds: float) -> void:
+	release_delay = seconds
+	if not _release_timer.is_stopped():
+		_release_timer.start(release_delay)
+
+
 func press(command: StringName) -> void:
 	match command:
 		KNOCK:
@@ -45,7 +55,7 @@ func press(command: StringName) -> void:
 
 
 func release(command: StringName) -> void:
-	if command == KNOCK:
+	if command == KNOCK and _knock_held:
 		_knock_held = false
 		if phase == Phase.KNOCKING:
 			_release_timer.start(release_delay)

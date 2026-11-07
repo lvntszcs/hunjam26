@@ -14,6 +14,7 @@ extends Control
 
 ## Set when the knocker runs out of health; the swap waits until the door closes.
 var _swap_pending := false
+var _input_lock_timer: SceneTreeTimer
 
 
 func _ready() -> void:
@@ -24,6 +25,10 @@ func _ready() -> void:
 			controller.model.defeated.connect(_on_player_defeated)
 	_assign_joypads()
 	Input.joy_connection_changed.connect(_on_joy_connection_changed)
+	if OS.is_debug_build():
+		var debug_menu := preload("res://scenes/debug_menu.tscn").instantiate()
+		debug_menu.setup(doorway, outside_role, players, _input_lock_time_left)
+		add_child(debug_menu)
 
 
 ## A button press on a gamepad nobody owns gives it to the next free player.
@@ -69,9 +74,15 @@ func _on_doorway_closed() -> void:
 func _block_input(seconds: float) -> void:
 	for controller in players:
 		controller.set_process_unhandled_input(false)
-	await get_tree().create_timer(seconds).timeout
+	_input_lock_timer = get_tree().create_timer(seconds, false)
+	await _input_lock_timer.timeout
+	_input_lock_timer = null
 	for controller in players:
 		controller.set_process_unhandled_input(true)
+
+
+func _input_lock_time_left() -> float:
+	return _input_lock_timer.time_left if _input_lock_timer else 0.0
 
 
 func _on_doorway_opening() -> void:
