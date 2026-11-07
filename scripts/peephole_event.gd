@@ -65,7 +65,6 @@ func _cancel() -> void:
 	_run += 1
 	_reset()
 
-
 func _reset() -> void:
 	apparition.hide()
 	_set_brightness(1.0)
