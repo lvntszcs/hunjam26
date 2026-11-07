@@ -85,6 +85,20 @@ func play_grab() -> void:
 	await open_finished
 
 
+## The reverse of [method play_grab]: lets go of the handle by playing the
+## grab frames backwards, then loops idle. Returns once the idle loop starts.
+func play_release() -> void:
+	if _open_frames.size() < 2:
+		play_idle()
+		return
+	var frames := _open_frames.slice(0, _open_frames.size() - 1)
+	frames.reverse()
+	_playing_open = true
+	_start(frames, false)
+	await open_finished
+	play_idle()
+
+
 ## Jumps straight to the last open frame (pulling the handle, drawn for the
 ## half-open door). Used when the hand already holds the handle.
 func play_pull() -> void:

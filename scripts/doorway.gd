@@ -68,10 +68,14 @@ func approach_doorknob() -> void:
 		await move.finished
 
 
+## Lets go of the handle (the grab animation backwards) while the camera
+## moves back to the room view.
 func leave_doorknob() -> void:
+	var move := camera.go_back()
 	if hand:
-		hand.play_idle()  # let go of the handle
-	await camera.go_back().finished
+		await hand.play_release()
+	if move.is_running():
+		await move.finished
 
 
 func leave_peephole() -> void:
