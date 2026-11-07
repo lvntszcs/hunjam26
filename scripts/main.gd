@@ -11,6 +11,12 @@ extends Control
 @export var players: Array[PlayerController] = []
 ## Szerepcsere után ennyi másodpercig nem fogadunk inputot.
 @export var swap_wait := 2.0
+## The start menu. While it is shown the players' game controls are off.
+@export var start_page: CanvasLayer
+## Clicking it hides [member start_page] and turns the game controls on.
+@export var start_button: PixelButton
+## Shown after the start page; Enter on it starts the game.
+@export var character_chooser: CharacterChooser
 
 ## Set when the knocker runs out of health; the swap waits until the door closes.
 var _swap_pending := false
@@ -25,6 +31,26 @@ func _ready() -> void:
 			controller.model.defeated.connect(_on_player_defeated)
 	_assign_joypads()
 	Input.joy_connection_changed.connect(_on_joy_connection_changed)
+	# Fall back to the default node names if the exports were left empty.
+	if start_page == null:
+		start_page = get_node_or_null("StartPage") as CanvasLayer
+	if start_button == null and start_page:
+		start_button = start_page.get_node_or_null("Start") as PixelButton
+	if character_chooser == null:
+		character_chooser = get_node_or_null("CharacterChoose") as CharacterChooser
+	if character_chooser:
+		character_chooser.confirmed.connect(_on_character_confirmed)
+	if start_button:
+		start_button.pressed.connect(_on_start_pressed)
+	# The menus visible in the editor decide where the game starts:
+	# start page -> character choose -> game.
+	if start_page and start_page.visible:
+		_set_player_input(false)
+		if character_chooser:
+			character_chooser.close()
+	elif character_chooser and character_chooser.visible:
+		_set_player_input(false)
+		character_chooser.open()
 	if OS.is_debug_build():
 		var debug_menu := preload("res://scenes/debug_menu.tscn").instantiate()
 		debug_menu.setup(doorway, outside_role, players, _input_lock_time_left)
@@ -71,15 +97,36 @@ func _on_doorway_closed() -> void:
 		await _block_input(swap_wait)
 
 
+## Start button: leave the start menu for the character choose screen.
+func _on_start_pressed() -> void:
+	start_page.hide()
+	# Hiding a CanvasLayer does not hide CanvasLayers nested in it (Buttons).
+	for layer in start_page.find_children("*", "CanvasLayer", true, false):
+		layer.hide()
+	if character_chooser:
+		character_chooser.open()
+	else:
+		_set_player_input(true)
+
+
+## Enter on the character choose screen: hand the controls to the players.
+func _on_character_confirmed() -> void:
+	character_chooser.close()
+	_set_player_input(true)
+
+
 ## Ignores every player's input for [param seconds].
 func _block_input(seconds: float) -> void:
-	for controller in players:
-		controller.set_process_unhandled_input(false)
+	_set_player_input(false)
 	_input_lock_timer = get_tree().create_timer(seconds, false)
 	await _input_lock_timer.timeout
 	_input_lock_timer = null
+	_set_player_input(true)
+
+
+func _set_player_input(enabled: bool) -> void:
 	for controller in players:
-		controller.set_process_unhandled_input(true)
+		controller.set_process_unhandled_input(enabled)
 
 
 func _input_lock_time_left() -> float:

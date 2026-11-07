@@ -50,9 +50,9 @@ static func load_frames(dir: String) -> Array[Texture2D]:
 	files.sort()
 	for file: String in files:
 		if file.get_extension().to_lower() in ["png", "webp", "jpg", "jpeg"]:
-			var texture := load(dir.path_join(file)) as Texture2D
-			if texture:
-				frames.append(texture)
+			var frame := load(dir.path_join(file)) as Texture2D
+			if frame:
+				frames.append(frame)
 	return frames
 
 
