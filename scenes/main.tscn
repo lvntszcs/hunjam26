@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://c6cihrf11y440"]
 
+[ext_resource type="Script" path="res://scripts/peephole_skeleton.gd" id="41_skeleton"]
 [ext_resource type="Script" uid="uid://dk2k6r2ki04xd" path="res://scripts/main.gd" id="1_0xm2m"]
 [ext_resource type="Script" uid="uid://ckcdm58bf4qg8" path="res://scripts/camera_controller.gd" id="1_ig7tw"]
 [ext_resource type="Texture2D" uid="uid://cmujiqt6t0ty6" path="res://assets/fomenu_background.png" id="2_2f3dj"]
@@ -408,6 +409,11 @@ mouse_filter = 2
 texture = ExtResource("10_jscy8")
 expand_mode = 1
 stretch_mode = 5
+
+[node name="SkeletonRunner" type="Node2D" parent="Peephole" node_paths=PackedStringArray("doorway")]
+visible = false
+script = ExtResource("41_skeleton")
+doorway = NodePath("../../Doorway")
 
 [node name="Mask" type="ColorRect" parent="Peephole" unique_id=330920548]
 material = SubResource("ShaderMaterial_h2yge")
