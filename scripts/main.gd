@@ -9,6 +9,9 @@ var state := State.FAR
 @export var can_open_from_peephole := true
 ## Ennyi másodperc után csukódik be magától a nyitott ajtó.
 @export var open_duration := 2.0
+@export var close_zoom_handle := Vector2(2,2)
+@export var close_zoom := Vector2(10, 10)
+
 
 @onready var cam = $Camera2D
 @onready var hole = $Hole
@@ -16,6 +19,7 @@ var state := State.FAR
 @onready var corridor = $Corridor
 @onready var black = $Fade/Black
 @onready var prank = $Corridor/Prank
+@onready var handle = $Handle
 
 var door_open := false  # nyitástól a csukás végéig igaz
 
@@ -36,7 +40,7 @@ func _unhandled_input(event):
 
 func enter_peephole():
 	state = State.MOVING
-	await cam.go_close(hole.get_center()).finished
+	await cam.go_close(hole.get_center(),close_zoom).finished
 	await fade_to(1.0)
 	peephole.visible = true
 	await fade_to(0.0)
@@ -52,6 +56,7 @@ func exit_peephole():
 
 func open_door():
 	state = State.MOVING
+	await cam.go_close(handle.get_center(),close_zoom_handle).finished
 	door_open = true
 	await fade_to(1.0)
 	peephole.visible = false

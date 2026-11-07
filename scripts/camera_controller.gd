@@ -1,6 +1,5 @@
 extends Camera2D
 
-@export var close_zoom := Vector2(10, 10)
 @export var duration := 0.6
 
 var home_position: Vector2
@@ -16,8 +15,8 @@ func move_to(target: Vector2, target_zoom: Vector2) -> Tween:
 	t.tween_property(self, "zoom", target_zoom, duration)
 	return t
 
-func go_close(target: Vector2) -> Tween:
-	return move_to(target, close_zoom)
+func go_close(target: Vector2, close_zoom_opt: Vector2) -> Tween:
+	return move_to(target, close_zoom_opt)
 
 func go_back() -> Tween:
 	return move_to(home_position, Vector2.ONE)
