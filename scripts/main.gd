@@ -10,6 +10,7 @@ const HealthHud := preload("res://scripts/health_hud.gd")
 
 @export var doorway: Doorway
 @export var outside_role: OutsideRole
+@export var inside_role: InsideRole
 @export var players: Array[PlayerController] = []
 ## Szerepcsere után ennyi másodpercig nem fogadunk inputot.
 @export var swap_wait := 2.0
@@ -38,7 +39,7 @@ const HealthHud := preload("res://scripts/health_hud.gd")
 ## Seconds to ease back to opaque after the last blink.
 @export var see_through_fade_back := 0.4
 
-## Set when the knocker runs out of health; the swap waits until the door closes.
+## Set when either player runs out of health; the swap waits until the door closes.
 var _swap_pending := false
 var _input_lock_timer: SceneTreeTimer
 ## True while a menu transition runs; repeated presses are ignored meanwhile.
@@ -185,9 +186,10 @@ func swap_roles() -> void:
 	for controller in players:
 		if controller.role:
 			controller.role.reset_state()
-	# Only the knocker has health, so the new one starts from full.
-	if outside_role.player:
-		outside_role.player.reset()
+		# The new knocker starts at full health; a defeated player also needs
+		# full health if they are moving inside.
+		if controller.model and (controller.role == outside_role or controller.model.is_defeated()):
+			controller.model.reset()
 	print("swap")
 
 
@@ -261,6 +263,8 @@ func _on_doorway_swung_open() -> void:
 			outside_role.player.take_damage(1)
 		print("Elkapva")
 	else:
+		if inside_role and inside_role.player:
+			inside_role.player.take_damage(1)
 		print("Pranked")
 
 

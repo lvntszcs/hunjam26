@@ -82,7 +82,7 @@ script = ExtResource("16_profile")
 script = ExtResource("15_model")
 display_name = "Player 2"
 
-[node name="Main" type="Control" unique_id=1249313363 node_paths=PackedStringArray("doorway", "outside_role", "players", "start_page", "start_button", "character_chooser")]
+[node name="Main" type="Control" unique_id=1249313363 node_paths=PackedStringArray("doorway", "outside_role", "inside_role", "players", "start_page", "start_button", "character_chooser")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -93,6 +93,7 @@ size_flags_horizontal = 4
 script = ExtResource("1_0xm2m")
 doorway = NodePath("Doorway")
 outside_role = NodePath("Roles/OutsideRole")
+inside_role = NodePath("Roles/InsideRole")
 players = [NodePath("Players/Player1"), NodePath("Players/Player2")]
 start_page = NodePath("StartPage")
 start_button = NodePath("StartPage/Start")
