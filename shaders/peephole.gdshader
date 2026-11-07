@@ -8,6 +8,8 @@ uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 // Lens radius, as a fraction of the screen height.
 uniform float radius = 0.35;
 uniform float softness = 0.05;
+// Colour around the lens (outside the round opening). Default: #551822.
+uniform vec4 outside_color : source_color = vec4(0.333, 0.094, 0.133, 1.0);
 // Barrel strength: the centre stays 1:1 and sharp, the rim bends and looks
 // further out (0 = flat, 0.8 = the rim shows 1.8x as far).
 uniform float strength : hint_range(0.0, 3.0) = 0.4;
@@ -32,5 +34,5 @@ void fragment() {
 
 	col *= 1.0 - vignette * r * r;
 	float outside = smoothstep(radius, radius + softness, d);
-	COLOR = vec4(mix(col, vec3(0.0), outside), 1.0);
+	COLOR = vec4(mix(col, outside_color.rgb, outside), 1.0);
 }
