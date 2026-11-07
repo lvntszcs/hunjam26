@@ -51,37 +51,63 @@ func _animate_run(progress: float) -> void:
 
 
 func _draw() -> void:
-	var bounce := -absf(sin(_stride)) * 6.0
+	var bounce := -absf(sin(_stride)) * 5.0
 	draw_set_transform(Vector2(0, bounce))
-	var hip := Vector2(-7, -47)
-	var shoulder := Vector2(6, -87)
-	_draw_leg(hip, _stride + PI, FAR_BONE)
-	_draw_arm(shoulder, _stride, FAR_BONE)
-	_draw_bone(hip, shoulder, BONE, 5.0)
-	_draw_bone(hip + Vector2(-6, -1), hip + Vector2(8, 1), BONE, 7.0)
-	for rib in range(4):
-		var root := shoulder.lerp(hip, 0.17 + 0.13 * rib)
-		_draw_bone(root, root + Vector2(13 - rib, 3), BONE, 3.0)
+	var hip := Vector2(-9, -65)
+	var shoulder := Vector2(4, -109)
+	_draw_leg(hip + Vector2(4, 0), _stride + PI, FAR_BONE)
+	_draw_arm(shoulder + Vector2(4, 0), _stride, FAR_BONE)
+	_draw_bone(hip, shoulder, FAR_BONE, 4.5)
+	_draw_ribcage(hip, shoulder)
 	_draw_leg(hip, _stride, BONE)
+	_draw_bone(hip + Vector2(-5, -4), hip + Vector2(7, -1), BONE, 8.0)
+	draw_circle(hip + Vector2(3, -3), 2.4, SHADOW)
+	_draw_bone(shoulder, shoulder + Vector2(6, -11), BONE, 4.0)
 	_draw_arm(shoulder, _stride + PI, BONE)
-	_draw_skull(shoulder + Vector2(8, -21))
+	_draw_skull(shoulder + Vector2(10, -20 + bounce))
+
+
+func _draw_ribcage(hip: Vector2, shoulder: Vector2) -> void:
+	for rib in range(6):
+		var root := shoulder.lerp(hip, 0.1 + 0.1 * rib)
+		var span := 12.0 + 7.0 * sin(float(rib) * PI / 6.0)
+		var arc := PackedVector2Array([
+			root + Vector2(-4, -2),
+			root + Vector2(-5, 2),
+			root + Vector2(1, 6),
+			root + Vector2(span - 3, 5),
+			root + Vector2(span, 1),
+		])
+		draw_polyline(arc, SHADOW, 4.0)
+		draw_polyline(arc, BONE, 2.1)
+		draw_circle(root, 2.0, FAR_BONE)
 
 
 func _draw_leg(hip: Vector2, phase: float, color: Color) -> void:
-	var swing := sin(phase)
-	var knee := hip + Vector2(20 * swing + 5, 22 - 11 * maxf(swing, 0.0))
-	var ankle := hip + Vector2(27 * sin(phase - 0.55), 43 - 16 * maxf(swing, 0.0))
-	_draw_bone(hip, knee, color, 5.0)
-	_draw_bone(knee, ankle, color, 4.0)
-	_draw_bone(ankle, ankle + Vector2(10, 1), color, 4.0)
+	var swing := cos(phase)
+	var thigh_angle := 0.1 + 1.02 * swing
+	var knee_bend := 0.42 + 0.65 * (1.0 - swing) * 0.5 + 0.18 * sin(phase)
+	var knee := hip + Vector2.DOWN.rotated(-thigh_angle) * 32.0
+	var ankle := knee + Vector2.DOWN.rotated(knee_bend - thigh_angle) * 32.0
+	_draw_bone(hip, knee, color, 4.0)
+	_draw_bone(knee, ankle, color, 3.0)
+	_draw_bone(knee + Vector2(-2, 2), ankle + Vector2(-2, 0), FAR_BONE, 1.4)
+	_draw_bone(ankle, ankle + Vector2(10, 3 - 4 * swing), color, 3.0)
 
 
 func _draw_arm(shoulder: Vector2, phase: float, color: Color) -> void:
-	var swing := sin(phase)
-	var elbow := shoulder + Vector2(16 * swing - 5, 17)
-	var hand := elbow + Vector2(14 + 6 * swing, -9 - 4 * swing)
-	_draw_bone(shoulder, elbow, color, 4.0)
-	_draw_bone(elbow, hand, color, 3.0)
+	var swing := cos(phase)
+	var upper_angle := -0.25 + 1.0 * swing
+	var forearm := Vector2.DOWN.rotated(-(upper_angle + 1.2 + 0.22 * swing))
+	var elbow := shoulder + Vector2.DOWN.rotated(-upper_angle) * 21.0
+	var wrist := elbow + forearm * 19.0
+	_draw_bone(shoulder, elbow, color, 3.5)
+	_draw_bone(elbow, wrist, color, 2.5)
+	var palm := wrist + forearm * 4.0
+	_draw_bone(wrist, palm, color, 3.0)
+	for finger in range(-1, 2):
+		var tip := palm + forearm * 4.0 + forearm.orthogonal() * (finger * 1.8)
+		draw_line(palm, tip, color, 1.2)
 
 
 func _draw_bone(from: Vector2, to: Vector2, color: Color, width: float) -> void:
@@ -91,10 +117,19 @@ func _draw_bone(from: Vector2, to: Vector2, color: Color, width: float) -> void:
 
 
 func _draw_skull(center: Vector2) -> void:
-	draw_rect(Rect2(center + Vector2(-5, 1), Vector2(20, 15)), SHADOW)
-	draw_circle(center, 15.0, SHADOW)
-	draw_circle(center, 13.0, BONE)
-	draw_rect(Rect2(center + Vector2(-3, 3), Vector2(16, 11)), BONE)
-	draw_circle(center + Vector2(6, -3), 4.0, SHADOW)
-	draw_rect(Rect2(center + Vector2(11, 3), Vector2(3, 3)), SHADOW)
-	draw_line(center + Vector2(1, 10), center + Vector2(13, 10), SHADOW, 2.0)
+	draw_set_transform(center)
+	var profile := PackedVector2Array([
+		Vector2(-11, -6), Vector2(-7, -11), Vector2(1, -13), Vector2(8, -11),
+		Vector2(12, -6), Vector2(11, -1), Vector2(14, 3), Vector2(11, 6),
+		Vector2(10, 11), Vector2(3, 13), Vector2(-3, 9), Vector2(-4, 5),
+		Vector2(-9, 3),
+	])
+	draw_colored_polygon(profile, BONE)
+	profile.append(profile[0])
+	draw_polyline(profile, SHADOW, 2.5)
+	draw_circle(Vector2(6, -3), 3.6, SHADOW)
+	draw_circle(Vector2(10, 3), 1.5, SHADOW)
+	draw_line(Vector2(2, 8), Vector2(11, 7), SHADOW, 1.6)
+	for tooth in range(3):
+		var x := 4 + tooth * 2
+		draw_line(Vector2(x, 6), Vector2(x, 9), SHADOW, 1.0)
