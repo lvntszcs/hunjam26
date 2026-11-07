@@ -29,15 +29,22 @@ shader = ExtResource("4_1bvp3")
 shader_parameter/radius = 0.35
 shader_parameter/softness = 0.05
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wobble"]
+shader = ExtResource("18_wobble")
+shader_parameter/wobble_pixels = 1.0
+shader_parameter/wobble_scale = 22.0
+shader_parameter/wobble_rate = 4.0
+shader_parameter/grain_strength = 0.0
+shader_parameter/grain_size = 1.0
+shader_parameter/grain_rate = 1.0
+shader_parameter/design_height = 720.0
+
 [sub_resource type="Resource" id="PlayerModel_one"]
 script = ExtResource("15_model")
 display_name = "Player 1"
 
 [sub_resource type="Resource" id="InputProfile_keyboard"]
 script = ExtResource("16_profile")
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_wobble"]
-shader = ExtResource("18_wobble")
 
 [sub_resource type="Resource" id="PlayerModel_two"]
 script = ExtResource("15_model")
@@ -239,11 +246,11 @@ anchor_bottom = 0.06
 grow_horizontal = 2
 color = Color(0.9653986, 0.6455708, 0.4345745, 1)
 
-[node name="PostFx" type="CanvasLayer" parent="."]
+[node name="PostFx" type="CanvasLayer" parent="." unique_id=2119104863]
 layer = 5
 script = ExtResource("17_postfx")
 
-[node name="Effect" type="ColorRect" parent="PostFx"]
+[node name="Effect" type="ColorRect" parent="PostFx" unique_id=1760892254]
 material = SubResource("ShaderMaterial_wobble")
 anchors_preset = 15
 anchor_right = 1.0
