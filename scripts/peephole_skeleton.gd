@@ -2,12 +2,12 @@ extends Node2D
 ## One corridor run after a continuous look through the peephole.
 
 const BONE := Color("#c4d4dd")
-const FAR_BONE := Color("#a18488")
-const SHADOW := Color("#301017")
+const FAR_BONE := Color("#C4D4DD")
+const SHADOW := Color("#551822")
 
 @export var doorway: Doorway
-@export var wait_duration := 15.0
-@export var run_duration := 1.45
+@export var wait_duration := 15
+@export var run_duration := 1
 
 var _sequence: Tween
 var _stride := 0.0

@@ -1,6 +1,5 @@
 [gd_scene format=3 uid="uid://c6cihrf11y440"]
 
-[ext_resource type="Script" path="res://scripts/peephole_skeleton.gd" id="41_skeleton"]
 [ext_resource type="Script" uid="uid://dk2k6r2ki04xd" path="res://scripts/main.gd" id="1_0xm2m"]
 [ext_resource type="Script" uid="uid://ckcdm58bf4qg8" path="res://scripts/camera_controller.gd" id="1_ig7tw"]
 [ext_resource type="Texture2D" uid="uid://cmujiqt6t0ty6" path="res://assets/fomenu_background.png" id="2_2f3dj"]
@@ -46,6 +45,7 @@
 [ext_resource type="Texture2D" uid="uid://c6gxumewowitt" path="res://assets/KopogoGep/kopogo-gep - 1.png" id="41_kopogo1"]
 [ext_resource type="Texture2D" uid="uid://u37gb0arwvow" path="res://assets/KopogoGep/kopogo-gep - 2.png" id="42_kopogo2"]
 [ext_resource type="Script" path="res://scripts/knocking_machine.gd" id="43_machine"]
+[ext_resource type="Script" uid="uid://dqo7bnrd5cnpn" path="res://scripts/peephole_skeleton.gd" id="41_skeleton"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -410,7 +410,7 @@ texture = ExtResource("10_jscy8")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="SkeletonRunner" type="Node2D" parent="Peephole" node_paths=PackedStringArray("doorway")]
+[node name="SkeletonRunner" type="Node2D" parent="Peephole" unique_id=633268502 node_paths=PackedStringArray("doorway")]
 visible = false
 script = ExtResource("41_skeleton")
 doorway = NodePath("../../Doorway")
