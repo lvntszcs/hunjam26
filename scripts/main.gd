@@ -1,112 +1,33 @@
 extends Control
+## Wires players, roles and the doorway together and owns the round rules.
+##
+## Scene layout:
+##   Doorway  - presentation and door state
+##   Roles    - InsideRole, OutsideRole (one per side of the door)
+##   Players  - PlayerController per player, each holding a PlayerModel and a Role
 
-enum State { FAR, MOVING, PEEKING, OPEN }
-enum Outer_phase {IDLE, KNOCKING}
-var state := State.FAR
-var phase := Outer_phase.IDLE
-var outer_hp := 3
+@export var doorway: Doorway
+@export var outside_role: OutsideRole
+@export var players: Array[PlayerController] = []
 
-## Ki lehet-e nyitni az ajtót a szoba közepéről (messziről).
-@export var can_open_from_far := true
-## Ki lehet-e nyitni az ajtót kukucskálás közben (azonnal, hátralépés nélkül).
-@export var can_open_from_peephole := true
-## Ennyi másodperc után csukódik be magától a nyitott ajtó.
-@export var open_duration := 2.0
 
-@onready var cam = $Camera2D
-@onready var hole = $Hole
-@onready var peephole = $Peephole
-@onready var corridor = $Corridor
-@onready var black = $Fade/Black
-@onready var prank = $Corridor/Prank
-@onready var release_timer: Timer = $KnockReleaseTimer
+func _ready() -> void:
+	doorway.opening.connect(_on_doorway_opening)
 
-var release_delay: float = 1.5 #knocking state-ben toltott ido kopogas utan
 
-var door_open := false  # nyitástól a csukás végéig igaz
+## Swaps the roles of the first two players. Meant to be called between
+## rounds, while nobody is mid-action.
+func swap_roles() -> void:
+	assert(players.size() >= 2, "swap_roles() needs two players")
+	var first_role := players[0].role
+	players[0].role = players[1].role
+	players[1].role = first_role
 
-func _ready():
-	release_timer.one_shot = true
-	release_timer.timeout.connect(_knock_release_timer)
-	
 
-func _unhandled_input(event):
-	if event.is_action_pressed("place_prank") and not door_open:
-		prank.visible = true  # placeholder csali: csak a nyitott ajtón át látszik
-		return
-	if state == State.MOVING or state == State.OPEN:
-		return  # animáció / nyitott ajtó közben nem reagálunk
-	if event.is_action_pressed("open_door"):
-		if (state == State.FAR and can_open_from_far) \
-				or (state == State.PEEKING and can_open_from_peephole):
-					if (phase == Outer_phase.KNOCKING):
-						health_reduce(outer_hp)
-						print("Elkapva")
-					elif (phase == Outer_phase.IDLE):
-						print("Pranked")
-					open_door()
-	if event.is_action_pressed("approach") and state == State.FAR:
-		enter_peephole()
-	if event.is_action_pressed("step_back") and state == State.PEEKING:
-		exit_peephole()
-	if event.is_action_pressed("knock") and not event.is_echo():
-		release_timer.stop()
-		if phase != Outer_phase.KNOCKING:
-			phase = Outer_phase.KNOCKING
-			print("Outer-KNOCKING")
-	if event.is_action_released("knock"):
-		if phase == Outer_phase.KNOCKING:
-			release_timer.start(release_delay)
-			
-			
-func _knock_release_timer():
-	if phase == Outer_phase.KNOCKING and not Input.is_action_pressed("knock"):
-		phase = Outer_phase.IDLE
-		print("Outer-IDLE")
-
-func enter_peephole():
-	state = State.MOVING
-	await cam.go_close(hole.get_center()).finished
-	await fade_to(1.0)
-	peephole.visible = true
-	await fade_to(0.0)
-	state = State.PEEKING
-
-func exit_peephole():
-	state = State.MOVING
-	await fade_to(1.0)
-	peephole.visible = false
-	await fade_to(0.0)
-	await cam.go_back().finished
-	state = State.FAR
-
-func open_door():
-	state = State.MOVING
-	door_open = true
-	await fade_to(1.0)
-	peephole.visible = false
-	corridor.visible = true
-	await fade_to(0.0)
-	state = State.OPEN
-	await get_tree().create_timer(open_duration).timeout
-	close_door()
-
-func close_door():
-	state = State.MOVING
-	await fade_to(1.0)
-	corridor.visible = false
-	prank.visible = false  # nyitás után a csali resetel
-	cam.snap_back()  # ha kukucskálásból nyitottunk, a kamera még ráközelített
-	await fade_to(0.0)
-	door_open = false
-	state = State.FAR
-
-func fade_to(alpha: float, time := 0.3):
-	var t = create_tween()
-	t.tween_property(black, "modulate:a", alpha, time)
-	await t.finished
-
-func health_reduce(health : int):
-	health -= 1
-	
-	
+func _on_doorway_opening() -> void:
+	if outside_role.is_knocking():
+		if outside_role.player:
+			outside_role.player.take_damage(1)
+		print("Elkapva")
+	else:
+		print("Pranked")
