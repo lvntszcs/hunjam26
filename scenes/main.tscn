@@ -40,6 +40,8 @@
 [ext_resource type="Script" uid="uid://dq8girncta47s" path="res://scripts/pixel_button.gd" id="35_pixel_button"]
 [ext_resource type="Script" uid="uid://cif4pfppfe7nq" path="res://scripts/character_chooser.gd" id="36_chooser"]
 [ext_resource type="Texture2D" uid="uid://copepsfort1op" path="res://assets/logo.png" id="40_logo"]
+[ext_resource type="Texture2D" uid="uid://c10qva5f8g6w2" path="res://assets/Tuja/tuja_1.png" id="37_tuja1"]
+[ext_resource type="Texture2D" uid="uid://ch5qbyj40o54k" path="res://assets/Tuja/tuja_2.png" id="38_tuja2"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -495,6 +497,9 @@ script = ExtResource("32_knocker")
 figures = [NodePath("../RoomCorridor/Knocker"), NodePath("../Peephole/Knocker"), NodePath("../Corridor/Knocker")]
 room_figure = NodePath("../RoomCorridor/Knocker")
 doorway_wall = NodePath("../Wall")
+disguise_frames = Array[Texture2D]([ExtResource("37_tuja1"), ExtResource("38_tuja2")])
+disguise_offset = Vector2(750, 50)
+disguise_scale = 0.7
 
 [node name="Roles" type="Node" parent="." unique_id=863425788]
 
