@@ -74,8 +74,9 @@ func _exit_peephole() -> void:
 
 
 func _open_door() -> void:
+	var from_knob := state == State.AT_KNOB  # kéz már a kilincsen: nincs félig nyitott fázis
 	state = State.MOVING
-	await doorway.open()
+	await doorway.open(from_knob)
 	state = State.OPEN
 	await doorway.closed  # az ajtó magától csukódik be
 	state = State.FAR
