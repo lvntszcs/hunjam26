@@ -40,7 +40,7 @@ signal peephole_left
 @export var reveal_duration := 0.8
 
 @export var close_zoom := Vector2(10, 10)
-@export var close_zoom_knob := Vector2(2, 2)
+@export var close_zoom_knob := Vector2(1, 1)
 ## Kilincstől nyitva ennyi pixellel néz fel a kamera a nyitott ajtóra.
 @export var knob_look_up := 280.0
 ## Ennyi másodperc alatt néz fel a kamera kilincstől nyitáskor.
