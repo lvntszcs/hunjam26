@@ -1,13 +1,13 @@
 [gd_scene format=3 uid="uid://c6cihrf11y440"]
 
-[ext_resource type="Script" uid="uid://dk2k6r2ki04xd" path="res://main.gd" id="1_0xm2m"]
-[ext_resource type="Script" uid="uid://ckcdm58bf4qg8" path="res://camera_controller.gd" id="1_ig7tw"]
-[ext_resource type="Script" uid="uid://baglovkgb0itc" path="res://door.gd" id="2_h2yge"]
-[ext_resource type="Script" uid="uid://b83dm8ak05258" path="res://hole.gd" id="3_7mycd"]
-[ext_resource type="Shader" uid="uid://b0suws2i47pts" path="res://holeShape.gdshader" id="3_272bh"]
-[ext_resource type="Shader" uid="uid://c47ps4srjwaxe" path="res://peephole.gdshader" id="4_1bvp3"]
-[ext_resource type="Texture2D" uid="uid://gfourp23jtlw" path="res://bob.jpg" id="4_lquwl"]
-[ext_resource type="Texture2D" path="res://assets/jack_in_box.png" id="5_prank"]
+[ext_resource type="Script" uid="uid://dk2k6r2ki04xd" path="res://scripts/main.gd" id="1_0xm2m"]
+[ext_resource type="Script" uid="uid://ckcdm58bf4qg8" path="res://scripts/camera_controller.gd" id="1_ig7tw"]
+[ext_resource type="Script" uid="uid://baglovkgb0itc" path="res://scripts/door.gd" id="2_h2yge"]
+[ext_resource type="Script" uid="uid://b83dm8ak05258" path="res://scripts/hole.gd" id="3_7mycd"]
+[ext_resource type="Shader" uid="uid://b0suws2i47pts" path="res://shaders/holeShape.gdshader" id="3_272bh"]
+[ext_resource type="Shader" uid="uid://c47ps4srjwaxe" path="res://shaders/peephole.gdshader" id="4_1bvp3"]
+[ext_resource type="Texture2D" uid="uid://gfourp23jtlw" path="res://assets/bob.jpg" id="4_lquwl"]
+[ext_resource type="Texture2D" uid="uid://ctdqqc2pmbet3" path="res://assets/jack_in_box.png" id="5_prank"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -34,6 +34,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+color = Color(0.78, 0.74, 0.66, 1)
 
 [node name="Door" type="ColorRect" parent="." unique_id=1773061244]
 layout_mode = 1

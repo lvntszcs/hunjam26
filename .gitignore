@@ -1,3 +1,32 @@
-# Godot 4+ specific ignores
+# Godot 4+ cache and generated files
 .godot/
 /android/
+
+# Godot .NET / C# build output (the project was opened with the .NET editor)
+.mono/
+data_*/
+mono_crash.*.json
+*.csproj.user
+
+# Export output
+/build/
+/export/
+/exports/
+*.exe
+*.pck
+*.zip
+*.apk
+*.aab
+export_credentials.cfg
+
+# Editor / IDE
+.vscode/
+.idea/
+.vs/
+*.swp
+*~
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
