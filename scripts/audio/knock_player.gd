@@ -16,12 +16,15 @@ const SOUND_FILE_PATTERN := "^knock_\\d+\\.wav$"
 ## Rhythm patterns: the time of each hit, in seconds from the first one.
 ## Keep them shorter than OutsideRole.release_delay, since the rhythm is cut
 ## off when the knocking phase ends.
-@export var patterns: Array[PackedFloat32Array] = [
-	PackedFloat32Array([0.0, 0.3]),  # kop-kop
-	PackedFloat32Array([0.0, 0.25, 0.5]),  # three even
-	PackedFloat32Array([0.0, 0.15, 0.3, 0.45]),  # four quick
-	PackedFloat32Array([0.0, 0.12, 0.24, 0.6, 0.72, 0.84]),  # impatient: 3 + 3
-	PackedFloat32Array([0.0, 0.2, 0.3, 0.4, 0.6, 1.0, 1.2]),  # shave and a haircut, two bits
+## Plain nested arrays of float literals on purpose: the editor can only read
+## a constant default. With PackedFloat32Array(...) calls it saw no default,
+## showed an empty list and saved that into the scene, silencing the knocks.
+@export var patterns: Array[Array] = [
+	[0.0, 0.3],  # kop-kop
+	[0.0, 0.25, 0.5],  # three even
+	[0.0, 0.15, 0.3, 0.45],  # four quick
+	[0.0, 0.12, 0.24, 0.6, 0.72, 0.84],  # impatient: 3 + 3
+	[0.0, 0.2, 0.3, 0.4, 0.6, 1.0, 1.2],  # shave and a haircut, two bits
 ]
 ## Random pitch spread per hit (0.05 = +-5 %), so repeats sound less mechanical.
 @export_range(0.0, 0.3, 0.01) var pitch_variation := 0.05
@@ -44,6 +47,9 @@ func _ready() -> void:
 	_sounds = load_knock_sounds()
 	if _sounds.is_empty():
 		push_warning("KnockPlayer: no knock_NN.wav files in %s" % SOUND_DIR)
+	if patterns.is_empty():
+		push_warning("KnockPlayer: 'patterns' is empty, knocks will be silent. " \
+				+ "Check the node in the Inspector (Revert restores the defaults).")
 	for i in voices:
 		var player := AudioStreamPlayer.new()
 		player.bus = bus
@@ -82,16 +88,18 @@ func play_random_pattern() -> void:
 	play_pattern(patterns.pick_random())
 
 
-func play_pattern(hit_times: PackedFloat32Array) -> void:
+## [param hit_times]: seconds from the first hit, e.g. [0.0, 0.25, 0.5].
+func play_pattern(hit_times: Array) -> void:
 	_generation += 1
 	var generation := _generation
 	_active = true
 	var elapsed := 0.0
 	for i in hit_times.size():
-		var wait := hit_times[i] - elapsed
+		var hit_time := float(hit_times[i])
+		var wait := hit_time - elapsed
 		if wait > 0.0:
 			await get_tree().create_timer(wait, false).timeout
-			elapsed = hit_times[i]
+			elapsed = hit_time
 		if generation != _generation:
 			return  # stopped or replaced meanwhile
 		_play_hit()
