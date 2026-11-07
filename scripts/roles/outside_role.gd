@@ -55,3 +55,9 @@ func _on_release_timer_timeout() -> void:
 	if phase == Phase.KNOCKING and not _knock_held:
 		phase = Phase.IDLE
 		print("Outer-IDLE")
+
+
+func reset_state() -> void:
+	_knock_held = false
+	_release_timer.stop()
+	phase = Phase.IDLE
