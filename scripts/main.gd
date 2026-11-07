@@ -18,7 +18,7 @@ var _input_lock_timer: SceneTreeTimer
 
 
 func _ready() -> void:
-	doorway.opening.connect(_on_doorway_opening)
+	doorway.swung_open.connect(_on_doorway_swung_open)
 	doorway.closed.connect(_on_doorway_closed)
 	for controller in players:
 		if controller.model:
@@ -64,6 +64,7 @@ func _on_player_defeated() -> void:
 
 
 func _on_doorway_closed() -> void:
+	outside_role.let_go()
 	if _swap_pending:
 		_swap_pending = false
 		swap_roles()
@@ -85,8 +86,10 @@ func _input_lock_time_left() -> float:
 	return _input_lock_timer.time_left if _input_lock_timer else 0.0
 
 
-func _on_doorway_opening() -> void:
-	if outside_role.is_knocking():
+## Caught if even one pixel of the knocker shows in the opened doorway.
+func _on_doorway_swung_open() -> void:
+	if outside_role.is_in_doorway():
+		outside_role.freeze()
 		if outside_role.player:
 			outside_role.player.take_damage(1)
 		print("Elkapva")

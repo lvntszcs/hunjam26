@@ -26,6 +26,7 @@
 [ext_resource type="Script" uid="uid://c8whefiwduaec" path="res://scripts/peephole_event.gd" id="19_peephole_event"]
 [ext_resource type="Script" uid="uid://3j51kls7et06" path="res://scripts/audio/knock_player.gd" id="30_knock_player"]
 [ext_resource type="Script" uid="uid://5vuhc8rkaa0" path="res://scripts/hand.gd" id="31_hand"]
+[ext_resource type="Script" uid="uid://cb077rd6ii7dr" path="res://scripts/knocker.gd" id="32_knocker"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -81,6 +82,20 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("12_pm3ni")
 expand_mode = 1
+
+[node name="Knocker" type="TextureRect" parent="RoomCorridor" unique_id=1683870814]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 334.0
+offset_top = 7.0
+offset_right = -320.0
+offset_bottom = 4.0
+mouse_filter = 2
+texture = ExtResource("10_jscy8")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Wall" type="TextureRect" parent="." unique_id=634147687]
 layout_mode = 1
@@ -141,7 +156,7 @@ pivot_offset_ratio = Vector2(0.5, 0.5)
 color = Color(0, 0, 0, 1)
 script = ExtResource("6_muem4")
 
-[node name="Hand" type="TextureRect" parent="."]
+[node name="Hand" type="TextureRect" parent="." unique_id=1765161049]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -188,6 +203,20 @@ offset_bottom = 4.0
 texture = ExtResource("10_jscy8")
 expand_mode = 1
 
+[node name="Knocker" type="TextureRect" parent="Peephole" unique_id=1474770962]
+visible = false
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 334.0
+offset_top = 7.0
+offset_right = -320.0
+offset_bottom = 4.0
+mouse_filter = 2
+texture = ExtResource("10_jscy8")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="Mask" type="ColorRect" parent="Peephole" unique_id=330920548]
 material = SubResource("ShaderMaterial_h2yge")
 anchors_preset = 15
@@ -206,6 +235,20 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("12_pm3ni")
+
+[node name="Knocker" type="TextureRect" parent="Corridor" unique_id=395020958]
+visible = false
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 334.0
+offset_top = 7.0
+offset_right = -320.0
+offset_bottom = 4.0
+mouse_filter = 2
+texture = ExtResource("10_jscy8")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Prank" type="TextureRect" parent="Corridor" unique_id=1580244742]
 visible = false
@@ -266,15 +309,22 @@ inside_role = NodePath("../Roles/InsideRole")
 apparition = NodePath("../Peephole/Apparition")
 background = NodePath("../Peephole/TextureRect")
 
+[node name="Knocker" type="Node" parent="." unique_id=1113584781 node_paths=PackedStringArray("figures", "room_figure", "doorway_wall")]
+script = ExtResource("32_knocker")
+figures = [NodePath("../RoomCorridor/Knocker"), NodePath("../Peephole/Knocker"), NodePath("../Corridor/Knocker")]
+room_figure = NodePath("../RoomCorridor/Knocker")
+doorway_wall = NodePath("../Wall")
+
 [node name="Roles" type="Node" parent="." unique_id=863425788]
 
 [node name="InsideRole" type="Node" parent="Roles" unique_id=201516575 node_paths=PackedStringArray("doorway")]
 script = ExtResource("12_inside")
 doorway = NodePath("../../Doorway")
 
-[node name="OutsideRole" type="Node" parent="Roles" unique_id=409835860 node_paths=PackedStringArray("doorway")]
+[node name="OutsideRole" type="Node" parent="Roles" unique_id=409835860 node_paths=PackedStringArray("doorway", "knocker")]
 script = ExtResource("13_outside")
 doorway = NodePath("../../Doorway")
+knocker = NodePath("../../Knocker")
 
 [node name="ReleaseTimer" type="Timer" parent="Roles/OutsideRole" unique_id=247840856]
 one_shot = true
