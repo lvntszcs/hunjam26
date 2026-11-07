@@ -19,11 +19,12 @@
 [ext_resource type="Script" uid="uid://bpvvn563j3l5t" path="res://scripts/player/player_controller.gd" id="14_controller"]
 [ext_resource type="Script" uid="uid://bll14ayn8bqvc" path="res://scripts/player/player_model.gd" id="15_model"]
 [ext_resource type="Script" uid="uid://r6swcrjwau1p" path="res://scripts/player/input_profile.gd" id="16_profile"]
-[ext_resource type="Script" uid="uid://ced6clvkhamtf" path="res://scripts/post_fx.gd" id="17_postfx"]
-[ext_resource type="Shader" uid="uid://b2eeeyq2soeyy" path="res://shaders/pixel_wobble.gdshader" id="18_wobble"]
 [ext_resource type="Texture2D" uid="uid://dqyxo02hwnium" path="res://assets/door_02.png" id="17_door_half"]
+[ext_resource type="Script" uid="uid://ced6clvkhamtf" path="res://scripts/post_fx.gd" id="17_postfx"]
 [ext_resource type="Texture2D" uid="uid://cslkusniy4l7m" path="res://assets/door_03.png" id="18_door_open"]
+[ext_resource type="Shader" uid="uid://b2eeeyq2soeyy" path="res://shaders/pixel_wobble.gdshader" id="18_wobble"]
 [ext_resource type="Script" uid="uid://c8whefiwduaec" path="res://scripts/peephole_event.gd" id="19_peephole_event"]
+[ext_resource type="Script" uid="uid://3j51kls7et06" path="res://scripts/audio/knock_player.gd" id="30_knock_player"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -264,6 +265,9 @@ doorway = NodePath("../../Doorway")
 
 [node name="ReleaseTimer" type="Timer" parent="Roles/OutsideRole" unique_id=247840856]
 one_shot = true
+
+[node name="KnockPlayer" type="Node" parent="Roles/OutsideRole" unique_id=1818723635]
+script = ExtResource("30_knock_player")
 
 [node name="Players" type="Node" parent="." unique_id=1634670261]
 
