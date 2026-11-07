@@ -14,6 +14,7 @@ extends Resource
 	&"open_door": &"open_door",
 	&"knock": &"knock",
 	&"place_prank": &"place_prank",
+	&"disguise": &"disguise",
 }
 
 

@@ -6,7 +6,8 @@ enum Phase { IDLE, KNOCKING }
 
 const KNOCK := &"knock"
 const PLACE_PRANK := &"place_prank"
-const COMMANDS: Array[StringName] = [KNOCK, PLACE_PRANK]
+const DISGUISE := &"disguise"
+const COMMANDS: Array[StringName] = [KNOCK, PLACE_PRANK, DISGUISE]
 
 ## Knocking state-ben töltött idő kopogás után (másodperc).
 @export var release_delay := 1.5
@@ -52,6 +53,7 @@ func press(command: StringName) -> void:
 			_knock_held = true
 			_release_timer.stop()
 			if knocker:
+				knocker.set_disguised(false)  # knocking again drops the disguise
 				knocker.slide_in()
 			if phase != Phase.KNOCKING:
 				phase = Phase.KNOCKING
@@ -60,6 +62,11 @@ func press(command: StringName) -> void:
 		PLACE_PRANK:
 			if not doorway.is_open:
 				doorway.place_prank()  # placeholder csali: csak a nyitott ajtón át látszik
+		DISGUISE:
+			# The knocker standing at the door vanishes at once and the disguise
+			# (tuja) plays in its place until the door has closed again.
+			if knocker and knocker.is_present():
+				knocker.set_disguised(true)
 
 
 func release(command: StringName) -> void:
@@ -96,6 +103,8 @@ func freeze() -> void:
 ## The door has closed again: carry on from where the knocker was frozen.
 func let_go() -> void:
 	_release_timer.paused = false
+	if knocker:
+		knocker.set_disguised(false)  # the inside player is back in the room
 	if knocker == null or not knocker.is_frozen():
 		return
 	knocker.unfreeze()
@@ -114,4 +123,5 @@ func reset_state() -> void:
 	_knock_player.stop()
 	if knocker:
 		knocker.hide_now()
+		knocker.set_disguised(false)
 	phase = Phase.IDLE
