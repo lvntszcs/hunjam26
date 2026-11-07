@@ -51,7 +51,7 @@ grow_vertical = 0
 color = Color(0.9653986, 0.6455708, 0.4345745, 1)
 script = ExtResource("2_h2yge")
 
-[node name="Hole" type="ColorRect" parent="." unique_id=221810347]
+[node name="Hole" type="ColorRect" parent="Door" unique_id=221810347]
 material = SubResource("ShaderMaterial_272bh")
 layout_mode = 1
 anchors_preset = -1
@@ -60,16 +60,16 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -20.0
-offset_top = -20.0
+offset_top = -94.0
 offset_right = 20.0
-offset_bottom = 20.0
+offset_bottom = -54.0
 grow_horizontal = 2
 grow_vertical = 2
 pivot_offset_ratio = Vector2(0.5, 0.5)
 color = Color(0, 0, 0, 1)
 script = ExtResource("3_7mycd")
 
-[node name="Handle" type="ColorRect" parent="." unique_id=1379969787]
+[node name="Handle" type="ColorRect" parent="Door" unique_id=1379969787]
 material = SubResource("ShaderMaterial_272bh")
 layout_mode = 1
 anchors_preset = 8
@@ -78,9 +78,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -176.0
-offset_top = 76.0
+offset_top = 2.0
 offset_right = -136.0
-offset_bottom = 116.0
+offset_bottom = 42.0
 grow_horizontal = 2
 grow_vertical = 2
 pivot_offset_ratio = Vector2(0.5, 0.5)

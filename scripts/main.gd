@@ -1,6 +1,6 @@
 extends Control
 
-enum State { FAR, MOVING, PEEKING, OPEN }
+enum State { FAR, MOVING, PEEKING, AT_KNOB, OPEN }
 var state := State.FAR
 
 ## Ki lehet-e nyitni az ajtót a szoba közepéről (messziről).
@@ -14,12 +14,12 @@ var state := State.FAR
 
 
 @onready var cam = $Camera2D
-@onready var hole = $Hole
+@onready var hole = $Door/Hole
 @onready var peephole = $Peephole
 @onready var corridor = $Corridor
 @onready var black = $Fade/Black
 @onready var prank = $Corridor/Prank
-@onready var handle = $Handle
+@onready var handle = $Door/Handle
 
 var door_open := false  # nyitástól a csukás végéig igaz
 
@@ -31,12 +31,28 @@ func _unhandled_input(event):
 		return  # animáció / nyitott ajtó közben nem reagálunk
 	if event.is_action_pressed("open_door"):
 		if (state == State.FAR and can_open_from_far) \
-				or (state == State.PEEKING and can_open_from_peephole):
+				or (state == State.PEEKING and can_open_from_peephole) \
+				or state == State.AT_KNOB:
 			open_door()
-	elif event.is_action_pressed("approach") and state == State.FAR:
+	elif event.is_action_pressed("approach_peephole") and state == State.FAR:
 		enter_peephole()
+	elif event.is_action_pressed("approach_door_knob") and state == State.FAR:
+		enter_knob()
 	elif event.is_action_pressed("step_back") and state == State.PEEKING:
 		exit_peephole()
+	elif event.is_action_pressed("step_back") and state == State.AT_KNOB:
+		exit_knob()
+
+## Shift: közel megy a kilincshez, de nem nyit ajtót.
+func enter_knob():
+	state = State.MOVING
+	await cam.go_close(handle.get_center(), close_zoom_handle).finished
+	state = State.AT_KNOB
+
+func exit_knob():
+	state = State.MOVING
+	await cam.go_back().finished
+	state = State.FAR
 
 func enter_peephole():
 	state = State.MOVING
