@@ -6,6 +6,9 @@ extends ColorRect
 ## the cover colour, each at a random moment. [code]fade_to(0.0)[/code] reveals:
 ## every pixel fades from the cover colour to the new view, in a new random
 ## pattern. Swap what is shown while covered.
+##
+## The cover colour is the node's [member ColorRect.color] (dark red) unless a
+## [param tint] is passed to [method fade_to] / [method cover_now].
 
 const DISSOLVE_SHADER := preload("res://shaders/pixel_dissolve.gdshader")
 
@@ -26,6 +29,8 @@ const DISSOLVE_SHADER := preload("res://shaders/pixel_dissolve.gdshader")
 ## 0 = clear, 1 = fully covered.
 var progress := 0.0:
 	set = _set_progress
+## Default cover colour, taken from the node's colour in the scene.
+var cover_color: Color
 
 var _material: ShaderMaterial
 
@@ -36,7 +41,8 @@ func _ready() -> void:
 		_material = ShaderMaterial.new()
 		_material.shader = DISSOLVE_SHADER
 		material = _material
-	_material.set_shader_parameter("cover_color", color)
+	cover_color = color
+	_material.set_shader_parameter("cover_color", cover_color)
 	color = Color.WHITE  # the shader draws the colour
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	resized.connect(_update_grid)
@@ -46,8 +52,12 @@ func _ready() -> void:
 
 ## Covers ([param target] 1) or reveals ([param target] 0); returns when done.
 ## [param duration] defaults to [member cover_duration] / [member reveal_duration].
-func fade_to(target: float, duration: float = -1.0) -> void:
+## When covering, [param tint] (if not transparent) replaces [member cover_color]
+## for this transition; a reveal keeps whatever colour is covering.
+func fade_to(target: float, duration: float = -1.0, tint := Color.TRANSPARENT) -> void:
 	var covering := target > progress
+	if covering:
+		_set_tint(tint)
 	if duration < 0.0:
 		duration = cover_duration if covering else reveal_duration
 	_material.set_shader_parameter("softness", cover_softness if covering else reveal_softness)
@@ -55,6 +65,16 @@ func fade_to(target: float, duration: float = -1.0) -> void:
 	var tween := create_tween()
 	tween.tween_property(self, "progress", target, duration)
 	await tween.finished
+
+
+## Fully covered right away, e.g. on the first frame; reveal with fade_to(0).
+func cover_now(tint := Color.TRANSPARENT) -> void:
+	_set_tint(tint)
+	progress = 1.0
+
+
+func _set_tint(tint: Color) -> void:
+	_material.set_shader_parameter("cover_color", tint if tint.a > 0.0 else cover_color)
 
 
 func _set_progress(value: float) -> void:

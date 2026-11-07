@@ -25,6 +25,7 @@
 [ext_resource type="Script" uid="uid://bcd0vxxs02kv6" path="res://scripts/roles/outside_role.gd" id="13_outside"]
 [ext_resource type="Texture2D" uid="uid://bo3ii6x3vp1u2" path="res://assets/peephole.png" id="13_vxglm"]
 [ext_resource type="Script" uid="uid://bpvvn563j3l5t" path="res://scripts/player/player_controller.gd" id="14_controller"]
+[ext_resource type="Texture2D" uid="uid://copepsfort1op" path="res://assets/logo.png" id="40_logo"]
 [ext_resource type="Script" uid="uid://bll14ayn8bqvc" path="res://scripts/player/player_model.gd" id="15_model"]
 [ext_resource type="Script" uid="uid://r6swcrjwau1p" path="res://scripts/player/input_profile.gd" id="16_profile"]
 [ext_resource type="Texture2D" uid="uid://dqyxo02hwnium" path="res://assets/door_02.png" id="17_door_half"]
@@ -115,6 +116,16 @@ mouse_filter = 2
 texture = ExtResource("3_yq6so")
 expand_mode = 1
 script = ExtResource("2_h2yge")
+
+[node name="Logo" type="TextureRect" parent="StartPage" unique_id=1951122970]
+offset_left = 311.0
+offset_top = -91.0
+offset_right = 1591.0
+offset_bottom = 629.0
+scale = Vector2(0.5, 0.5)
+mouse_filter = 2
+texture = ExtResource("40_logo")
+expand_mode = 1
 
 [node name="Settings" type="TextureRect" parent="StartPage" unique_id=1399988289 node_paths=PackedStringArray("buttons")]
 anchors_preset = 15
