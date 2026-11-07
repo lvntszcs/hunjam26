@@ -1,0 +1,206 @@
+[gd_scene format=3 uid="uid://c6cihrf11y440"]
+
+[ext_resource type="Script" uid="uid://dk2k6r2ki04xd" path="res://main.gd" id="1_0xm2m"]
+[ext_resource type="Script" uid="uid://ckcdm58bf4qg8" path="res://camera_controller.gd" id="1_ig7tw"]
+[ext_resource type="Script" uid="uid://baglovkgb0itc" path="res://door.gd" id="2_h2yge"]
+[ext_resource type="Script" uid="uid://b83dm8ak05258" path="res://hole.gd" id="3_7mycd"]
+[ext_resource type="Shader" uid="uid://b0suws2i47pts" path="res://holeShape.gdshader" id="3_272bh"]
+[ext_resource type="Shader" uid="uid://c47ps4srjwaxe" path="res://peephole.gdshader" id="4_1bvp3"]
+[ext_resource type="Texture2D" uid="uid://gfourp23jtlw" path="res://bob.jpg" id="4_lquwl"]
+[ext_resource type="Texture2D" path="res://assets/jack_in_box.png" id="5_prank"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
+shader = ExtResource("3_272bh")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_h2yge"]
+shader = ExtResource("4_1bvp3")
+shader_parameter/radius = 0.35
+shader_parameter/softness = 0.05
+
+[node name="Main" type="Control" unique_id=1249313363]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+script = ExtResource("1_0xm2m")
+
+[node name="Wall" type="ColorRect" parent="." unique_id=806344602]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Door" type="ColorRect" parent="." unique_id=1773061244]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -500.0
+offset_right = 200.0
+grow_horizontal = 2
+grow_vertical = 0
+color = Color(0.9653986, 0.6455708, 0.4345745, 1)
+script = ExtResource("2_h2yge")
+
+[node name="Hole" type="ColorRect" parent="." unique_id=221810347]
+material = SubResource("ShaderMaterial_272bh")
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset_ratio = Vector2(0.5, 0.5)
+color = Color(0, 0, 0, 1)
+script = ExtResource("3_7mycd")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=435261660]
+script = ExtResource("1_ig7tw")
+
+[node name="Peephole" type="CanvasLayer" parent="." unique_id=2061978330]
+visible = false
+
+[node name="Outside" type="ColorRect" parent="Peephole" unique_id=1276660066]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(1, 0.13725491, 1, 1)
+
+[node name="TextureRect" type="TextureRect" parent="Peephole" unique_id=1466534611]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_lquwl")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Mask" type="ColorRect" parent="Peephole" unique_id=330920548]
+material = SubResource("ShaderMaterial_h2yge")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Corridor" type="CanvasLayer" parent="." unique_id=1580244731]
+visible = false
+
+[node name="BackWall" type="ColorRect" parent="Corridor" unique_id=1580244732]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.55, 0.5, 0.42, 1)
+
+[node name="Ceiling" type="ColorRect" parent="Corridor" unique_id=1580244733]
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.15
+grow_horizontal = 2
+color = Color(0.82, 0.8, 0.74, 1)
+
+[node name="Floor" type="ColorRect" parent="Corridor" unique_id=1580244734]
+anchors_preset = -1
+anchor_top = 0.78
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+color = Color(0.3, 0.22, 0.17, 1)
+
+[node name="Baseboard" type="ColorRect" parent="Corridor" unique_id=1580244735]
+anchors_preset = -1
+anchor_top = 0.76
+anchor_right = 1.0
+anchor_bottom = 0.78
+grow_horizontal = 2
+color = Color(0.2, 0.15, 0.12, 1)
+
+[node name="OppositeDoorLeft" type="ColorRect" parent="Corridor" unique_id=1580244736]
+anchors_preset = -1
+anchor_left = 0.12
+anchor_top = 0.32
+anchor_right = 0.26
+anchor_bottom = 0.76
+color = Color(0.45, 0.28, 0.18, 1)
+
+[node name="OppositeDoorRight" type="ColorRect" parent="Corridor" unique_id=1580244737]
+anchors_preset = -1
+anchor_left = 0.74
+anchor_top = 0.32
+anchor_right = 0.88
+anchor_bottom = 0.76
+color = Color(0.45, 0.28, 0.18, 1)
+
+[node name="Lamp" type="ColorRect" parent="Corridor" unique_id=1580244738]
+anchors_preset = -1
+anchor_left = 0.46
+anchor_top = 0.15
+anchor_right = 0.54
+anchor_bottom = 0.18
+color = Color(1, 0.95, 0.7, 1)
+
+[node name="Prank" type="TextureRect" parent="Corridor" unique_id=1580244742]
+visible = false
+anchors_preset = -1
+anchor_left = 0.4
+anchor_top = 0.55
+anchor_right = 0.6
+anchor_bottom = 0.92
+texture = ExtResource("5_prank")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="FrameLeft" type="ColorRect" parent="Corridor" unique_id=1580244739]
+anchors_preset = -1
+anchor_right = 0.05
+anchor_bottom = 1.0
+grow_vertical = 2
+color = Color(0.9653986, 0.6455708, 0.4345745, 1)
+
+[node name="FrameRight" type="ColorRect" parent="Corridor" unique_id=1580244740]
+anchors_preset = -1
+anchor_left = 0.95
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 0
+grow_vertical = 2
+color = Color(0.9653986, 0.6455708, 0.4345745, 1)
+
+[node name="FrameTop" type="ColorRect" parent="Corridor" unique_id=1580244741]
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.06
+grow_horizontal = 2
+color = Color(0.9653986, 0.6455708, 0.4345745, 1)
+
+[node name="Fade" type="CanvasLayer" parent="." unique_id=1976015250]
+layer = 10
+
+[node name="Black" type="ColorRect" parent="Fade" unique_id=973507871]
+modulate = Color(1, 1, 1, 0)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
