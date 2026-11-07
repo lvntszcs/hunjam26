@@ -18,6 +18,8 @@
 [ext_resource type="Script" uid="uid://bpvvn563j3l5t" path="res://scripts/player/player_controller.gd" id="14_controller"]
 [ext_resource type="Script" uid="uid://bll14ayn8bqvc" path="res://scripts/player/player_model.gd" id="15_model"]
 [ext_resource type="Script" uid="uid://r6swcrjwau1p" path="res://scripts/player/input_profile.gd" id="16_profile"]
+[ext_resource type="Texture2D" uid="uid://dqyxo02hwnium" path="res://assets/door_02.png" id="17_door_half"]
+[ext_resource type="Texture2D" uid="uid://cslkusniy4l7m" path="res://assets/door_03.png" id="18_door_open"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -54,6 +56,16 @@ doorway = NodePath("Doorway")
 outside_role = NodePath("Roles/OutsideRole")
 players = [NodePath("Players/Player1"), NodePath("Players/Player2")]
 
+[node name="RoomCorridor" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("11_0ld40")
+expand_mode = 1
+
 [node name="Wall" type="TextureRect" parent="." unique_id=634147687]
 layout_mode = 1
 anchors_preset = 15
@@ -72,6 +84,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 0
 texture = ExtResource("3_dp3eg")
+expand_mode = 1
 script = ExtResource("2_h2yge")
 
 [node name="Hole" type="ColorRect" parent="." unique_id=221810347]
@@ -179,8 +192,12 @@ grow_vertical = 2
 color = Color(0, 0, 0, 1)
 script = ExtResource("10_fader")
 
-[node name="Doorway" type="Node" parent="." unique_id=606465438 node_paths=PackedStringArray("camera", "fader", "peephole_target", "peephole_view", "corridor_view", "prank", "doorknob_target")]
+[node name="Doorway" type="Node" parent="." unique_id=606465438 node_paths=PackedStringArray("camera", "fader", "peephole_target", "peephole_view", "corridor_view", "prank", "doorknob_target", "door")]
 script = ExtResource("11_doorway")
+door = NodePath("../Door")
+door_closed_texture = ExtResource("3_dp3eg")
+door_half_open_texture = ExtResource("17_door_half")
+door_open_texture = ExtResource("18_door_open")
 camera = NodePath("../Camera2D")
 fader = NodePath("../Fade/Black")
 peephole_target = NodePath("../Hole")
