@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hunjam26</title>
+<style>
+  :root {
+    --bg: #15130f;
+    --bar: #1f1c17;
+    --line: #3a342b;
+    --text: #ece6da;
+    --muted: #9a907f;
+    --accent: #f6a56f;
+    --accent-text: #1f1c17;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  body { display: flex; flex-direction: column; }
+
+  header { display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    padding: 10px 16px; background: var(--bar); border-bottom: 1px solid var(--line); }
+  h1 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: .02em; }
+
+  .switch { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .switch button { all: unset; cursor: pointer; padding: 6px 14px; color: var(--muted); font-weight: 500; }
+  .switch button + button { border-left: 1px solid var(--line); }
+  .switch button:hover { color: var(--text); }
+  .switch button[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); }
+  .switch button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+  #info { color: var(--muted); font-size: 13px; min-width: 0; flex: 1;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #info code { color: var(--text); font-family: ui-monospace, Consolas, monospace; }
+
+  a.full { color: var(--accent); text-decoration: none; font-weight: 500; white-space: nowrap; }
+  a.full:hover { text-decoration: underline; }
+
+  main { flex: 1; position: relative; min-height: 0; }
+  iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #000; }
+  #empty { position: absolute; inset: 0; display: none; place-items: center; text-align: center;
+    color: var(--muted); padding: 16px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>hunjam26</h1>
+  <div class="switch" role="group" aria-label="Branch">
+    <button type="button" data-branch="main">main</button>
+    <button type="button" data-branch="testing">testing</button>
+  </div>
+  <div id="info"></div>
+  <a class="full" id="full" href="main/" target="_blank" rel="noopener">Open in new tab ↗</a>
+</header>
+<main>
+  <iframe id="game" title="Game" allow="fullscreen; autoplay; gamepad"></iframe>
+  <div id="empty"></div>
+</main>
+<script>
+  const BRANCHES = ["main", "testing"];
+  const frame = document.getElementById("game");
+  const info = document.getElementById("info");
+  const empty = document.getElementById("empty");
+  const full = document.getElementById("full");
+  const buttons = document.querySelectorAll(".switch button");
+
+  function current() {
+    const h = location.hash.slice(1);
+    return BRANCHES.includes(h) ? h : "main";
+  }
+
+  async function show(branch) {
+    buttons.forEach(b => b.setAttribute("aria-pressed", b.dataset.branch === branch));
+    full.href = branch + "/";
+    info.textContent = "";
+
+    let meta = null;
+    try {
+      const r = await fetch(branch + "/version.json", { cache: "no-store" });
+      if (r.ok) meta = await r.json();
+    } catch (e) { /* treated as missing */ }
+    if (branch !== current()) return; // user switched again while loading
+
+    if (!meta || !meta.ok) {
+      frame.style.display = "none";
+      frame.removeAttribute("src");
+      full.style.display = "none";
+      empty.style.display = "grid";
+      empty.textContent = meta
+        ? `The ${branch} build failed (commit ${meta.sha.slice(0, 7)}). Check the Actions log.`
+        : `No build for “${branch}” yet. Push to the ${branch} branch to create one.`;
+      return;
+    }
+
+    empty.style.display = "none";
+    frame.style.display = "";
+    full.style.display = "";
+    frame.src = branch + "/index.html?v=" + meta.sha.slice(0, 7);
+    frame.addEventListener("load", () => frame.focus(), { once: true });
+
+    const when = new Date(meta.date).toLocaleString();
+    info.innerHTML = "";
+    const code = document.createElement("code");
+    code.textContent = meta.sha.slice(0, 7);
+    info.append(code, ` · ${when} · ${meta.message}`);
+    info.title = meta.message;
+  }
+
+  buttons.forEach(b => b.addEventListener("click", () => {
+    if (location.hash.slice(1) === b.dataset.branch) return;
+    location.hash = b.dataset.branch;
+  }));
+  addEventListener("hashchange", () => show(current()));
+  // Clicking the game area should give it keyboard focus.
+  document.querySelector("main").addEventListener("pointerdown", () => frame.focus());
+  show(current());
+</script>
+</body>
+</html>

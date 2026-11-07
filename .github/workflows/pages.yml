@@ -1,0 +1,116 @@
+# Builds the Web export of every branch in BRANCHES and publishes them to
+# GitHub Pages:  /           -> branch selector (web/index.html from main)
+#                /main/      -> build of main
+#                /testing/   -> build of testing
+# Any push to one of the branches rebuilds all of them, so the site always
+# shows the latest commit of each.
+name: Deploy web builds to Pages
+
+on:
+  push:
+    branches: [main, testing]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  GODOT_VERSION: "4.7.2"
+  BRANCHES: "main testing"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (all branches)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/godot-bin
+            ~/.local/share/godot/export_templates
+          key: godot-${{ env.GODOT_VERSION }}-web
+
+      - name: Download Godot and web templates
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          base="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
+          mkdir -p ~/godot-bin
+          curl -fsSL -o /tmp/godot.zip "$base/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q /tmp/godot.zip -d /tmp/godot
+          mv /tmp/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64 ~/godot-bin/godot
+          chmod +x ~/godot-bin/godot
+          # The template archive holds every platform; keep only the web ones.
+          tdir=~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          mkdir -p "$tdir"
+          curl -fsSL -o /tmp/templates.tpz "$base/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          unzip -q -j /tmp/templates.tpz 'templates/web_*' 'templates/version.txt' -d "$tdir"
+          ls -la "$tdir"
+
+      - name: Build each branch
+        run: |
+          set -uo pipefail
+          godot=~/godot-bin/godot
+          site="$RUNNER_TEMP/site"
+          mkdir -p "$site"
+          for b in $BRANCHES; do
+            out="$site/$b"
+            mkdir -p "$out"
+            if ! git rev-parse --verify --quiet "origin/$b" >/dev/null; then
+              echo "::notice::Branch '$b' does not exist, skipping"
+              continue   # no version.json -> selector shows "no build yet"
+            fi
+            src="$RUNNER_TEMP/src/$b"
+            git worktree add --detach "$src" "origin/$b"
+            sha=$(git rev-parse "origin/$b")
+            msg=$(git log -1 --format=%s "origin/$b")
+            date=$(git log -1 --format=%cI "origin/$b")
+
+            echo "::group::Build $b ($sha)"
+            "$godot" --headless --path "$src" --import || true
+            "$godot" --headless --path "$src" --export-release "Web" "$out/index.html"
+            echo "::endgroup::"
+
+            if [ -f "$out/index.pck" ] && [ -f "$out/index.wasm" ]; then ok=true; else
+              ok=false
+              echo "::error::Web export of '$b' failed"
+            fi
+            jq -n --arg sha "$sha" --arg message "$msg" --arg date "$date" --argjson ok $ok \
+              '{sha:$sha, message:$message, date:$date, ok:$ok}' > "$out/version.json"
+          done
+
+          # Selector page: from main if it has one, else from the commit being built.
+          if git cat-file -e origin/main:web/index.html 2>/dev/null; then
+            git show origin/main:web/index.html > "$site/index.html"
+          else
+            cp web/index.html "$site/index.html"
+          fi
+          find "$site" -maxdepth 2 | sort
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ runner.temp }}/site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
