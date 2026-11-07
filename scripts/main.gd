@@ -130,10 +130,11 @@ func _sync_health_hud_visibility() -> void:
 ## The joining button press itself is swallowed.
 ## (_input runs before any PlayerController's _unhandled_input.)
 func _input(event: InputEvent) -> void:
-	var joining := event is InputEventJoypadButton and event.pressed
-	if event is InputEventJoypadMotion:
-		joining = (event.axis == JOY_AXIS_TRIGGER_LEFT or event.axis == JOY_AXIS_TRIGGER_RIGHT) \
-				and event.axis_value >= PlayerController.TRIGGER_PRESS_THRESHOLD
+	var joining: bool = event is InputEventJoypadButton and event.is_pressed()
+	var motion := event as InputEventJoypadMotion
+	if motion:
+		joining = (motion.axis == JOY_AXIS_TRIGGER_LEFT or motion.axis == JOY_AXIS_TRIGGER_RIGHT) \
+				and motion.axis_value >= PlayerController.TRIGGER_PRESS_THRESHOLD
 	if joining and not _joypad_owner(event.device) and _claim_joypad(event.device):
 		get_viewport().set_input_as_handled()
 
