@@ -85,6 +85,21 @@ func play_grab() -> void:
 	await open_finished
 
 
+## Jumps straight to the last open frame (pulling the handle, drawn for the
+## half-open door). Used when the hand already holds the handle.
+func play_pull() -> void:
+	if _open_frames.is_empty():
+		return
+	var last: Array[Texture2D] = [_open_frames.back()]
+	_playing_open = false
+	_frames = last
+	_loop = false
+	_frame = 0
+	_frame_time = 0.0
+	_open_done = true
+	texture = last[0]
+
+
 ## Plays the open animation once and returns when its last frame is shown.
 func play_open() -> void:
 	if _open_frames.is_empty():

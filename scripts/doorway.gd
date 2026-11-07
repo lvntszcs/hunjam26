@@ -82,9 +82,9 @@ func leave_peephole() -> void:
 
 ## Opens the door; returns once the corridor is visible. The door then closes
 ## by itself after [member open_duration] and emits [signal closed].
-## With [param skip_half_open] (hand already on the knob) the door goes
-## straight from closed to fully open.
-func open(skip_half_open := false) -> void:
+## With [param from_knob] the hand already holds the handle: it just pulls,
+## the camera stays close and looks up into the doorway.
+func open(from_knob := false) -> void:
 	is_open = true
 	opening.emit()
 	# Back to the room view first, so the opening door is actually visible.
@@ -94,26 +94,26 @@ func open(skip_half_open := false) -> void:
 		peephole_view.hide()
 		camera.snap_back()
 		await fader.fade_to(0.0)
-	elif camera.zoom != Vector2.ONE and not skip_half_open:
+	elif camera.zoom != Vector2.ONE and not from_knob:
 		await camera.go_back().finished
 	# The hand reaches and grabs the handle (OPEN frames); its last frame pulls
 	# the handle and is drawn for the half-open door, so they switch together.
-	# From the knob the hand is already holding the handle: no reach again.
-	if hand and not skip_half_open:
-		await hand.play_open()
-	# Closed -> (half open) -> open; the corridor shows through the opening...
-	if not skip_half_open:
-		door.texture = door_half_open_texture
-		swung_open.emit()
-		await get_tree().create_timer(half_open_duration).timeout
+	# From the knob the hand is already holding the handle: it just pulls.
+	if hand:
+		if from_knob:
+			hand.play_pull()
+		else:
+			await hand.play_open()
+	# Closed -> half open -> open; the corridor shows through the opening...
+	door.texture = door_half_open_texture
+	swung_open.emit()
+	await get_tree().create_timer(half_open_duration).timeout
 	door.texture = door_open_texture
-	if skip_half_open:
-		swung_open.emit()
 	if hand:
 		hand.play_idle()  # the handle swung away with the door: let go
 	# Opened from the knob close-up: look up from the handle into the doorway.
 	var tilt: Tween = null
-	if skip_half_open and camera.zoom != Vector2.ONE:
+	if from_knob and camera.zoom != Vector2.ONE:
 		tilt = camera.move_to(camera.position + Vector2(0.0, -knob_look_up), camera.zoom)
 	await get_tree().create_timer(reveal_duration).timeout
 	if tilt and tilt.is_running():
