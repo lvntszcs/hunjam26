@@ -3,130 +3,178 @@
 [ext_resource type="Script" path="res://scripts/debug_menu.gd" id="1_menu"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-content_margin_left = 20.0
-content_margin_top = 18.0
-content_margin_right = 20.0
-content_margin_bottom = 18.0
-bg_color = Color(0.082, 0.098, 0.13, 1)
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.33333334, 0.09411765, 0.13333334, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.31, 0.37, 0.47, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
+border_color = Color(0.76862746, 0.83137256, 0.8666667, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
+content_margin_left = 6.0
+content_margin_top = 2.0
+content_margin_right = 6.0
+content_margin_bottom = 2.0
+bg_color = Color(0.33333334, 0.09411765, 0.13333334, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.76862746, 0.83137256, 0.8666667, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_active"]
+content_margin_left = 6.0
+content_margin_top = 2.0
+content_margin_right = 6.0
+content_margin_bottom = 2.0
+bg_color = Color(0.76862746, 0.83137256, 0.8666667, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.76862746, 0.83137256, 0.8666667, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_disabled"]
+content_margin_left = 6.0
+content_margin_top = 2.0
+content_margin_right = 6.0
+content_margin_bottom = 2.0
+bg_color = Color(0.33333334, 0.09411765, 0.13333334, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_focus"]
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_separator"]
+color = Color(0.76862746, 0.83137256, 0.8666667, 1)
+
+[sub_resource type="Theme" id="Theme_debug"]
+default_font_size = 12
+Button/colors/font_color = Color(0.76862746, 0.83137256, 0.8666667, 1)
+Button/colors/font_disabled_color = Color(0.76862746, 0.83137256, 0.8666667, 1)
+Button/colors/font_focus_color = Color(0.76862746, 0.83137256, 0.8666667, 1)
+Button/colors/font_hover_color = Color(0.33333334, 0.09411765, 0.13333334, 1)
+Button/colors/font_hover_pressed_color = Color(0.33333334, 0.09411765, 0.13333334, 1)
+Button/colors/font_pressed_color = Color(0.33333334, 0.09411765, 0.13333334, 1)
+Button/styles/disabled = SubResource("StyleBoxFlat_button_disabled")
+Button/styles/focus = SubResource("StyleBoxEmpty_focus")
+Button/styles/hover = SubResource("StyleBoxFlat_button_active")
+Button/styles/normal = SubResource("StyleBoxFlat_button")
+Button/styles/pressed = SubResource("StyleBoxFlat_button_active")
+HSeparator/constants/separation = 6
+HSeparator/styles/separator = SubResource("StyleBoxLine_separator")
+Label/colors/font_color = Color(0.76862746, 0.83137256, 0.8666667, 1)
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_panel")
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_phase"]
 
 [node name="DebugMenu" type="CanvasLayer"]
-process_mode = 3
 layer = 20
-visible = false
 script = ExtResource("1_menu")
 
-[node name="Backdrop" type="ColorRect" parent="."]
-anchors_preset = 15
+[node name="Panel" type="PanelContainer" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
 anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0, 0, 0, 0.55)
+offset_left = -228.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = 8.0
+grow_horizontal = 0
+theme = SubResource("Theme_debug")
 
-[node name="Scroll" type="ScrollContainer" parent="."]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 12.0
-offset_top = 12.0
-offset_right = -12.0
-offset_bottom = -12.0
-grow_horizontal = 2
-grow_vertical = 2
-follow_focus = true
-horizontal_scroll_mode = 0
-
-[node name="Center" type="CenterContainer" parent="Scroll"]
+[node name="Content" type="VBoxContainer" parent="Panel"]
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-mouse_filter = 2
+theme_override_constants/separation = 4
 
-[node name="Panel" type="PanelContainer" parent="Scroll/Center"]
+[node name="Title" type="Label" parent="Panel/Content"]
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+text = "DEBUG"
 
-[node name="Content" type="VBoxContainer" parent="Scroll/Center/Panel"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="Title" type="Label" parent="Scroll/Center/Panel/Content"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Debug menü"
-
-[node name="Status" type="Label" parent="Scroll/Center/Panel/Content"]
+[node name="Status" type="Label" parent="Panel/Content"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(248, 0)
 layout_mode = 2
 autowrap_mode = 3
 
-[node name="Separator" type="HSeparator" parent="Scroll/Center/Panel/Content"]
+[node name="Separator" type="HSeparator" parent="Panel/Content"]
 layout_mode = 2
 
-[node name="PhaseRow" type="HBoxContainer" parent="Scroll/Center/Panel/Content"]
+[node name="PhaseRow" type="HBoxContainer" parent="Panel/Content"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Scroll/Center/Panel/Content/PhaseRow"]
+[node name="Label" type="Label" parent="Panel/Content/PhaseRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Phase"
 
-[node name="Phase" type="OptionButton" parent="Scroll/Center/Panel/Content/PhaseRow"]
+[node name="PhaseIdle" type="Button" parent="Panel/Content/PhaseRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(126, 0)
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+button_group = SubResource("ButtonGroup_phase")
+text = "IDLE"
+
+[node name="PhaseKnocking" type="Button" parent="Panel/Content/PhaseRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+button_group = SubResource("ButtonGroup_phase")
+text = "KNOCKING"
+
+[node name="DelayRow" type="HBoxContainer" parent="Panel/Content"]
 layout_mode = 2
 
-[node name="DelayRow" type="HBoxContainer" parent="Scroll/Center/Panel/Content"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="Scroll/Center/Panel/Content/DelayRow"]
+[node name="Label" type="Label" parent="Panel/Content/DelayRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Késleltetés (mp)"
+text = "Release delay"
 
-[node name="ReleaseDelay" type="SpinBox" parent="Scroll/Center/Panel/Content/DelayRow"]
+[node name="DelayDown" type="Button" parent="Panel/Content/DelayRow"]
+layout_mode = 2
+focus_mode = 0
+text = "−"
+
+[node name="ReleaseDelay" type="Label" parent="Panel/Content/DelayRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="DelayUp" type="Button" parent="Panel/Content/DelayRow"]
+layout_mode = 2
+focus_mode = 0
+text = "+"
+
+[node name="Separator2" type="HSeparator" parent="Panel/Content"]
+layout_mode = 2
+
+[node name="Timers" type="Label" parent="Panel/Content"]
 unique_name_in_owner = true
 layout_mode = 2
-min_value = 0.05
-max_value = 30.0
-step = 0.05
-value = 1.5
 
-[node name="Timers" type="Label" parent="Scroll/Center/Panel/Content"]
+[node name="Buttons" type="HBoxContainer" parent="Panel/Content"]
+layout_mode = 2
+
+[node name="TestKnock" type="Button" parent="Panel/Content/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "Test knock"
 
-[node name="Resume" type="Button" parent="Scroll/Center/Panel/Content"]
+[node name="ResetRound" type="Button" parent="Panel/Content/Buttons"]
 layout_mode = 2
-text = "Folytatás"
+size_flags_horizontal = 3
+focus_mode = 0
+text = "Reset round"
 
-[node name="TestKnock" type="Button" parent="Scroll/Center/Panel/Content"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Kopogás tesztelése"
-
-[node name="ResetRound" type="Button" parent="Scroll/Center/Panel/Content"]
-layout_mode = 2
-text = "Reset Round"
-
-[node name="Hint" type="Label" parent="Scroll/Center/Panel/Content"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.65, 0.71, 0.8, 1)
-theme_override_font_sizes/font_size = 13
-text = "F3 / Esc  ·  Bezárás"
-
-[connection signal="item_selected" from="Scroll/Center/Panel/Content/PhaseRow/Phase" to="." method="_on_phase_selected"]
-[connection signal="value_changed" from="Scroll/Center/Panel/Content/DelayRow/ReleaseDelay" to="." method="_on_release_delay_changed"]
-[connection signal="pressed" from="Scroll/Center/Panel/Content/Resume" to="." method="_resume"]
-[connection signal="pressed" from="Scroll/Center/Panel/Content/TestKnock" to="." method="_test_knock"]
-[connection signal="pressed" from="Scroll/Center/Panel/Content/ResetRound" to="." method="_reset_round"]
+[connection signal="pressed" from="Panel/Content/PhaseRow/PhaseIdle" to="." method="_on_phase_pressed" binds= [0]]
+[connection signal="pressed" from="Panel/Content/PhaseRow/PhaseKnocking" to="." method="_on_phase_pressed" binds= [1]]
+[connection signal="pressed" from="Panel/Content/DelayRow/DelayDown" to="." method="_change_release_delay" binds= [-0.1]]
+[connection signal="pressed" from="Panel/Content/DelayRow/DelayUp" to="." method="_change_release_delay" binds= [0.1]]
+[connection signal="pressed" from="Panel/Content/Buttons/TestKnock" to="." method="_activate_knock"]
+[connection signal="pressed" from="Panel/Content/Buttons/ResetRound" to="." method="_reset_round"]
