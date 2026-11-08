@@ -45,6 +45,7 @@
 [ext_resource type="Texture2D" uid="uid://dlm2a4su6io6s" path="res://assets/Controls/dpad/dpad_left.png" id="51_dpad_left"]
 [ext_resource type="Texture2D" uid="uid://ckve2e161l4d5" path="res://assets/Controls/dpad/dpad_down.png" id="52_dpad_down"]
 [ext_resource type="Texture2D" uid="uid://buvd7yxxjds4u" path="res://assets/Controls/dpad/dpad_right.png" id="53_dpad_right"]
+[ext_resource type="Texture2D" uid="uid://kpkyqapem0p" path="res://assets/Controls/no_interaction.png" id="56_no_interaction"]
 [ext_resource type="Texture2D" uid="uid://c6lyi7d26eg4n" path="res://assets/Granny/granny1.png" id="54_granny1"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
@@ -109,6 +110,7 @@ visible = false
 script = ExtResource("45_card_chooser")
 cards = [NodePath("Cards/Card1"), NodePath("Cards/Card2"), NodePath("Cards/Card3"), NodePath("Cards/Card4"), NodePath("Cards/Card5"), NodePath("Cards/Card6")]
 button_textures = Array[Texture2D]([ExtResource("51_dpad_left"), ExtResource("52_dpad_down"), ExtResource("53_dpad_right")])
+unavailable_texture = ExtResource("56_no_interaction")
 
 [node name="Wall" type="ColorRect" parent="CardChoose" unique_id=1901739251]
 anchors_preset = 15

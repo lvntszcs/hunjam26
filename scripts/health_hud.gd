@@ -7,7 +7,7 @@ extends CanvasLayer
 ## A round not (yet) won / won.
 @export var round_empty_texture: Texture2D
 @export var round_won_texture: Texture2D
-@export var round_icon_size := Vector2(40, 40)
+@export var round_icon_size := Vector2(26, 26)
 
 var _players: Array[PlayerController]
 

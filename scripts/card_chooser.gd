@@ -13,6 +13,11 @@ extends CanvasLayer
 ## secret from the other player): that player's cards slide out of the
 ## screen, and once both players' cards are gone the screen confirms.
 ##
+## The screen comes before every round of a match: a card a side chose in an
+## earlier round of the match stays in its row (to learn from) but cannot be
+## chosen again; [member unavailable_texture] replaces its D-pad picture (see
+## [method start_match]).
+##
 ## The cards are laid out by this script (also in the editor): change the
 ## rows with the exports below, not by moving the cards.
 
@@ -53,6 +58,18 @@ const PER_PLAYER := 3
 	set(value):
 		button_textures = value
 		_layout(true)
+## Shown in place of the D-pad picture under a card that cannot be chosen
+## (chosen in an earlier round of the match).
+@export var unavailable_texture: Texture2D:
+	set(value):
+		unavailable_texture = value
+		_layout(true)
+## Size of [member unavailable_texture] (its square; its art fills the
+## picture, the D-pad's does not).
+@export var unavailable_size := 72.0:
+	set(value):
+		unavailable_size = value
+		_layout(true)
 ## Size of a D-pad picture (its square, in design pixels).
 @export var button_size := 110.0:
 	set(value):
@@ -86,6 +103,8 @@ var _buttons: Array[TextureRect] = []
 ## Per player: the slide out of the screen, and whether it has finished.
 var _leave_tweens: Array[Tween] = [null, null]
 var _gone: Array[bool] = [false, false]
+## Per side: the cards (0..2) it chose in earlier rounds of this match.
+var _used: Array[Array] = [[], []]
 ## Per card: a fixed random nudge, -1..1 on each axis.
 var _nudge: Array[Vector2] = []
 
@@ -130,6 +149,12 @@ func open() -> void:
 	_layout(true)
 	_set_shown(true)
 	set_process_unhandled_input(true)
+
+
+## A new match: every card is available again.
+func start_match() -> void:
+	_used = [[], []]
+	_layout(true)
 
 
 ## Hides the screen and stops listening to the keys.
@@ -207,10 +232,11 @@ func _side_of(player: int) -> int:
 ## [param player] chooses card [param card] (0..2) of their row (final):
 ## nothing marks it, their cards just slide out of the screen.
 func _choose(player: int, card: int) -> void:
-	if cards.size() < PER_PLAYER * 2 or _locked[player]:
+	if cards.size() < PER_PLAYER * 2 or _locked[player] or _used[player].has(card):
 		return
 	_choice[player] = card
 	_locked[player] = true
+	_used[player].append(card)
 	_leave(player)
 
 
@@ -274,10 +300,16 @@ func _layout(_instant: bool) -> void:
 			card.rotation = 0.0
 			card.scale = Vector2.ONE * size
 			card.modulate = Color.WHITE
+			# Chosen in an earlier round of this match: stays, but can't be chosen.
+			var available := not _used[player].has(i)
 			if index < _buttons.size():
 				var button := _buttons[index]
-				button.texture = button_textures[i] if i < button_textures.size() else null
-				button.size = Vector2.ONE * button_size
+				if available or unavailable_texture == null:
+					button.texture = button_textures[i] if i < button_textures.size() else null
+					button.size = Vector2.ONE * button_size
+				else:
+					button.texture = unavailable_texture
+					button.size = Vector2.ONE * unavailable_size
 				button.position = (card_center + Vector2(0.0, button_offset)
 						- button.size / 2.0).round()
 

@@ -246,6 +246,8 @@ func _start_match() -> void:
 	_match_over = false
 	_round_over_pending = false
 	_show_wins()
+	if card_chooser:
+		card_chooser.start_match()
 
 
 func _show_wins() -> void:
@@ -253,12 +255,19 @@ func _show_wins() -> void:
 	_health_hud.show_wins(_resident_wins, _knocker_wins, rounds_to_win)
 
 
-## The round is decided but the match is not: through the dark red into a
+## The round is decided but the match is not: through the dark red to the
+## card screen (each side picks a card it has not had yet this match), then a
 ## fresh round, same roles, full health.
 func _next_round() -> void:
 	if _transitioning:
 		return
 	_set_player_input(false)
+	if card_chooser:
+		_in_game = false
+		await _menu_transition(doorway.fader.cover_color, func() -> void:
+			_reset_round()
+			card_chooser.open())
+		return
 	await _menu_transition(doorway.fader.cover_color, _reset_round)
 	if _in_game:
 		_set_player_input(true)
@@ -308,6 +317,7 @@ func _on_character_confirmed() -> void:
 		return
 	character_chooser.set_process_unhandled_input(false)  # no second Enter
 	_assign_roles_from_choice()
+	_start_match()
 	if card_chooser:
 		await _menu_transition(_splash_color(), func() -> void:
 			character_chooser.close()
@@ -317,18 +327,19 @@ func _on_character_confirmed() -> void:
 	_start_game()
 
 
-## Both cards chosen (and slid away): through the dark red into the game.
+## Both cards chosen (and slid away): through the dark red into the round.
 func _on_card_confirmed() -> void:
 	if _transitioning:
 		return
 	card_chooser.set_process_unhandled_input(false)
-	await _menu_transition(doorway.fader.cover_color, card_chooser.close)
+	await _menu_transition(doorway.fader.cover_color, func() -> void:
+		card_chooser.close()
+		_reset_round())
 	_start_game()
 
 
 ## Hands the controls to the players.
 func _start_game() -> void:
-	_start_match()
 	_in_game = true
 	_set_player_input(true)
 
