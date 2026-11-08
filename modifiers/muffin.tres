@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MuffinModifier" format=3]
+
+[ext_resource type="Script" uid="uid://ddpwfqlfuw3hv" path="res://scripts/modifiers/muffin_modifier.gd" id="1_muffin"]
+[ext_resource type="Texture2D" uid="uid://4135cdkljsbt" path="res://assets/Cards/card_muffin.png" id="2_card"]
+
+[resource]
+script = ExtResource("1_muffin")
+display_name = "Muffin"
+card_texture = ExtResource("2_card")
+owner = 0

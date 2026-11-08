@@ -154,6 +154,25 @@ func disguise() -> bool:
 	return knocker.disguised
 
 
+## The muffin's smell: a knocker anywhere in the corridor (not disguised)
+## stops knocking and stands still, hooked, until [method draw_in]. False if
+## he is out of range.
+func lure() -> bool:
+	if knocker == null or knocker.disguised or knocker.is_frozen() or not knocker.is_present():
+		return false
+	_release_timer.stop()
+	_stop_knocking()
+	knocker.hold_still()
+	return true
+
+
+## The hooked knocker walks up in front of the open door in [param duration]
+## seconds.
+func draw_in(duration: float) -> void:
+	if knocker:
+		knocker.pull_in(duration)
+
+
 ## True when the knocker stands right behind the door (fully slid in, not
 ## disguised): only then can it knock.
 func is_at_door() -> bool:

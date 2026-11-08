@@ -96,6 +96,9 @@ var _rest_offsets: Array[Vector2] = []  # (offset_left, offset_right) per figure
 var _scene_offsets: Array[Vector4] = []  # left, top, right, bottom as in the scene
 var _tween: Tween
 var _frozen := false
+## True while drawn to the door (see [method pull_in]): his own slides are
+## ignored.
+var _pulled := false
 ## Doorway test data per picture: {"rows": Array[Vector2i], "size": Vector2},
 ## see [method _row_spans]. Figure pictures are scanned once, up front.
 var _figure_spans := {}
@@ -314,11 +317,29 @@ func slide_out(duration: float = -1.0) -> void:
 	_slide_to(0.0, duration if duration > 0.0 else slide_out_duration, Tween.EASE_IN_OUT)
 
 
+## Caught by the muffin's smell: stops where he is and ignores the player's
+## slides until [method unfreeze] / [method hide_now].
+func hold_still() -> void:
+	if _tween:
+		_tween.kill()
+	_pulled = true
+	set_knocking(false)
+
+
+## Drawn to the door by the smell: walks up to it in [param duration] seconds,
+## whatever the player does (see [method hold_still]).
+func pull_in(duration: float) -> void:
+	hold_still()
+	_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_tween.tween_property(self, "presence", 1.0, maxf(duration, 0.01))
+
+
 ## Gone immediately (e.g. when a game ends); also unfreezes.
 func hide_now() -> void:
 	if _tween:
 		_tween.kill()
 	_frozen = false
+	_pulled = false
 	set_knocking(false)
 	presence = 0.0
 
@@ -336,6 +357,7 @@ func freeze() -> void:
 ## Lets it move again; the caller decides where it goes next.
 func unfreeze() -> void:
 	_frozen = false
+	_pulled = false
 	_update_pose()
 
 
@@ -377,7 +399,7 @@ func is_in_doorway() -> bool:
 
 
 func _slide_to(target: float, full_duration: float, easing: Tween.EaseType) -> void:
-	if _frozen or disguised:
+	if _frozen or disguised or _pulled:
 		return
 	if _tween:
 		_tween.kill()

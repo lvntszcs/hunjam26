@@ -19,6 +19,9 @@ signal peephole_left
 
 ## Ennyi másodperc után csukódik be magától a nyitott ajtó.
 @export var open_duration := 0.5
+## How long the corridor stays when something modifier related happened at
+## the opening (see [method hold_open]).
+@export var held_open_duration := 5.0
 @export var camera: CameraController
 @export var fader: ScreenFader
 ## The camera zooms onto the centre of this control when approaching the peephole.
@@ -48,6 +51,8 @@ signal peephole_left
 ## True from the start of opening until the door has fully closed.
 var is_open := false
 var _close_timer: SceneTreeTimer
+## Set by [method hold_open] for the current opening.
+var _hold_open := false
 
 
 func approach_peephole() -> void:
@@ -132,6 +137,14 @@ func open(from_knob := false) -> void:
 	_close_after_delay()
 
 
+## This opening shows something worth a look (a modifier played out): the
+## corridor stays [member held_open_duration] seconds instead of
+## [member open_duration].
+func hold_open() -> void:
+	if is_open:
+		_hold_open = true
+
+
 func place_prank() -> void:
 	prank.show()
 
@@ -141,7 +154,8 @@ func close_time_left() -> float:
 
 
 func _close_after_delay() -> void:
-	_close_timer = get_tree().create_timer(open_duration, false)
+	_close_timer = get_tree().create_timer(held_open_duration if _hold_open else open_duration, false)
+	_hold_open = false
 	await _close_timer.timeout
 	_close_timer = null
 	await fader.fade_to(1.0)

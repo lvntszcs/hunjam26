@@ -29,6 +29,8 @@ var _open_after_grab := false
 ## The peek was let go while still walking up: step back once there.
 var _leave_after_peek := false
 var _walking_to_peephole := false
+## True while a modifier plays out (the muffin): Granny's own input is ignored.
+var _locked := false
 
 
 func get_commands() -> Array[StringName]:
@@ -37,6 +39,8 @@ func get_commands() -> Array[StringName]:
 
 func set_trigger_held(held: bool) -> void:
 	_trigger_held = held
+	if _locked:
+		return
 	if held:
 		_release_after_grab = false
 		if state == State.FAR:
@@ -50,6 +54,8 @@ func set_trigger_held(held: bool) -> void:
 
 
 func press(command: StringName) -> void:
+	if _locked:
+		return
 	if state == State.GRABBING_KNOB:
 		if _trigger_held and command == OPEN_DOOR:
 			_open_after_grab = true
@@ -72,6 +78,25 @@ func press(command: StringName) -> void:
 		APPROACH_DOORKNOB:
 			if state == State.FAR:
 				_enter_doorknob()
+
+
+## True if Granny stands still where she can open the door right now (in the
+## room or holding the handle), not walking or looking through the peephole.
+func can_open_now() -> bool:
+	return state == State.FAR or state == State.AT_KNOB
+
+
+## Ignores Granny's own input while on (see [method open_now]).
+func set_locked(on: bool) -> void:
+	_locked = on
+
+
+## Opens the door for her (the muffin), if she can right now.
+func open_now() -> bool:
+	if not can_open_now():
+		return false
+	_open_door()
+	return true
 
 
 func _can_open_door() -> bool:
@@ -114,7 +139,7 @@ func _enter_peephole() -> void:
 ## Letting go of the peek (left stick back): step back from the peephole, or
 ## right after getting there if still walking up.
 func release(command: StringName) -> void:
-	if command != PEEK_HOLD:
+	if _locked or command != PEEK_HOLD:
 		return
 	if state == State.PEEKING:
 		_exit_peephole()
@@ -145,6 +170,7 @@ func _return_to_far() -> void:
 
 func reset_state() -> void:
 	_trigger_held = false
+	_locked = false
 	_leave_after_peek = false
 	_walking_to_peephole = false
 	_release_after_grab = false
