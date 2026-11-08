@@ -8,10 +8,8 @@
 [ext_resource type="Shader" uid="uid://b0suws2i47pts" path="res://shaders/holeShape.gdshader" id="3_272bh"]
 [ext_resource type="Texture2D" uid="uid://blvigclr60cfs" path="res://assets/door.png" id="3_jscy8"]
 [ext_resource type="Shader" uid="uid://c47ps4srjwaxe" path="res://shaders/peephole.gdshader" id="4_1bvp3"]
-[ext_resource type="Texture2D" uid="uid://ctdqqc2pmbet3" path="res://assets/jack_in_box.png" id="5_prank"]
 [ext_resource type="Script" uid="uid://bsxswm1u5tak6" path="res://scenes/knob.gd" id="6_muem4"]
 [ext_resource type="Script" uid="uid://bwaih7avvwvjy" path="res://scripts/screen_fader.gd" id="10_fader"]
-[ext_resource type="Texture2D" uid="uid://b4bof8xbwl1yy" path="res://assets/snowleopard_nobg.png" id="10_jscy8"]
 [ext_resource type="Script" uid="uid://cjws0wqniyo14" path="res://scripts/doorway.gd" id="11_doorway"]
 [ext_resource type="Script" uid="uid://b8o4dhj5v2778" path="res://scripts/roles/inside_role.gd" id="12_inside"]
 [ext_resource type="Texture2D" uid="uid://b5w3a22kioabl" path="res://assets/back_wall.png" id="12_pm3ni"]
@@ -29,16 +27,20 @@
 [ext_resource type="Script" uid="uid://cb077rd6ii7dr" path="res://scripts/knocker.gd" id="32_knocker"]
 [ext_resource type="Texture2D" uid="uid://c10qva5f8g6w2" path="res://assets/Tuja/tuja_1.png" id="37_tuja1"]
 [ext_resource type="Texture2D" uid="uid://ch5qbyj40o54k" path="res://assets/Tuja/tuja_2.png" id="38_tuja2"]
-[ext_resource type="Texture2D" uid="uid://c6gxumewowitt" path="res://assets/KopogoGep/kopogo-gep - 1.png" id="41_kopogo1"]
-[ext_resource type="Texture2D" uid="uid://u37gb0arwvow" path="res://assets/KopogoGep/kopogo-gep - 2.png" id="42_kopogo2"]
-[ext_resource type="Script" path="res://scripts/knocking_machine.gd" id="43_machine"]
-[ext_resource type="Script" uid="uid://dqo7bnrd5cnpn" path="res://scripts/peephole_skeleton.gd" id="41_skeleton"]
 [ext_resource type="PackedScene" path="res://scenes/health_hud.tscn" id="41_health_hud"]
-[ext_resource type="PackedScene" path="res://scenes/start_page.tscn" id="44_start_page"]
-[ext_resource type="PackedScene" path="res://scenes/character_choose.tscn" id="45_character_choose"]
+[ext_resource type="Texture2D" uid="uid://c6gxumewowitt" path="res://assets/KopogoGep/kopogo-gep - 1.png" id="41_kopogo1"]
+[ext_resource type="Script" uid="uid://dqo7bnrd5cnpn" path="res://scripts/peephole_skeleton.gd" id="41_skeleton"]
+[ext_resource type="Texture2D" uid="uid://u37gb0arwvow" path="res://assets/KopogoGep/kopogo-gep - 2.png" id="42_kopogo2"]
+[ext_resource type="Script" uid="uid://5xjnxmmlge5a" path="res://scripts/knocking_machine.gd" id="43_machine"]
 [ext_resource type="Texture2D" uid="uid://bgk45u7sd52mk" path="res://assets/Cards/kartya_1.png" id="44_card"]
-[ext_resource type="Script" path="res://scripts/card_chooser.gd" id="45_card_chooser"]
+[ext_resource type="PackedScene" uid="uid://hlspx8t4i3lr" path="res://scenes/start_page.tscn" id="44_start_page"]
+[ext_resource type="Script" uid="uid://bb8ti8ax50v4h" path="res://scripts/card_chooser.gd" id="45_card_chooser"]
+[ext_resource type="PackedScene" uid="uid://vujs57thlm7l" path="res://scenes/character_choose.tscn" id="45_character_choose"]
 [ext_resource type="Texture2D" uid="uid://bevctdqbm7g7c" path="res://assets/character_choose_door.png" id="46_card_door"]
+[ext_resource type="Texture2D" uid="uid://cl5ojnrvli7pt" path="res://assets/Knocker/knocker_idle.png" id="47_knocker_idle"]
+[ext_resource type="Texture2D" uid="uid://s3i5hysh8adc" path="res://assets/Knocker/knocker_knock1.png" id="48_knocker_knock1"]
+[ext_resource type="Texture2D" uid="uid://canky3nvalojb" path="res://assets/Knocker/knocker_knock2.png" id="49_knocker_knock2"]
+[ext_resource type="Texture2D" uid="uid://dp7pkbybcnimm" path="res://assets/Knocker/knocker_caught.png" id="50_knocker_caught"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -52,6 +54,7 @@ shader_parameter/strength = 0.8
 shader_parameter/curve = 2.0
 shader_parameter/zoom = 1.0
 shader_parameter/vignette = 0.5
+shader_parameter/look_height = 0.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_wobble"]
 shader = ExtResource("18_wobble")
@@ -96,9 +99,10 @@ card_chooser = NodePath("CardChoose")
 
 [node name="CharacterChoose" parent="." unique_id=1901739246 instance=ExtResource("45_character_choose")]
 
-[node name="CardChoose" type="CanvasLayer" parent="." unique_id=1901739250]
+[node name="CardChoose" type="CanvasLayer" parent="." unique_id=1901739250 node_paths=PackedStringArray("cards")]
 visible = false
 script = ExtResource("45_card_chooser")
+cards = [NodePath("Cards/Card1"), NodePath("Cards/Card2"), NodePath("Cards/Card3"), NodePath("Cards/Card4"), NodePath("Cards/Card5"), NodePath("Cards/Card6")]
 
 [node name="Wall" type="ColorRect" parent="CardChoose" unique_id=1901739251]
 anchors_preset = 15
@@ -120,70 +124,113 @@ texture = ExtResource("46_card_door")
 expand_mode = 1
 
 [node name="Cards" type="Control" parent="CardChoose" unique_id=1901739252]
+texture_filter = 4
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture_filter = 4
 
 [node name="Card1" type="TextureRect" parent="CardChoose/Cards" unique_id=1901739253]
-anchors_preset = 15
+texture_filter = 4
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -509.0
+offset_top = 43.0
+offset_right = -509.0
+offset_bottom = 43.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(0.55, 0.55)
+pivot_offset = Vector2(640, 360)
 mouse_filter = 2
 texture = ExtResource("44_card")
 expand_mode = 1
 
 [node name="Card2" type="TextureRect" parent="CardChoose/Cards" unique_id=1901739254]
-anchors_preset = 15
+texture_filter = 4
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -311.0
+offset_top = 40.0
+offset_right = -311.0
+offset_bottom = 40.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(0.55, 0.55)
+pivot_offset = Vector2(640, 360)
 mouse_filter = 2
 texture = ExtResource("44_card")
 expand_mode = 1
 
 [node name="Card3" type="TextureRect" parent="CardChoose/Cards" unique_id=1901739255]
-anchors_preset = 15
+texture_filter = 4
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -121.0
+offset_top = 35.0
+offset_right = -121.0
+offset_bottom = 35.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(0.55, 0.55)
+pivot_offset = Vector2(640, 360)
 mouse_filter = 2
 texture = ExtResource("44_card")
 expand_mode = 1
 
 [node name="Card4" type="TextureRect" parent="CardChoose/Cards" unique_id=1901739256]
-anchors_preset = 15
+texture_filter = 4
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 133.0
+offset_top = 36.0
+offset_right = 133.0
+offset_bottom = 36.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(0.55, 0.55)
+pivot_offset = Vector2(640, 360)
 mouse_filter = 2
 texture = ExtResource("44_card")
 expand_mode = 1
 
 [node name="Card5" type="TextureRect" parent="CardChoose/Cards" unique_id=1901739257]
-anchors_preset = 15
+texture_filter = 4
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 324.0
+offset_top = 35.0
+offset_right = 324.0
+offset_bottom = 35.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(0.55, 0.55)
+pivot_offset = Vector2(640, 360)
 mouse_filter = 2
 texture = ExtResource("44_card")
 expand_mode = 1
 
 [node name="Card6" type="TextureRect" parent="CardChoose/Cards" unique_id=1901739258]
-anchors_preset = 15
+texture_filter = 4
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 520.0
+offset_top = 42.0
+offset_right = 520.0
+offset_bottom = 42.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(0.55, 0.55)
+pivot_offset = Vector2(640, 360)
 mouse_filter = 2
 texture = ExtResource("44_card")
 expand_mode = 1
@@ -203,14 +250,9 @@ visible = false
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 334.0
-offset_top = 7.0
-offset_right = -320.0
-offset_bottom = 4.0
 mouse_filter = 2
-texture = ExtResource("10_jscy8")
+texture = ExtResource("47_knocker_idle")
 expand_mode = 1
-stretch_mode = 5
 
 [node name="Prank" type="TextureRect" parent="RoomCorridor" unique_id=1580244744]
 visible = false
@@ -323,14 +365,9 @@ visible = false
 anchors_preset = -1
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 334.0
-offset_top = 7.0
-offset_right = -320.0
-offset_bottom = 4.0
 mouse_filter = 2
-texture = ExtResource("10_jscy8")
+texture = ExtResource("47_knocker_idle")
 expand_mode = 1
-stretch_mode = 5
 
 [node name="SkeletonRunner" type="Node2D" parent="Peephole" unique_id=633268502 node_paths=PackedStringArray("doorway")]
 visible = false
@@ -373,14 +410,9 @@ visible = false
 anchors_preset = -1
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 334.0
-offset_top = 7.0
-offset_right = -320.0
-offset_bottom = 4.0
 mouse_filter = 2
-texture = ExtResource("10_jscy8")
+texture = ExtResource("47_knocker_idle")
 expand_mode = 1
-stretch_mode = 5
 
 [node name="Prank" type="TextureRect" parent="Corridor" unique_id=1580244742 node_paths=PackedStringArray("copies")]
 visible = false
@@ -443,11 +475,16 @@ door_half_open_texture = ExtResource("17_door_half")
 door_open_texture = ExtResource("18_door_open")
 hand = NodePath("../Hand")
 
-[node name="Knocker" type="Node" parent="." unique_id=1113584781 node_paths=PackedStringArray("figures", "room_figure", "doorway_wall")]
+[node name="Knocker" type="Node" parent="." unique_id=1113584781 node_paths=PackedStringArray("figures", "room_figure", "doorway_wall", "close_up_figure")]
 script = ExtResource("32_knocker")
 figures = [NodePath("../RoomCorridor/Knocker"), NodePath("../Peephole/Knocker"), NodePath("../Corridor/Knocker")]
 room_figure = NodePath("../RoomCorridor/Knocker")
 doorway_wall = NodePath("../Wall")
+idle_texture = ExtResource("47_knocker_idle")
+knock_ready_texture = ExtResource("48_knocker_knock1")
+knock_hit_texture = ExtResource("49_knocker_knock2")
+caught_texture = ExtResource("50_knocker_caught")
+close_up_figure = NodePath("../Peephole/Knocker")
 disguise_frames = Array[Texture2D]([ExtResource("37_tuja1"), ExtResource("38_tuja2")])
 disguise_offset = Vector2(750, 50)
 disguise_scale = 0.7

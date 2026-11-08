@@ -7,13 +7,13 @@ extends CanvasLayer
 ## each set laid out in a row, every card nudged a little off its spot so
 ## they look put down by hand. A player moves between their own cards
 ## (player 1: A / D, player 2: arrow keys); the card they are on is lifted.
-## S (player 1) / Down (player 2) locks it, pressing again
-## unlocks. Enter confirms once both players have locked a card.
+## S (player 1) / Down (player 2) chooses it: that player's cards slide out
+## of the screen, and once both players' cards are gone the screen confirms.
 ##
 ## The cards are laid out by this script (also in the editor): change the
 ## rows with the exports below, not by moving the cards.
 
-## Emitted when Enter is pressed with both cards locked.
+## Emitted once both players chose a card and their cards left the screen.
 signal confirmed
 
 ## Cards per player.
@@ -52,13 +52,19 @@ const PER_PLAYER := 3
 ## The card a player is on is lifted this many pixels.
 @export var hover_lift := 40.0
 @export var move_time := 0.12
-## Tint of a card once its player has locked it.
-@export var locked_color := Color("#551822")
+## Seconds after choosing before the cards slide away. The chosen card is
+## not marked in any way: the choice is a secret from the other player.
+@export var leave_delay := 0.2
+## Seconds the cards take to slide out of the screen (down).
+@export var leave_time := 0.45
 
 ## Index (0..2) of the card each player is on, within their own three.
 var _choice: Array[int] = [1, 1]
 var _locked: Array[bool] = [false, false]
 var _tweens: Array[Tween] = []
+## Per player: the slide out of the screen, and whether it has finished.
+var _leave_tweens: Array[Tween] = [null, null]
+var _gone: Array[bool] = [false, false]
 ## Per card: a fixed random nudge, -1..1 on each axis.
 var _nudge: Array[Vector2] = []
 
@@ -83,8 +89,16 @@ func _ready() -> void:
 	_layout(true)
 
 
-## Shows the screen and starts listening to the keys.
+## Shows the screen (cards back in their rows) and starts listening to the
+## keys.
 func open() -> void:
+	for player in 2:
+		if _leave_tweens[player]:
+			_leave_tweens[player].kill()
+		_leave_tweens[player] = null
+		_locked[player] = false
+		_gone[player] = false
+	_layout(true)
 	_set_shown(true)
 	set_process_unhandled_input(true)
 
@@ -122,12 +136,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_RIGHT:
 			_step(1, 1)
 		KEY_S:
-			_set_locked(0, not _locked[0])
+			_choose(0)
 		KEY_DOWN:
-			_set_locked(1, not _locked[1])
-		KEY_ENTER, KEY_KP_ENTER:
-			if is_ready():
-				confirmed.emit()
+			_choose(1)
 		_:
 			return
 	get_viewport().set_input_as_handled()
@@ -145,11 +156,41 @@ func _step(player: int, direction: int) -> void:
 	_layout(false)
 
 
-func _set_locked(player: int, locked: bool) -> void:
-	if cards.size() < PER_PLAYER * 2:
+## [param player] chooses the card they are on (final): their cards
+## slide out of the screen.
+func _choose(player: int) -> void:
+	if cards.size() < PER_PLAYER * 2 or _locked[player]:
 		return
-	_locked[player] = locked
+	_locked[player] = true
 	_layout(false)
+	_leave(player)
+
+
+## Slides [param player]'s cards down out of the screen; confirms once both
+## players' cards are gone.
+func _leave(player: int) -> void:
+	var view_height: float = ProjectSettings.get_setting("display/window/size/viewport_height", 720)
+	# The lift settles first (other layouts skip this player from here).
+	var wait := create_tween()
+	wait.tween_interval(leave_delay)
+	_leave_tweens[player] = wait
+	await wait.finished
+	if _leave_tweens[player] != wait:
+		return  # the screen was opened again meanwhile
+	var tween := create_tween().set_parallel().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	# Far enough for the lifted card (drawn in the middle of its picture).
+	var drop := view_height + hover_lift
+	for i in PER_PLAYER:
+		var card := cards[player * PER_PLAYER + i]
+		tween.tween_property(card, "offset_top", card.offset_top + drop, leave_time).set_delay(i * 0.04)
+		tween.tween_property(card, "offset_bottom", card.offset_bottom + drop, leave_time).set_delay(i * 0.04)
+	_leave_tweens[player] = tween
+	await tween.finished
+	if _leave_tweens[player] != tween:
+		return
+	_gone[player] = true
+	if _gone[0] and _gone[1] and visible:
+		confirmed.emit()
 
 
 ## Places every card in its row; the chosen ones lifted.
@@ -166,6 +207,8 @@ func _layout(instant: bool) -> void:
 			ProjectSettings.get_setting("display/window/size/viewport_width", 1280),
 			ProjectSettings.get_setting("display/window/size/viewport_height", 720))
 	for player in 2:
+		if _leave_tweens[player] and not instant:
+			continue  # chose already: its cards are leaving (or gone)
 		var center := left_center if player == 0 else right_center
 		for i in PER_PLAYER:
 			var index := player * PER_PLAYER + i
@@ -181,7 +224,6 @@ func _layout(instant: bool) -> void:
 			# The card is drawn in the middle of its full-screen picture.
 			var shift := card_center - view / 2.0
 			var size := card_scale  # all the same size: scaling apart breaks the dithering
-			var tint := locked_color if chosen and _locked[player] else Color.WHITE
 			card.pivot_offset = view / 2.0
 			card.z_index = 1 if chosen else 0
 			if instant:
@@ -191,7 +233,7 @@ func _layout(instant: bool) -> void:
 				card.offset_bottom = shift.y
 				card.rotation = 0.0
 				card.scale = Vector2.ONE * size
-				card.modulate = tint
+				card.modulate = Color.WHITE
 			else:
 				var tween := create_tween().set_parallel().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 				tween.tween_property(card, "offset_left", shift.x, move_time)
@@ -199,7 +241,6 @@ func _layout(instant: bool) -> void:
 				tween.tween_property(card, "offset_top", shift.y, move_time)
 				tween.tween_property(card, "offset_bottom", shift.y, move_time)
 				tween.tween_property(card, "scale", Vector2.ONE * size, move_time)
-				tween.tween_property(card, "modulate", tint, move_time)
 				_tweens.append(tween)
 
 

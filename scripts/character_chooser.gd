@@ -9,9 +9,10 @@ extends CanvasLayer
 ## S (player 1) / Down (player 2) locks the character under the picture:
 ## only the left and right slots hold a character, and a character can be
 ## locked by one player only (first come, first served). Pressing it again
-## unlocks. Enter confirms once both players are locked.
+## unlocks. Once both players are locked, the screen confirms by itself after
+## [member confirm_delay] (unless someone unlocks first); Enter skips the wait.
 
-## Emitted when Enter is pressed; the game starts after this.
+## Emitted once both players are locked (see [member confirm_delay]).
 signal confirmed
 
 ## Player 1's picture (A / D). Defaults to the "Controller" child.
@@ -20,13 +21,19 @@ signal confirmed
 @export var controller_two: Control
 ## Seconds a picture takes to slide to the next slot.
 @export var move_time := 0.12
-## Tint of a picture while its player has locked a character.
-@export var locked_color := Color("#551822")
+## A player's picture while they have locked a character (in place of
+## their normal picture, which comes back on unlock).
+@export var locked_texture: Texture2D
 ## The character pictures standing in the left and right slots.
 @export var characters: Array[TextureRect] = []
-## Per character (same order): the picture shown while it is locked
-## (selected). Its normal texture comes back when it is unlocked.
+## Per character (same order): the second picture of its selected
+## animation. While a character is locked (selected) it flips between its
+## normal texture and this one; unlocked, it shows its normal texture.
 @export var selected_textures: Array[Texture2D] = []
+## Seconds to wait, once both players are locked, before confirming.
+@export var confirm_delay := 1.0
+## Frames per second of the selected animation (each frame is one picture).
+@export_range(0.5, 30.0, 0.5) var selected_fps := 4.0
 
 ## The three slot x positions, left to right.
 var _slots: Array[float] = []
@@ -35,8 +42,18 @@ var _slot_of: Array[int] = [0, 2]
 var _tweens: Array[Tween] = [null, null]
 ## Whether each player has locked the character under their picture.
 var _locked: Array[bool] = [false, false]
+## Each player's picture texture from the scene, restored on unlock.
+var _controller_textures: Array[Texture2D] = [null, null]
 ## Each character's texture from the scene, restored on unlock.
 var _idle_textures: Array[Texture2D] = []
+## Per character: whether its selected animation plays, and its frame.
+var _selected: Array[bool] = [false, false]
+var _frame: Array[int] = [0, 0]
+var _frame_time := 0.0
+## True once [signal confirmed] was emitted (until the screen opens again).
+var _confirmed := false
+## Counts lock changes, so a wait started before one is dropped.
+var _lock_change := 0
 
 
 func _ready() -> void:
@@ -45,11 +62,13 @@ func _ready() -> void:
 	if controller_two == null:
 		controller_two = get_node_or_null("Controller2") as Control
 	set_process_unhandled_input(false)
+	set_process(false)
 	for character in characters:
 		_idle_textures.append(character.texture if character else null)
 	if controller_one == null or controller_two == null:
 		push_warning("CharacterChooser: Controller and Controller2 are both needed")
 		return
+	_controller_textures = [_texture_of(controller_one), _texture_of(controller_two)]
 	var one_x := controller_one.position.x
 	var two_x := controller_two.position.x
 	_slots = [minf(one_x, two_x), (one_x + two_x) / 2.0, maxf(one_x, two_x)]
@@ -61,12 +80,15 @@ func _ready() -> void:
 func open() -> void:
 	_set_shown(true)
 	set_process_unhandled_input(true)
+	_confirmed = false
+	set_process(_selected.has(true))
 
 
 ## Hides the screen and stops listening to the keys.
 func close() -> void:
 	_set_shown(false)
 	set_process_unhandled_input(false)
+	set_process(false)
 
 
 ## The slot (0 = left, 1 = middle, 2 = right) player [param player] chose.
@@ -93,7 +115,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_toggle_lock(1)
 		KEY_ENTER, KEY_KP_ENTER:
 			if is_ready():
-				confirmed.emit()
+				_confirm()
 		_:
 			return
 	get_viewport().set_input_as_handled()
@@ -124,19 +146,67 @@ func _toggle_lock(player: int) -> void:
 
 func _set_locked(player: int, locked: bool) -> void:
 	_locked[player] = locked
+	_lock_change += 1
 	var picture := controller_one if player == 0 else controller_two
-	picture.modulate = locked_color if locked else Color.WHITE
+	if picture is TextureRect and locked_texture:
+		(picture as TextureRect).texture = locked_texture if locked else _controller_textures[player]
 	_show_selected(_slot_of[player], locked)
+	if locked and is_ready():
+		_confirm_after_delay()
 
 
-## Swaps the character in [param slot] (0 = left, 2 = right) to its
-## selected picture, or back to its normal one.
+## Confirms after [member confirm_delay] if both players are still locked.
+func _confirm_after_delay() -> void:
+	var change := _lock_change
+	await get_tree().create_timer(confirm_delay).timeout
+	# Still the same locks (nobody unlocked and locked again meanwhile)?
+	if change == _lock_change and is_ready() and visible:
+		_confirm()
+
+
+func _confirm() -> void:
+	if _confirmed:
+		return
+	_confirmed = true
+	confirmed.emit()
+
+
+## Starts the selected animation of the character in [param slot] (0 = left,
+## 2 = right), starting on its selected picture, or stops it and shows its
+## normal picture again.
 func _show_selected(slot: int, selected: bool) -> void:
 	var index := 0 if slot == 0 else 1
 	if index >= characters.size() or characters[index] == null:
 		return
+	_selected[index] = selected
+	_frame[index] = 1 if selected else 0
+	if selected and not is_processing():
+		_frame_time = 0.0
+	_update_texture(index)
+	set_process(_selected.has(true))
+
+
+## Advances the selected animations.
+func _process(delta: float) -> void:
+	if selected_fps <= 0.0:
+		return
+	_frame_time += delta
+	var frame_length := 1.0 / selected_fps
+	if _frame_time < frame_length:
+		return
+	_frame_time = fmod(_frame_time, frame_length)
+	for index in _selected.size():
+		if _selected[index]:
+			_frame[index] = 1 - _frame[index]
+			_update_texture(index)
+
+
+## Frame 0 is the character's normal picture, frame 1 its selected one.
+func _update_texture(index: int) -> void:
+	if index >= characters.size() or characters[index] == null:
+		return
 	var texture: Texture2D = null
-	if selected and index < selected_textures.size():
+	if _frame[index] == 1 and index < selected_textures.size():
 		texture = selected_textures[index]
 	characters[index].texture = texture if texture else _idle_textures[index]
 
@@ -156,6 +226,10 @@ func _step(player: int, direction: int) -> void:
 	var tween := create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(picture, "position:x", _slots[slot], move_time)
 	_tweens[player] = tween
+
+
+static func _texture_of(picture: Control) -> Texture2D:
+	return (picture as TextureRect).texture if picture is TextureRect else null
 
 
 ## Hiding a CanvasLayer does not hide the CanvasLayers nested in it.

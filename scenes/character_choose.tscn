@@ -7,11 +7,13 @@
 [ext_resource type="Texture2D" uid="uid://ddogpv0qlb884" path="res://assets/Granny/granny2.png" id="41_granny2"]
 [ext_resource type="Texture2D" uid="uid://beg41v0upul02" path="res://assets/Knocker/knocker1.png" id="42_knocker1"]
 [ext_resource type="Texture2D" uid="uid://csu8dymg85b48" path="res://assets/Knocker/knocker2.png" id="43_knocker2"]
+[ext_resource type="Texture2D" uid="uid://dqrhrs6vethfu" path="res://assets/Controls/controller-confirm.png" id="44_confirm"]
 
 [node name="CharacterChoose" type="CanvasLayer" unique_id=1901739246 node_paths=PackedStringArray("characters")]
 script = ExtResource("36_chooser")
 characters = [NodePath("CanvasLayer/Granny"), NodePath("CanvasLayer2/Knocker")]
 selected_textures = Array[Texture2D]([ExtResource("41_granny2"), ExtResource("43_knocker2")])
+locked_texture = ExtResource("44_confirm")
 
 [node name="Wall" type="ColorRect" parent="." unique_id=1592017613]
 anchors_preset = 15
@@ -27,6 +29,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+texture_filter = 4
 mouse_filter = 2
 texture = ExtResource("13_5he1u")
 expand_mode = 1

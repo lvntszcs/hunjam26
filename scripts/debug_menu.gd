@@ -34,6 +34,14 @@ const LENS_ROWS := [
 	["Bend curve", "curve", 0.25, 0.5, 6.0, "%.2f"],
 	["Centre zoom", "zoom", 0.05, 0.25, 4.0, "%.2fx"],
 	["Vignette", "vignette", 0.05, 0.0, 1.0, "%.2f"],
+	["Look height", "look_height", 0.02, -0.5, 0.5, "%+.2f"],
+]
+## Knocker close-up through the peephole (same format as PACING_ROWS).
+const CLOSE_UP_ROWS := [
+	["Knocker zoom", "knocker", "close_up_zoom", 0.1, 1.0, 5.0, "%.1fx"],
+	["Focus x", "knocker", "close_up_focus_x", 10.0, 0.0, 1280.0, "%.0f px"],
+	["Focus y", "knocker", "close_up_focus_y", 10.0, 0.0, 720.0, "%.0f px"],
+	["Knocker in door", "knocker", "room_scale", 0.01, 0.3, 1.0, "%.2fx"],
 ]
 ## Lens presets to compare quickly; "Scene" restores what main.tscn has.
 const LENS_PRESETS := {
@@ -117,7 +125,7 @@ func _open_section(open_header: Button) -> void:
 ## Rows of [label, target, property, step, min, max, format] stepping a property.
 func _build_property_rows(container: Container, rows: Array) -> void:
 	var targets := {"doorway": _doorway, "hand": _doorway.hand, "fader": _doorway.fader,
-			"camera": _doorway.camera}
+			"camera": _doorway.camera, "knocker": _outside_role.knocker if _outside_role else null}
 	for row: Array in rows:
 		var target: Object = targets[row[1]]
 		if target == null:
@@ -150,6 +158,7 @@ func _build_lens_rows() -> void:
 		presets.add_child(_action_button(preset_name, _apply_lens.bind(LENS_PRESETS[preset_name])))
 	presets.add_child(_action_button("Copy", _copy_lens_values))
 	%Lens.add_child(presets)
+	_build_property_rows(%Lens, CLOSE_UP_ROWS)
 
 
 ## Falls back to the shader's own default when the material doesn't set it.
