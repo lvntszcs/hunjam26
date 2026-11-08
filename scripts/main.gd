@@ -12,8 +12,6 @@ const HealthHud := preload("res://scripts/health_hud.gd")
 @export var outside_role: OutsideRole
 @export var inside_role: InsideRole
 @export var players: Array[PlayerController] = []
-## Szerepcsere után ennyi másodpercig nem fogadunk inputot.
-@export var swap_wait := 2.0
 ## The start menu. While it is shown the players' game controls are off.
 @export var start_page: CanvasLayer
 ## Clicking it hides [member start_page] and turns the game controls on.
@@ -41,8 +39,9 @@ const HealthHud := preload("res://scripts/health_hud.gd")
 ## Seconds to ease back to opaque after the last blink.
 @export var see_through_fade_back := 0.4
 
-## Set when either player runs out of health; the swap waits until the door closes.
-var _swap_pending := false
+## Set when either player runs out of health; back to the main menu once the
+## door has closed.
+var _game_over_pending := false
 var _input_lock_timer: SceneTreeTimer
 ## True while a menu transition runs; repeated presses are ignored meanwhile.
 var _transitioning := false
@@ -194,33 +193,49 @@ func _set_see_through_alpha(alpha: float) -> void:
 			item.modulate.a = alpha
 
 
-## Swaps the roles of the first two players. Meant to be called between
-## rounds, while nobody is mid-action.
-func swap_roles() -> void:
-	assert(players.size() >= 2, "swap_roles() needs two players")
-	var first_role := players[0].role
-	players[0].role = players[1].role
-	players[1].role = first_role
-	for controller in players:
-		if controller.role:
-			controller.role.reset_state()
-		# The new knocker starts at full health; a defeated player also needs
-		# full health if they are moving inside.
-		if controller.model and (controller.role == outside_role or controller.model.is_defeated()):
-			controller.model.reset()
-	print("swap")
+## Gives each player the role of the character they locked on the character
+## screen: Granny (left slot) plays inside the door, the Knocker (right slot)
+## outside, whichever controller they hold. The card screen's sides follow.
+func _assign_roles_from_choice() -> void:
+	if players.size() < 2 or character_chooser == null:
+		return
+	var sides: Array[int] = [0, 1]
+	for index in 2:
+		var granny := character_chooser.slot_of(index) == 0
+		players[index].role = inside_role if granny else outside_role
+		sides[index] = 0 if granny else 1
+	if card_chooser:
+		card_chooser.player_sides = sides
 
 
 func _on_player_defeated() -> void:
-	_swap_pending = true
+	_game_over_pending = true
 
 
 func _on_doorway_closed() -> void:
 	outside_role.let_go()
-	if _swap_pending:
-		_swap_pending = false
-		swap_roles()
-		await _block_input(swap_wait)
+	if _game_over_pending:
+		_game_over_pending = false
+		_return_to_menu()
+
+
+## Someone is out of health: through the dark red back to the main menu, with
+## the roles and health reset for the next game.
+func _return_to_menu() -> void:
+	if _transitioning:
+		return
+	_in_game = false
+	_set_player_input(false)
+	await _menu_transition(doorway.fader.cover_color, func() -> void:
+		for controller in players:
+			if controller.role:
+				controller.role.reset_state()
+			if controller.model:
+				controller.model.reset()
+		if start_page.has_method("open"):
+			start_page.open()
+		else:
+			start_page.show())
 
 
 ## Start button: through the light colour to the character choose screen.
@@ -243,6 +258,7 @@ func _on_character_confirmed() -> void:
 	if _transitioning:
 		return
 	character_chooser.set_process_unhandled_input(false)  # no second Enter
+	_assign_roles_from_choice()
 	if card_chooser:
 		await _menu_transition(_splash_color(), func() -> void:
 			character_chooser.close()

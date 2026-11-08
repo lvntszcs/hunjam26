@@ -8,12 +8,13 @@
 [ext_resource type="Texture2D" uid="uid://beg41v0upul02" path="res://assets/Knocker/knocker1.png" id="42_knocker1"]
 [ext_resource type="Texture2D" uid="uid://csu8dymg85b48" path="res://assets/Knocker/knocker2.png" id="43_knocker2"]
 [ext_resource type="Texture2D" uid="uid://dqrhrs6vethfu" path="res://assets/Controls/controller-confirm.png" id="44_confirm"]
+[ext_resource type="Texture2D" uid="uid://dprhwmf0ngpqw" path="res://assets/Controls/buttons/button_x.png" id="45_button_x"]
 
 [node name="CharacterChoose" type="CanvasLayer" unique_id=1901739246 node_paths=PackedStringArray("characters")]
 script = ExtResource("36_chooser")
+locked_texture = ExtResource("44_confirm")
 characters = [NodePath("CanvasLayer/Granny"), NodePath("CanvasLayer2/Knocker")]
 selected_textures = Array[Texture2D]([ExtResource("41_granny2"), ExtResource("43_knocker2")])
-locked_texture = ExtResource("44_confirm")
 
 [node name="Wall" type="ColorRect" parent="." unique_id=1592017613]
 anchors_preset = 15
@@ -24,12 +25,12 @@ grow_vertical = 2
 color = Color(0.76862746, 0.83137256, 0.8666667, 1)
 
 [node name="Door" type="TextureRect" parent="." unique_id=883226614]
+texture_filter = 4
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture_filter = 4
 mouse_filter = 2
 texture = ExtResource("13_5he1u")
 expand_mode = 1
@@ -84,6 +85,17 @@ mouse_filter = 2
 texture = ExtResource("12_fuf3a")
 expand_mode = 1
 
+[node name="XButton" type="TextureRect" parent="Controller" unique_id=172830136]
+layout_mode = 0
+offset_left = 620.0
+offset_top = 35.999992
+offset_right = 876.0
+offset_bottom = 292.0
+scale = Vector2(0.4, 0.4)
+mouse_filter = 2
+texture = ExtResource("45_button_x")
+expand_mode = 1
+
 [node name="Controller2" type="TextureRect" parent="." unique_id=172830135]
 anchors_preset = 15
 anchor_right = 1.0
@@ -97,4 +109,15 @@ grow_vertical = 2
 scale = Vector2(0.25, 0.25)
 mouse_filter = 2
 texture = ExtResource("12_fuf3a")
+expand_mode = 1
+
+[node name="XButton" type="TextureRect" parent="Controller2" unique_id=172830137]
+layout_mode = 0
+offset_left = 620.0
+offset_top = 36.0
+offset_right = 876.0
+offset_bottom = 292.0
+scale = Vector2(0.4, 0.4)
+mouse_filter = 2
+texture = ExtResource("45_button_x")
 expand_mode = 1

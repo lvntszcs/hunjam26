@@ -313,7 +313,7 @@ func slide_out(duration: float = -1.0) -> void:
 	_slide_to(0.0, duration if duration > 0.0 else slide_out_duration, Tween.EASE_IN_OUT)
 
 
-## Gone immediately (e.g. when the roles are swapped); also unfreezes.
+## Gone immediately (e.g. when a game ends); also unfreezes.
 func hide_now() -> void:
 	if _tween:
 		_tween.kill()

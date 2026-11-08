@@ -29,7 +29,8 @@ const SOUND_FILE_PATTERN := "^knock_\\d+\\.wav$"
 ## Random pitch spread per hit (0.05 = +-5 %), so repeats sound less mechanical.
 @export_range(0.0, 0.3, 0.01) var pitch_variation := 0.05
 @export_range(-40.0, 12.0, 0.5, "suffix:dB") var volume_db := 0.0
-@export var bus: StringName = &"Master"
+## The knocks are sound effects: the menu's SFX knob sets this bus's volume.
+@export var bus: StringName = &"SFX"
 ## Simultaneous knocks allowed (hits can overlap the previous knock's tail).
 @export_range(1, 8) var voices := 3
 

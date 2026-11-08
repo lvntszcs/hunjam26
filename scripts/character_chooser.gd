@@ -41,6 +41,11 @@ const STICK_THRESHOLD := 0.6
 ## Frames per second of the selected animation (each frame is one picture).
 @export_range(0.5, 30.0, 0.5) var selected_fps := 4.0
 
+## Per player: shown over their controller picture while it stands at a
+## character they can lock (not the middle, not one the other player locked,
+## not once they locked). Defaults to each picture's "XButton" child.
+@export var lock_hints: Array[CanvasItem] = []
+
 ## The two players (player 1 first), for their gamepads. Set by main.
 var players: Array[PlayerController] = []
 ## Per player: the side (-1, 0, 1) the left stick is pushed to.
@@ -79,6 +84,9 @@ func _ready() -> void:
 		push_warning("CharacterChooser: Controller and Controller2 are both needed")
 		return
 	_controller_textures = [_texture_of(controller_one), _texture_of(controller_two)]
+	if lock_hints.is_empty():
+		lock_hints = [controller_one.get_node_or_null("XButton") as CanvasItem,
+				controller_two.get_node_or_null("XButton") as CanvasItem]
 	var one_x := controller_one.position.x
 	var two_x := controller_two.position.x
 	_slots = [minf(one_x, two_x), (one_x + two_x) / 2.0, maxf(one_x, two_x)]
@@ -86,10 +94,14 @@ func _ready() -> void:
 		_slot_of = [2, 0]
 
 
-## Shows the screen and starts listening to the keys.
+## Shows the screen (nobody locked) and starts listening to the keys.
 func open() -> void:
+	for player in 2:
+		if _locked[player]:
+			_set_locked(player, false)
 	_set_shown(true)
 	set_process_unhandled_input(true)
+	_update_lock_hints()
 	_confirmed = false
 	set_process(_selected.has(true))
 
@@ -180,6 +192,19 @@ func _player_of_joypad(device: int) -> int:
 	return -1
 
 
+## Shows each player's lock hint while they could lock the character under
+## their picture.
+func _update_lock_hints() -> void:
+	for player in mini(lock_hints.size(), 2):
+		var hint := lock_hints[player]
+		if hint == null:
+			continue
+		var slot := _slot_of[player]
+		var other := 1 - player
+		var taken := _locked[other] and _slot_of[other] == slot
+		hint.visible = slot != 1 and not _locked[player] and not taken
+
+
 ## True once both players have locked a character.
 func is_ready() -> bool:
 	return _locked[0] and _locked[1]
@@ -206,6 +231,7 @@ func _toggle_lock(player: int) -> void:
 func _set_locked(player: int, locked: bool) -> void:
 	_locked[player] = locked
 	_lock_change += 1
+	_update_lock_hints()
 	var picture := controller_one if player == 0 else controller_two
 	if picture is TextureRect and locked_texture:
 		(picture as TextureRect).texture = locked_texture if locked else _controller_textures[player]
@@ -279,6 +305,7 @@ func _step(player: int, direction: int) -> void:
 	if slot == _slot_of[player]:
 		return
 	_slot_of[player] = slot
+	_update_lock_hints()
 	var picture := controller_one if player == 0 else controller_two
 	if _tweens[player]:
 		_tweens[player].kill()

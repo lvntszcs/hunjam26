@@ -10,8 +10,10 @@
 [ext_resource type="Texture2D" uid="uid://cjdmx7il0rrop" path="res://assets/hanging_play_button.png" id="8_5q0nq"]
 [ext_resource type="Script" uid="uid://dq8girncta47s" path="res://scripts/pixel_button.gd" id="35_pixel_button"]
 [ext_resource type="Texture2D" uid="uid://cad7w57okipu" path="res://assets/button.png" id="9_dgi5k"]
+[ext_resource type="Script" uid="uid://cso84v4pysn2s" path="res://scripts/start_page.gd" id="10_start_page"]
 
 [node name="StartPage" type="CanvasLayer" unique_id=1951122962]
+script = ExtResource("10_start_page")
 
 [node name="Wall" type="TextureRect" parent="." unique_id=235883290]
 anchors_preset = 15
@@ -19,6 +21,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+texture_filter = 4
 mouse_filter = 2
 texture = ExtResource("2_2f3dj")
 expand_mode = 1
@@ -33,6 +36,7 @@ offset_right = 50.0
 offset_bottom = 60.0
 grow_horizontal = 2
 grow_vertical = 2
+texture_filter = 4
 mouse_filter = 2
 texture = ExtResource("3_yq6so")
 expand_mode = 1
