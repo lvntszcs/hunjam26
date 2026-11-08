@@ -137,7 +137,8 @@ func _menu_transition(tint: Color, swap: Callable) -> void:
 func _sync_health_hud_visibility() -> void:
 	var in_start_menu := start_page != null and start_page.visible
 	var in_character_menu := character_chooser != null and character_chooser.visible
-	_health_hud.visible = not (in_start_menu or in_character_menu)
+	var in_card_menu := card_chooser != null and card_chooser.visible
+	_health_hud.visible = not (in_start_menu or in_character_menu or in_card_menu)
 
 
 ## A button or trigger press on an unassigned gamepad joins the next free player.
