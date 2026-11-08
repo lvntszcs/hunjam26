@@ -20,6 +20,8 @@ const HealthHud := preload("res://scripts/health_hud.gd")
 @export var character_chooser: CharacterChooser
 ## Shown after the character select; Enter on it starts the game.
 @export var card_chooser: CardChooser
+## Shown when the match is won (confetti on the winner), before the menu.
+@export var victory_screen: VictoryScreen
 ## Seconds for each half (cover / reveal) of the dissolve between the boot
 ## splash, the start page, the character select and the game.
 @export var menu_transition_duration := 0.5
@@ -79,6 +81,10 @@ func _ready() -> void:
 		character_chooser.players = players
 	if card_chooser == null:
 		card_chooser = get_node_or_null("CardChoose") as CardChooser
+	if victory_screen == null:
+		victory_screen = get_node_or_null("Victory") as VictoryScreen
+	if victory_screen:
+		victory_screen.continued.connect(_on_victory_continued)
 	if card_chooser:
 		card_chooser.confirmed.connect(_on_card_confirmed)
 		card_chooser.players = players
@@ -147,7 +153,8 @@ func _sync_health_hud_visibility() -> void:
 	var in_start_menu := start_page != null and start_page.visible
 	var in_character_menu := character_chooser != null and character_chooser.visible
 	var in_card_menu := card_chooser != null and card_chooser.visible
-	_health_hud.visible = not (in_start_menu or in_character_menu or in_card_menu)
+	var in_victory := victory_screen != null and victory_screen.visible
+	_health_hud.visible = not (in_start_menu or in_character_menu or in_card_menu or in_victory)
 
 
 ## A button or trigger press on an unassigned gamepad joins the next free player.
@@ -234,7 +241,7 @@ func _on_doorway_closed() -> void:
 	if _round_over_pending:
 		_round_over_pending = false
 		if _match_over:
-			_return_to_menu()
+			_show_victory()
 		else:
 			_next_round()
 
@@ -279,6 +286,33 @@ func _reset_round() -> void:
 			controller.role.reset_state()
 		if controller.model:
 			controller.model.reset()
+
+
+## The match is won: through the light colour to the winner with confetti.
+func _show_victory() -> void:
+	if victory_screen == null:
+		_return_to_menu()
+		return
+	if _transitioning:
+		return
+	_in_game = false
+	_set_player_input(false)
+	var granny_won := _resident_wins > _knocker_wins
+	await _menu_transition(_splash_color(), func() -> void:
+		_reset_round()
+		victory_screen.show_winner(granny_won))
+
+
+## Pressed on from the victory screen: back to the main menu.
+func _on_victory_continued() -> void:
+	if _transitioning:
+		return
+	await _menu_transition(_splash_color(), func() -> void:
+		victory_screen.close()
+		if start_page.has_method("open"):
+			start_page.open()
+		else:
+			start_page.show())
 
 
 ## Someone is out of health: through the dark red back to the main menu, with

@@ -35,6 +35,7 @@
 [ext_resource type="Script" uid="uid://5xjnxmmlge5a" path="res://scripts/knocking_machine.gd" id="43_machine"]
 [ext_resource type="Texture2D" uid="uid://bgk45u7sd52mk" path="res://assets/Cards/kartya_1.png" id="44_card"]
 [ext_resource type="PackedScene" path="res://scenes/start_page.tscn" id="44_start_page"]
+[ext_resource type="PackedScene" path="res://scenes/victory.tscn" id="57_victory"]
 [ext_resource type="Script" uid="uid://bb8ti8ax50v4h" path="res://scripts/card_chooser.gd" id="45_card_chooser"]
 [ext_resource type="PackedScene" uid="uid://vujs57thlm7l" path="res://scenes/character_choose.tscn" id="45_character_choose"]
 [ext_resource type="Texture2D" uid="uid://bevctdqbm7g7c" path="res://assets/character_choose_door.png" id="46_card_door"]
@@ -104,6 +105,8 @@ card_chooser = NodePath("CardChoose")
 [node name="StartPage" parent="." unique_id=1951122962 instance=ExtResource("44_start_page")]
 
 [node name="CharacterChoose" parent="." unique_id=1901739246 instance=ExtResource("45_character_choose")]
+
+[node name="Victory" parent="." unique_id=1901739262 instance=ExtResource("57_victory")]
 
 [node name="CardChoose" type="CanvasLayer" parent="." unique_id=1901739250 node_paths=PackedStringArray("cards")]
 visible = false
