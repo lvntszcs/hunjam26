@@ -20,6 +20,10 @@ uniform float curve : hint_range(0.5, 6.0) = 2.0;
 uniform float zoom : hint_range(0.25, 4.0) = 1.0;
 // Darkening towards the rim of the lens.
 uniform float vignette : hint_range(0.0, 1.0) = 0.5;
+// Where the lens looks, up from the middle of the view, in screen heights
+// (0 = the middle, 0.25 = a quarter of the screen higher, e.g. the knocker's
+// head instead of his stomach). The lens itself stays where it is.
+uniform float look_height : hint_range(-0.5, 0.5) = 0.0;
 
 void fragment() {
 	// Circle space: centred, measured in screen heights so the lens stays round.
@@ -33,7 +37,8 @@ void fragment() {
 	// the edges are pulled in from further out.
 	vec2 src = p * (1.0 + strength * pow(r, curve)) / zoom;
 
-	vec2 src_uv = clamp(vec2(0.5) + src / aspect, vec2(0.0), vec2(1.0));
+	vec2 look = vec2(0.5, 0.5 - look_height);
+	vec2 src_uv = clamp(look + src / aspect, vec2(0.0), vec2(1.0));
 	// Same full-screen rect, so shift SCREEN_UV by the UV offset.
 	vec3 col = texture(screen_tex, SCREEN_UV + (src_uv - UV)).rgb;
 

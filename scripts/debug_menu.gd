@@ -34,6 +34,7 @@ const LENS_ROWS := [
 	["Bend curve", "curve", 0.25, 0.5, 6.0, "%.2f"],
 	["Centre zoom", "zoom", 0.05, 0.25, 4.0, "%.2fx"],
 	["Vignette", "vignette", 0.05, 0.0, 1.0, "%.2f"],
+	["Look height", "look_height", 0.02, -0.5, 0.5, "%+.2f"],
 ]
 ## Lens presets to compare quickly; "Scene" restores what main.tscn has.
 const LENS_PRESETS := {

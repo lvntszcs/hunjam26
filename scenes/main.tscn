@@ -55,6 +55,7 @@ shader_parameter/strength = 0.8
 shader_parameter/curve = 2.0
 shader_parameter/zoom = 1.0
 shader_parameter/vignette = 0.5
+shader_parameter/look_height = 0.2
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_wobble"]
 shader = ExtResource("18_wobble")
