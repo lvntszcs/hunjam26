@@ -47,6 +47,8 @@ const HealthHud := preload("res://scripts/health_hud.gd")
 @export var xray_fps := 12.0
 ## Shows [member xray_frames] (full screen, over the room view only).
 @export var xray_glasses: TextureRect
+## The courier modifier's figure (knocks at a neighbour's door).
+@export var courier: Courier
 
 ## Round wins needed to win the match (2 = best of 3).
 @export_range(1, 5) var rounds_to_win := 2
@@ -308,6 +310,15 @@ func is_see_through_on() -> bool:
 	return _seeing_through
 
 
+## The courier: he knocks at a neighbour's door (muffled). Opening the door
+## to it costs Granny a life (nobody is at her door); otherwise he leaves
+## after a few seconds. False if the door is open or he is already here.
+func send_courier() -> bool:
+	if courier == null or doorway.is_open:
+		return false
+	return courier.arrive()
+
+
 ## Granny looks through the peephole: a knocking machine out there gives
 ## itself away and breaks.
 func _on_granny_peeked() -> void:
@@ -427,6 +438,8 @@ func _on_player_defeated(loser: PlayerController) -> void:
 
 func _on_doorway_closed() -> void:
 	outside_role.let_go()
+	if courier:
+		courier.leave()  # gone once the door is shut again
 	if _round_over_pending:
 		_round_over_pending = false
 		if _match_over:
@@ -471,6 +484,8 @@ func _next_round() -> void:
 
 func _reset_round() -> void:
 	stop_see_through()
+	if courier:
+		courier.leave()
 	_bush_token += 1  # a bush countdown from the last round does nothing
 	if doorway.prank:
 		doorway.prank.hide()  # the knocking machine goes with the round
@@ -599,6 +614,8 @@ func _input_lock_time_left() -> float:
 
 ## Caught if even one pixel of the knocker shows in the opened doorway.
 func _on_doorway_swung_open() -> void:
+	if courier and courier.is_active():
+		courier.caught()  # she opened to his knock: he stops and stays in view
 	if outside_role.is_in_doorway():
 		outside_role.freeze()
 		if outside_role.player:
