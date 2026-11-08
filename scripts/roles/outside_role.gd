@@ -27,13 +27,14 @@ var _trigger_held := false
 func _ready() -> void:
 	_release_timer.one_shot = true
 	_release_timer.timeout.connect(_on_release_timer_timeout)
+	_knock_player.knocked.connect(_on_knocked)
 	set_process(false)
 
 
 ## While KNOCK is held but the knocker is still walking up: knocks as soon as
 ## it stands at the door.
 func _process(_delta: float) -> void:
-	if not _knock_held or phase == Phase.KNOCKING or doorway.is_open:
+	if not _knock_held or doorway.is_open:
 		set_process(false)
 	elif is_at_door():
 		set_process(false)
@@ -79,13 +80,14 @@ func press(command: StringName) -> void:
 			if knocker:
 				knocker.set_disguised(false)  # knocking again drops the disguise
 				knocker.slide_in()
-			# Only a knocker standing at the door can knock; until it gets
-			# there, _process waits (no sound, no knocking phase).
-			if phase != Phase.KNOCKING:
-				if is_at_door():
-					_start_knocking()
-				else:
-					set_process(true)
+			# Every press knocks once more, also during the knocking phase
+			# (e.g. walking away, then back). Only a knocker standing at the
+			# door can knock; until it gets there, _process waits (no sound,
+			# no knocking phase).
+			if is_at_door():
+				_start_knocking()
+			else:
+				set_process(true)
 		KNOCK_AT_DOOR:
 			if not doorway.is_open and _trigger_held and is_at_door():
 				_start_knocking()
@@ -135,6 +137,12 @@ func _stop_knocking() -> void:
 		if knocker:
 			knocker.set_knocking(false)
 		print("Outer-IDLE")
+
+
+## Every hit of the rhythm: the knocker's knuckles on the door.
+func _on_knocked(_hit_index: int) -> void:
+	if knocker:
+		knocker.knock_hit()
 
 
 ## True when the knocker stands right behind the door (fully slid in, not

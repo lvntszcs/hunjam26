@@ -11,8 +11,10 @@ extends Node
 ## the doorway; [method freeze] then pins it in place.
 ##
 ## Poses (same picture in every view): [member idle_texture] while walking or
-## standing, [member knock_frames] looped while knocking at the door
-## ([method set_knocking]), [member caught_texture] while frozen.
+## standing, [member knock_ready_texture] while knocking at the door
+## ([method set_knocking]) with [member knock_hit_texture] flashed on every
+## hit of the knock rhythm ([method knock_hit]), [member caught_texture] while
+## frozen.
 
 ## One figure per outside view; all move together.
 @export var figures: Array[Control] = []
@@ -27,10 +29,12 @@ extends Node
 @export var slide_out_duration := 1.5
 ## Shown while walking up or away, or standing without knocking.
 @export var idle_texture: Texture2D
-## Looped while knocking at the door.
-@export var knock_frames: Array[Texture2D] = []
-## Knock animation frames per second.
-@export var knock_fps := 6.0
+## Hand raised, between hits, while knocking at the door.
+@export var knock_ready_texture: Texture2D
+## Knuckles on the door: shown on every hit of the knock rhythm.
+@export var knock_hit_texture: Texture2D
+## Seconds the hit picture stays before the hand is raised again.
+@export var knock_hit_duration := 0.1
 ## Shown while caught in the doorway (frozen).
 @export var caught_texture: Texture2D
 ## Disguise (see [method set_disguised]): full-screen frames shown in place
@@ -63,8 +67,8 @@ var _figure_spans := {}
 var _doorway_spans := {}
 ## True while the knocking phase runs (see [method set_knocking]).
 var knocking := false
-var _knock_frame := 0
-var _knock_time := 0.0
+## Seconds the hit picture still shows (see [method knock_hit]).
+var _hit_left := 0.0
 
 ## True while the knocker is gone and the disguise shows instead.
 var disguised := false
@@ -85,8 +89,7 @@ func _ready() -> void:
 			_disguise_rects.append(rect)
 	set_process(false)
 	set_presence(0.0)
-	var poses: Array[Texture2D] = [idle_texture]
-	poses.append_array(knock_frames)
+	var poses: Array[Texture2D] = [idle_texture, knock_ready_texture, knock_hit_texture]
 	if room_figure:
 		poses.append(room_figure.texture)
 	for texture in poses:
@@ -96,20 +99,29 @@ func _ready() -> void:
 		_doorway_spans = _row_spans(doorway_wall.texture, false)
 
 
-## Starts / stops the knock animation (it only plays while the knocker stands
-## at the door; walking shows the idle picture).
+## Knocking pose on / off (it only shows while the knocker stands at the
+## door; walking shows the idle picture).
 func set_knocking(on: bool) -> void:
 	if on == knocking:
 		return
 	knocking = on
-	_knock_frame = 0
-	_knock_time = 0.0
+	_hit_left = 0.0
+	_update_process()
+	_update_pose()
+
+
+## One hit of the knock rhythm: knuckles on the door for
+## [member knock_hit_duration], then the hand goes up again.
+func knock_hit() -> void:
+	if _frozen or knock_hit_texture == null:
+		return
+	_hit_left = knock_hit_duration
 	_update_process()
 	_update_pose()
 
 
 func _update_process() -> void:
-	set_process(disguised or (knocking and not knock_frames.is_empty()))
+	set_process(disguised or _hit_left > 0.0)
 
 
 ## Puts the picture for the current state on every figure.
@@ -117,8 +129,10 @@ func _update_pose() -> void:
 	var texture := idle_texture
 	if _frozen and caught_texture:
 		texture = caught_texture
-	elif knocking and presence >= 1.0 and not knock_frames.is_empty():
-		texture = knock_frames[_knock_frame % knock_frames.size()]
+	elif presence >= 1.0 and _hit_left > 0.0:
+		texture = knock_hit_texture
+	elif presence >= 1.0 and knocking and knock_ready_texture:
+		texture = knock_ready_texture
 	if texture == null:
 		return  # no poses set: keep the scene's picture
 	for figure in figures:
@@ -145,7 +159,7 @@ func set_disguised(on: bool) -> void:
 	set_presence(presence)
 
 
-## Cycles the disguise and knock frames.
+## Cycles the disguise frames and ends a knock hit.
 func _process(delta: float) -> void:
 	if disguised and disguise_fps > 0.0:
 		_disguise_time += delta
@@ -154,12 +168,11 @@ func _process(delta: float) -> void:
 			_disguise_time = fmod(_disguise_time, frame_length)
 			_disguise_frame = (_disguise_frame + 1) % disguise_frames.size()
 			_show_disguise_frame()
-	if knocking and knock_fps > 0.0 and not _frozen:
-		_knock_time += delta
-		var knock_length := 1.0 / knock_fps
-		if _knock_time >= knock_length:
-			_knock_time = fmod(_knock_time, knock_length)
-			_knock_frame = (_knock_frame + 1) % maxi(knock_frames.size(), 1)
+	if _hit_left > 0.0:
+		_hit_left -= delta
+		if _hit_left <= 0.0:
+			_hit_left = 0.0
+			_update_process()
 			_update_pose()
 
 
@@ -240,6 +253,8 @@ func freeze() -> void:
 	if _tween:
 		_tween.kill()
 	_frozen = true
+	_hit_left = 0.0
+	_update_process()
 	_update_pose()
 
 
