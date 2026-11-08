@@ -55,7 +55,7 @@ shader_parameter/strength = 0.8
 shader_parameter/curve = 2.0
 shader_parameter/zoom = 1.0
 shader_parameter/vignette = 0.5
-shader_parameter/look_height = 0.2
+shader_parameter/look_height = 0.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_wobble"]
 shader = ExtResource("18_wobble")
@@ -432,13 +432,14 @@ door_half_open_texture = ExtResource("17_door_half")
 door_open_texture = ExtResource("18_door_open")
 hand = NodePath("../Hand")
 
-[node name="Knocker" type="Node" parent="." unique_id=1113584781 node_paths=PackedStringArray("figures", "room_figure", "doorway_wall")]
+[node name="Knocker" type="Node" parent="." unique_id=1113584781 node_paths=PackedStringArray("figures", "room_figure", "doorway_wall", "close_up_figure")]
 script = ExtResource("32_knocker")
 figures = [NodePath("../RoomCorridor/Knocker"), NodePath("../Peephole/Knocker"), NodePath("../Corridor/Knocker")]
 idle_texture = ExtResource("47_knocker_idle")
 knock_ready_texture = ExtResource("48_knocker_knock1")
 knock_hit_texture = ExtResource("49_knocker_knock2")
 caught_texture = ExtResource("50_knocker_caught")
+close_up_figure = NodePath("../Peephole/Knocker")
 room_figure = NodePath("../RoomCorridor/Knocker")
 doorway_wall = NodePath("../Wall")
 disguise_frames = Array[Texture2D]([ExtResource("37_tuja1"), ExtResource("38_tuja2")])

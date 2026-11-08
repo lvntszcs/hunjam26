@@ -37,6 +37,25 @@ extends Node
 @export var knock_hit_duration := 0.1
 ## Shown while caught in the doorway (frozen).
 @export var caught_texture: Texture2D
+## The figure seen through the peephole: drawn as a close-up (enlarged
+## around [member close_up_focus_x] / [member close_up_focus_y], which lands
+## in the middle of the view), so the fisheye is full of the knocker.
+@export var close_up_figure: TextureRect
+## How much the peephole figure is enlarged (1 = as in the other views).
+@export_range(1.0, 5.0, 0.05) var close_up_zoom := 2.0:
+	set(value):
+		close_up_zoom = value
+		_apply_close_up()
+## The point of the knocker picture (design pixels, 1280x720) put in the
+## middle of the peephole view: his face by default.
+@export var close_up_focus_x := 630.0:
+	set(value):
+		close_up_focus_x = value
+		_apply_close_up()
+@export var close_up_focus_y := 110.0:
+	set(value):
+		close_up_focus_y = value
+		_apply_close_up()
 ## Disguise (see [method set_disguised]): full-screen frames shown in place
 ## (no sliding) instead of the figures, cycled as an animation.
 @export var disguise_frames: Array[Texture2D] = []
@@ -59,6 +78,7 @@ var presence := 0.0:
 	set = set_presence
 
 var _rest_offsets: Array[Vector2] = []  # (offset_left, offset_right) per figure
+var _scene_offsets: Array[Vector4] = []  # left, top, right, bottom as in the scene
 var _tween: Tween
 var _frozen := false
 ## Doorway test data per picture: {"rows": Array[Vector2i], "size": Vector2},
@@ -81,6 +101,8 @@ var _disguise_time := 0.0
 func _ready() -> void:
 	for figure in figures:
 		_rest_offsets.append(Vector2(figure.offset_left, figure.offset_right))
+		_scene_offsets.append(Vector4(figure.offset_left, figure.offset_top,
+				figure.offset_right, figure.offset_bottom))
 		figure.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		if not disguise_frames.is_empty():
 			var rect := _make_disguise_rect()
@@ -88,6 +110,7 @@ func _ready() -> void:
 			figure.add_sibling.call_deferred(rect)
 			_disguise_rects.append(rect)
 	set_process(false)
+	_apply_close_up()
 	set_presence(0.0)
 	var poses: Array[Texture2D] = [idle_texture, knock_ready_texture, knock_hit_texture]
 	if room_figure:
@@ -97,6 +120,24 @@ func _ready() -> void:
 			_figure_spans[texture] = _row_spans(texture, true)
 	if doorway_wall and doorway_wall.texture:
 		_doorway_spans = _row_spans(doorway_wall.texture, false)
+
+
+## Enlarges the peephole figure around the focus point and moves that point
+## to the middle of the view (sliding still shifts it sideways from there).
+func _apply_close_up() -> void:
+	var index := figures.find(close_up_figure)
+	if index < 0 or index >= _scene_offsets.size():
+		return  # not ready yet
+	var view := Vector2(1280, 720)
+	var focus := Vector2(close_up_focus_x, close_up_focus_y)
+	var move := view / 2.0 - focus
+	var base := _scene_offsets[index]
+	close_up_figure.pivot_offset = focus
+	close_up_figure.scale = Vector2.ONE * close_up_zoom
+	close_up_figure.offset_top = base.y + move.y
+	close_up_figure.offset_bottom = base.w + move.y
+	_rest_offsets[index] = Vector2(base.x + move.x, base.z + move.x)
+	set_presence(presence)
 
 
 ## Knocking pose on / off (it only shows while the knocker stands at the
