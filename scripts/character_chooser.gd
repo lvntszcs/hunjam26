@@ -21,8 +21,9 @@ signal confirmed
 @export var controller_two: Control
 ## Seconds a picture takes to slide to the next slot.
 @export var move_time := 0.12
-## Tint of a picture while its player has locked a character.
-@export var locked_color := Color("#551822")
+## A player's picture while they have locked a character (in place of
+## their normal picture, which comes back on unlock).
+@export var locked_texture: Texture2D
 ## The character pictures standing in the left and right slots.
 @export var characters: Array[TextureRect] = []
 ## Per character (same order): the second picture of its selected
@@ -41,6 +42,8 @@ var _slot_of: Array[int] = [0, 2]
 var _tweens: Array[Tween] = [null, null]
 ## Whether each player has locked the character under their picture.
 var _locked: Array[bool] = [false, false]
+## Each player's picture texture from the scene, restored on unlock.
+var _controller_textures: Array[Texture2D] = [null, null]
 ## Each character's texture from the scene, restored on unlock.
 var _idle_textures: Array[Texture2D] = []
 ## Per character: whether its selected animation plays, and its frame.
@@ -65,6 +68,7 @@ func _ready() -> void:
 	if controller_one == null or controller_two == null:
 		push_warning("CharacterChooser: Controller and Controller2 are both needed")
 		return
+	_controller_textures = [_texture_of(controller_one), _texture_of(controller_two)]
 	var one_x := controller_one.position.x
 	var two_x := controller_two.position.x
 	_slots = [minf(one_x, two_x), (one_x + two_x) / 2.0, maxf(one_x, two_x)]
@@ -144,7 +148,8 @@ func _set_locked(player: int, locked: bool) -> void:
 	_locked[player] = locked
 	_lock_change += 1
 	var picture := controller_one if player == 0 else controller_two
-	picture.modulate = locked_color if locked else Color.WHITE
+	if picture is TextureRect and locked_texture:
+		(picture as TextureRect).texture = locked_texture if locked else _controller_textures[player]
 	_show_selected(_slot_of[player], locked)
 	if locked and is_ready():
 		_confirm_after_delay()
@@ -221,6 +226,10 @@ func _step(player: int, direction: int) -> void:
 	var tween := create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(picture, "position:x", _slots[slot], move_time)
 	_tweens[player] = tween
+
+
+static func _texture_of(picture: Control) -> Texture2D:
+	return (picture as TextureRect).texture if picture is TextureRect else null
 
 
 ## Hiding a CanvasLayer does not hide the CanvasLayers nested in it.
