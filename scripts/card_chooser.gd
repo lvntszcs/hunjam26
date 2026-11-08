@@ -4,13 +4,14 @@ extends CanvasLayer
 ## Card select screen, shown after the character select.
 ##
 ## Three cards on the left for player 1 and three on the right for player 2,
-## each set fanned out on an arc. A player moves between their own cards
+## each set laid out in a row, every card a little askew so they look put
+## down by hand. A player moves between their own cards
 ## (player 1: A / D, player 2: arrow keys); the card they are on is lifted
 ## and enlarged. S (player 1) / Down (player 2) locks it, pressing again
 ## unlocks. Enter confirms once both players have locked a card.
 ##
 ## The cards are laid out by this script (also in the editor): change the
-## arc with the exports below, not by moving the cards.
+## rows with the exports below, not by moving the cards.
 
 ## Emitted when Enter is pressed with both cards locked.
 signal confirmed
@@ -22,24 +23,30 @@ const PER_PLAYER := 3
 ## player 2's (right). Defaults to the children of the "Cards" node.
 ## The pictures are full-screen with the card drawn in the middle.
 @export var cards: Array[Control] = []
-## Centre of the left / right fan, in design pixels.
-@export var left_center := Vector2(330, 400):
+## Centre of the left / right row, in design pixels.
+@export var left_center := Vector2(325, 400):
 	set(value):
 		left_center = value
 		_layout(true)
-@export var right_center := Vector2(950, 400):
+@export var right_center := Vector2(965, 400):
 	set(value):
 		right_center = value
 		_layout(true)
-## Radius of the arc the cards sit on.
-@export var arc_radius := 380.0:
+## Distance between the centres of two neighbouring cards in a row.
+@export var card_spacing := 192.0:
 	set(value):
-		arc_radius = value
+		card_spacing = value
 		_layout(true)
-## Angle between two neighbouring cards (degrees).
-@export var arc_step_degrees := 22.0:
+## Each card is turned by a random angle up to this much either way (degrees),
+## so the row doesn't look machine-placed.
+@export var max_tilt_degrees := 2.5:
 	set(value):
-		arc_step_degrees = value
+		max_tilt_degrees = value
+		_layout(true)
+## Each card is nudged by a random amount up to this much (design pixels).
+@export var max_nudge := Vector2(4, 6):
+	set(value):
+		max_nudge = value
 		_layout(true)
 ## Size of a card (1 = as drawn on the full-screen picture).
 @export var card_scale := 0.55:
@@ -57,6 +64,9 @@ const PER_PLAYER := 3
 var _choice: Array[int] = [1, 1]
 var _locked: Array[bool] = [false, false]
 var _tweens: Array[Tween] = []
+## Per card: a fixed random value in -1..1 for the tilt, and for the nudge.
+var _tilt: Array[float] = []
+var _nudge: Array[Vector2] = []
 
 
 func _ready() -> void:
@@ -72,6 +82,8 @@ func _ready() -> void:
 		return
 	for card in cards:
 		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_tilt.append(randf_range(-1.0, 1.0))
+		_nudge.append(Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)))
 	_layout(true)
 
 
@@ -144,10 +156,10 @@ func _set_locked(player: int, locked: bool) -> void:
 	_layout(false)
 
 
-## Places every card on its fan; the chosen ones lifted and enlarged.
+## Places every card in its row; the chosen ones lifted and enlarged.
 ## [param instant] skips the slide (first layout, editor).
 func _layout(instant: bool) -> void:
-	if cards.size() < PER_PLAYER * 2 or not is_inside_tree():
+	if cards.size() < PER_PLAYER * 2 or _tilt.size() < cards.size() or not is_inside_tree():
 		return
 	for tween in _tweens:
 		if tween:
@@ -157,16 +169,17 @@ func _layout(instant: bool) -> void:
 	var view := Vector2(
 			ProjectSettings.get_setting("display/window/size/viewport_width", 1280),
 			ProjectSettings.get_setting("display/window/size/viewport_height", 720))
-	var step := deg_to_rad(arc_step_degrees)
 	for player in 2:
 		var center := left_center if player == 0 else right_center
 		for i in PER_PLAYER:
-			var card := cards[player * PER_PLAYER + i]
+			var index := player * PER_PLAYER + i
+			var card := cards[index]
 			var chosen := i == _choice[player] and not Engine.is_editor_hint()
-			# Fanned like a hand of cards: the middle one on top of the arc.
-			var angle := (i - (PER_PLAYER - 1) / 2.0) * step
-			var spot := center + Vector2(sin(angle), 1.0 - cos(angle)) * arc_radius
-			var lift := Vector2(sin(angle), -cos(angle)) * (hover_lift if chosen else 0.0)
+			# Side by side, each slightly askew and off its spot.
+			var angle := deg_to_rad(max_tilt_degrees) * _tilt[index]
+			var spot := center + Vector2((i - (PER_PLAYER - 1) / 2.0) * card_spacing, 0.0)
+			spot += _nudge[index] * max_nudge
+			var lift := Vector2(0.0, -hover_lift if chosen else 0.0)
 			var card_center := spot + lift
 			# The card is drawn in the middle of its full-screen picture.
 			var shift := card_center - view / 2.0

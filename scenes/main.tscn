@@ -38,6 +38,7 @@
 [ext_resource type="PackedScene" path="res://scenes/character_choose.tscn" id="45_character_choose"]
 [ext_resource type="Texture2D" uid="uid://bgk45u7sd52mk" path="res://assets/Cards/kartya_1.png" id="44_card"]
 [ext_resource type="Script" path="res://scripts/card_chooser.gd" id="45_card_chooser"]
+[ext_resource type="Texture2D" uid="uid://bevctdqbm7g7c" path="res://assets/character_choose_door.png" id="46_card_door"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -107,6 +108,16 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.76862746, 0.83137256, 0.8666667, 1)
+
+[node name="Door" type="TextureRect" parent="CardChoose" unique_id=1901739259]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("46_card_door")
+expand_mode = 1
 
 [node name="Cards" type="Control" parent="CardChoose" unique_id=1901739252]
 anchors_preset = 15
