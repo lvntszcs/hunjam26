@@ -52,6 +52,12 @@ var _match_over := false
 ## whether they used it already (once per round).
 var _modifiers: Dictionary[PlayerController, Modifier] = {}
 var _modifier_used: Dictionary[PlayerController, bool] = {}
+## Seconds the bush (BushModifier) lasts: then the Knocker steps out of it and
+## the card is used up.
+@export var bush_duration := 5.0
+## Bumped whenever a bush countdown starts or the round resets, so an old
+## countdown does nothing.
+var _bush_token := 0
 ## Rounds won in this match, per role.
 var _resident_wins := 0
 var _knocker_wins := 0
@@ -221,9 +227,18 @@ func use_modifier(controller: PlayerController) -> bool:
 		return false
 	if not modifier.activate(self, controller):
 		return false  # couldn't take effect now: still theirs to use
+	if modifier.spent_on_activate():
+		spend_modifier(controller)
+	return true
+
+
+## [param controller]'s modifier counts as used for this round.
+func spend_modifier(controller: PlayerController) -> void:
+	var modifier: Modifier = _modifiers.get(controller)
+	if modifier == null or _modifier_used.get(controller, false):
+		return
 	_modifier_used[controller] = true
 	print("%s used %s" % [controller.model.display_name if controller.model else "?", modifier.display_name])
-	return true
 
 
 ## The auto-knocker: the knocking machine at the door starts knocking. False
@@ -234,6 +249,54 @@ func place_knocking_machine() -> bool:
 		return false
 	doorway.place_prank()
 	return true
+
+
+## The bush: the Knocker at the door turns into a thuja. Opening the door on
+## it costs Granny a life, not him (nobody shows in the doorway). False if he
+## is already disguised, or the door is open.
+func disguise_knocker() -> bool:
+	if outside_role == null or not outside_role.disguise():
+		return false
+	_check_bush_seen()  # put on during the X-ray: seen at once
+	_bush_token += 1
+	var token := _bush_token
+	get_tree().create_timer(bush_duration).timeout.connect(_on_bush_timeout.bind(token))
+	return true
+
+
+## The bush's time is up: the Knocker steps out and the card is used. Nothing
+## if he dropped it already (knocking) or the door is open on it.
+func _on_bush_timeout(token: int) -> void:
+	if token != _bush_token or outside_role == null or outside_role.knocker == null:
+		return
+	if not outside_role.knocker.disguised or doorway.is_open:
+		return
+	outside_role.knocker.set_disguised(false)
+	_spend_bush()
+	print("Bush ran out")
+
+
+## The bush is spent once Granny has seen it: the door opened on it, or the
+## X-ray goggles showed it through the wall.
+func _spend_bush() -> void:
+	for controller in players:
+		if controller.role == outside_role:
+			spend_modifier(controller)
+
+
+## While the X-ray runs, a bush out there is seen through the wall: the
+## Knocker's card is used up (he can't put it on again this round).
+func _check_bush_seen() -> void:
+	if not is_see_through_on() or outside_role == null or outside_role.knocker == null:
+		return
+	if outside_role.knocker.disguised:
+		_spend_bush()
+		print("Bush seen through the X-ray")
+
+
+## True while the wall and door blink see-through (the X-ray goggles).
+func is_see_through_on() -> bool:
+	return _see_through_tween != null and _see_through_tween.is_running()
 
 
 ## Granny looks through the peephole: a knocking machine out there gives
@@ -267,6 +330,7 @@ func start_see_through() -> void:
 	# The last wave may stop halfway; ease back to opaque instead of popping.
 	_see_through_tween.tween_method(_set_see_through_alpha, _see_through_alpha_at(see_through_duration), 1.0, see_through_fade_back) \
 			.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_check_bush_seen()
 
 
 ## Blink at [param t] seconds into the effect. The rate grows linearly from
@@ -362,6 +426,7 @@ func _next_round() -> void:
 
 
 func _reset_round() -> void:
+	_bush_token += 1  # a bush countdown from the last round does nothing
 	if doorway.prank:
 		doorway.prank.hide()  # the knocking machine goes with the round
 	for controller in players:
@@ -495,6 +560,8 @@ func _on_doorway_swung_open() -> void:
 			outside_role.player.take_damage(1)
 		print("Elkapva")
 	else:
+		if outside_role.knocker and outside_role.knocker.disguised:
+			_spend_bush()  # Granny saw the bush
 		if inside_role and inside_role.player:
 			inside_role.player.take_damage(1)
 		print("Pranked")
