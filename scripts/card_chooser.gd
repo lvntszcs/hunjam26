@@ -172,7 +172,9 @@ func _layout(instant: bool) -> void:
 			var spot := center + Vector2((i - (PER_PLAYER - 1) / 2.0) * card_spacing, 0.0)
 			spot += _nudge[index] * max_nudge
 			var lift := Vector2(0.0, -hover_lift if chosen else 0.0)
-			var card_center := spot + lift
+			# Whole pixels only: the dithered picture is shrunk a lot, and a card
+			# landing between pixels samples it differently from its neighbours.
+			var card_center := (spot + lift).round()
 			# The card is drawn in the middle of its full-screen picture.
 			var shift := card_center - view / 2.0
 			var size := card_scale  # all the same size: scaling apart breaks the dithering
