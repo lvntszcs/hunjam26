@@ -4,9 +4,11 @@ extends CanvasLayer
 ##
 ## Each player slides their controller picture between three slots: where
 ## the two pictures start (left and right) and halfway between them.
-## Player 1 uses A / D, player 2 the arrow keys.
+## Player 1 uses A / D, player 2 the arrow keys; on a gamepad, the D-pad or
+## the left stick moves the picture of the player holding it.
 ##
-## S (player 1) / Down (player 2) locks the character under the picture:
+## S (player 1) / Down (player 2) / D-pad down or X locks the character under the
+## picture:
 ## only the left and right slots hold a character, and a character can be
 ## locked by one player only (first come, first served). Pressing it again
 ## unlocks. Once both players are locked, the screen confirms by itself after
@@ -14,6 +16,10 @@ extends CanvasLayer
 
 ## Emitted once both players are locked (see [member confirm_delay]).
 signal confirmed
+
+## How far the left stick has to be pushed sideways to move a picture (it has
+## to come back towards the middle before it moves it again).
+const STICK_THRESHOLD := 0.6
 
 ## Player 1's picture (A / D). Defaults to the "Controller" child.
 @export var controller_one: Control
@@ -35,6 +41,10 @@ signal confirmed
 ## Frames per second of the selected animation (each frame is one picture).
 @export_range(0.5, 30.0, 0.5) var selected_fps := 4.0
 
+## The two players (player 1 first), for their gamepads. Set by main.
+var players: Array[PlayerController] = []
+## Per player: the side (-1, 0, 1) the left stick is pushed to.
+var _stick: Array[int] = [0, 0]
 ## The three slot x positions, left to right.
 var _slots: Array[float] = []
 ## Slot index (0, 1, 2) of each player's picture.
@@ -97,6 +107,10 @@ func slot_of(player: int) -> int:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventJoypadButton or event is InputEventJoypadMotion:
+		if _joypad_input(event):
+			get_viewport().set_input_as_handled()
+		return
 	var key := event as InputEventKey
 	if key == null or not key.pressed or key.echo:
 		return
@@ -119,6 +133,51 @@ func _unhandled_input(event: InputEvent) -> void:
 		_:
 			return
 	get_viewport().set_input_as_handled()
+
+
+## D-pad left / right or the left stick moves the picture of the player the
+## gamepad belongs to, D-pad down or X locks / unlocks. True if it was used.
+func _joypad_input(event: InputEvent) -> bool:
+	var player := _player_of_joypad(event.device)
+	if player < 0:
+		return false
+	var motion := event as InputEventJoypadMotion
+	if motion:
+		if motion.axis != JOY_AXIS_LEFT_X:
+			return false
+		var side := 0
+		if motion.axis_value <= -STICK_THRESHOLD:
+			side = -1
+		elif motion.axis_value >= STICK_THRESHOLD:
+			side = 1
+		elif absf(motion.axis_value) > STICK_THRESHOLD / 2.0:
+			return true  # between: keep the last side, so it doesn't flicker
+		if side != _stick[player] and side != 0:
+			_step(player, side)
+		_stick[player] = side
+		return true
+	var button := event as InputEventJoypadButton
+	if not button.pressed:
+		return false
+	match button.button_index:
+		JOY_BUTTON_DPAD_LEFT:
+			_step(player, -1)
+		JOY_BUTTON_DPAD_RIGHT:
+			_step(player, 1)
+		# X is the PlayStation cross: the bottom face button (A on Xbox).
+		JOY_BUTTON_DPAD_DOWN, JOY_BUTTON_A:
+			_toggle_lock(player)
+		_:
+			return false
+	return true
+
+
+## Which player (0 or 1) gamepad [param device] belongs to, or -1.
+func _player_of_joypad(device: int) -> int:
+	for player in mini(players.size(), 2):
+		if players[player] and players[player].joypad_id == device:
+			return player
+	return -1
 
 
 ## True once both players have locked a character.

@@ -70,10 +70,12 @@ func _ready() -> void:
 		character_chooser = get_node_or_null("CharacterChoose") as CharacterChooser
 	if character_chooser:
 		character_chooser.confirmed.connect(_on_character_confirmed)
+		character_chooser.players = players
 	if card_chooser == null:
 		card_chooser = get_node_or_null("CardChoose") as CardChooser
 	if card_chooser:
 		card_chooser.confirmed.connect(_on_card_confirmed)
+		card_chooser.players = players
 	if start_button:
 		start_button.pressed.connect(_on_start_pressed)
 	# The menus visible in the editor decide where the game starts:

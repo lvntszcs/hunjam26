@@ -37,6 +37,9 @@
 [ext_resource type="Script" uid="uid://bb8ti8ax50v4h" path="res://scripts/card_chooser.gd" id="45_card_chooser"]
 [ext_resource type="PackedScene" uid="uid://vujs57thlm7l" path="res://scenes/character_choose.tscn" id="45_character_choose"]
 [ext_resource type="Texture2D" uid="uid://bevctdqbm7g7c" path="res://assets/character_choose_door.png" id="46_card_door"]
+[ext_resource type="Texture2D" uid="uid://dlm2a4su6io6s" path="res://assets/Controls/dpad/dpad_left.png" id="51_dpad_left"]
+[ext_resource type="Texture2D" uid="uid://ckve2e161l4d5" path="res://assets/Controls/dpad/dpad_down.png" id="52_dpad_down"]
+[ext_resource type="Texture2D" uid="uid://buvd7yxxjds4u" path="res://assets/Controls/dpad/dpad_right.png" id="53_dpad_right"]
 [ext_resource type="Texture2D" uid="uid://cl5ojnrvli7pt" path="res://assets/Knocker/knocker_idle.png" id="47_knocker_idle"]
 [ext_resource type="Texture2D" uid="uid://s3i5hysh8adc" path="res://assets/Knocker/knocker_knock1.png" id="48_knocker_knock1"]
 [ext_resource type="Texture2D" uid="uid://canky3nvalojb" path="res://assets/Knocker/knocker_knock2.png" id="49_knocker_knock2"]
@@ -103,6 +106,7 @@ card_chooser = NodePath("CardChoose")
 visible = false
 script = ExtResource("45_card_chooser")
 cards = [NodePath("Cards/Card1"), NodePath("Cards/Card2"), NodePath("Cards/Card3"), NodePath("Cards/Card4"), NodePath("Cards/Card5"), NodePath("Cards/Card6")]
+button_textures = Array[Texture2D]([ExtResource("51_dpad_left"), ExtResource("52_dpad_down"), ExtResource("53_dpad_right")])
 
 [node name="Wall" type="ColorRect" parent="CardChoose" unique_id=1901739251]
 anchors_preset = 15
