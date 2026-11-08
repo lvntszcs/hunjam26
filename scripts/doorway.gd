@@ -37,6 +37,12 @@ signal peephole_left
 @export var door_open_texture: Texture2D
 ## The inside player's hand; reaches for the handle before the door opens.
 @export var hand: Hand
+## Opening without already holding the handle (from the room or the
+## peephole) is slower, so holding it first is an advantage: the hand's open
+## animation plays at this speed (frames per second; the hand's own
+## open_fps otherwise) and the door stays half open this long.
+@export var open_without_hand_fps := 4.0
+@export var half_open_without_hand := 0.3
 ## Ennyi másodpercig áll félig nyitva az ajtó.
 @export var half_open_duration := 0.05
 ## Ennyi másodpercig látszik a folyosó a nyitott ajtón át, mielőtt kimegyünk.
@@ -114,11 +120,11 @@ func open(from_knob := false) -> void:
 		if from_knob:
 			hand.play_pull()
 		else:
-			await hand.play_open()
+			await hand.play_open(open_without_hand_fps)
 	# Closed -> half open -> open; the corridor shows through the opening...
 	door.texture = door_half_open_texture
 	swung_open.emit()
-	await get_tree().create_timer(half_open_duration).timeout
+	await get_tree().create_timer(half_open_duration if from_knob else half_open_without_hand).timeout
 	door.texture = door_open_texture
 	if hand:
 		hand.play_idle()  # the handle swung away with the door: let go

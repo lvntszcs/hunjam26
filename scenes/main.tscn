@@ -99,9 +99,9 @@ shader = ExtResource("4_1bvp3")
 shader_parameter/radius = 0.35
 shader_parameter/softness = 0.05
 shader_parameter/outside_color = Color(0.333, 0.094, 0.133, 1)
-shader_parameter/strength = 0.8
-shader_parameter/curve = 2.0
-shader_parameter/zoom = 1.0
+shader_parameter/strength = 0.5
+shader_parameter/curve = 2.5
+shader_parameter/zoom = 1.1
 shader_parameter/vignette = 0.5
 shader_parameter/look_height = 0.0
 
