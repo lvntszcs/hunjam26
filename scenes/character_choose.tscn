@@ -42,6 +42,7 @@ offset_bottom = 375.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.5, 0.5)
+texture_filter = 4
 texture = ExtResource("11_kmb1v")
 expand_mode = 1
 
@@ -58,6 +59,7 @@ offset_bottom = 360.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.5, 0.5)
+texture_filter = 4
 texture = ExtResource("42_knocker1")
 expand_mode = 1
 
