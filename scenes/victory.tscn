@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://cxneeuvelq113" path="res://assets/confetti/confetti_2.png" id="6_confetti2"]
 [ext_resource type="Texture2D" uid="uid://dwm02kskqk0hk" path="res://assets/confetti/confetti_3.png" id="7_confetti3"]
 [ext_resource type="Texture2D" uid="uid://4asftl67mayf" path="res://assets/confetti/confetti_4.png" id="8_confetti4"]
+[ext_resource type="Texture2D" uid="uid://xdb8gqlhpete" path="res://assets/win/win_bg_granny.png" id="9_granny_bg"]
 
 [node name="Victory" type="CanvasLayer"]
 layer = 4
@@ -16,6 +17,7 @@ script = ExtResource("1_victory")
 confetti_frames = Array[Texture2D]([ExtResource("4_confetti0"), ExtResource("5_confetti1"), ExtResource("6_confetti2"), ExtResource("7_confetti3"), ExtResource("8_confetti4")])
 granny_texture = ExtResource("2_granny")
 knocker_texture = ExtResource("3_knocker")
+granny_background = ExtResource("9_granny_bg")
 
 [node name="Wall" type="ColorRect" parent="."]
 anchors_preset = 15
@@ -25,6 +27,18 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.76862746, 0.83137256, 0.8666667, 1)
+
+[node name="Background" type="TextureRect" parent="."]
+visible = false
+texture_filter = 4
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("9_granny_bg")
+expand_mode = 1
 
 [node name="Winner" type="TextureRect" parent="."]
 texture_filter = 4

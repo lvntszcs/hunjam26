@@ -15,6 +15,12 @@ signal continued
 @export var confetti_fps := 10.0
 @export var granny_texture: Texture2D
 @export var knocker_texture: Texture2D
+## Full-screen background behind each winner (over the plain wall colour);
+## none shows the plain wall.
+@export var granny_background: Texture2D
+@export var knocker_background: Texture2D
+## Shows the winner's background.
+@export var background: TextureRect
 ## How far each picture is moved so its figure stands in the middle (the
 ## figures are not centred in their pictures).
 @export var granny_shift := Vector2(92, 0)
@@ -34,6 +40,8 @@ func _ready() -> void:
 		winner = get_node_or_null("Winner") as TextureRect
 	if confetti == null:
 		confetti = get_node_or_null("Confetti") as TextureRect
+	if background == null:
+		background = get_node_or_null("Background") as TextureRect
 	set_process(false)
 	set_process_input(false)
 
@@ -41,6 +49,9 @@ func _ready() -> void:
 ## Shows the screen with Granny ([param granny] true) or the Knocker as the
 ## winner.
 func show_winner(granny: bool) -> void:
+	if background:
+		background.texture = granny_background if granny else knocker_background
+		background.visible = background.texture != null
 	if winner:
 		winner.texture = granny_texture if granny else knocker_texture
 		var shift := granny_shift if granny else knocker_shift

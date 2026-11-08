@@ -97,6 +97,18 @@ var _muffin_lured := false
 @export var flipflop_bush_point := Vector2(1060, 330)
 ## Bumped by every burst and round reset, so an old burst stops.
 var _burst_token := 0
+## The explosion on the bush after the flip-flop's burst (full-screen
+## frames, played once).
+@export var explosion_frames: Array[Texture2D] = []
+@export var explosion_fps := 12.0
+## Shows [member explosion_frames] in the hallway.
+@export var explosion: TextureRect
+## Moves the explosion picture (design pixels) so it rises from the bush.
+@export var explosion_offset := Vector2(365, 12):
+	set(value):
+		explosion_offset = value
+		if explosion:
+			explosion.position = value
 ## True from the card until the next door opening.
 var _flipflop_ready := false
 ## Bumped by every flip-flop animation and round reset, so an old one stops.
@@ -499,7 +511,10 @@ func _flipflop_in_hallway(outcome: String) -> void:
 			# bursts on the bush.
 			await _play_flipflop(flipflop_hallway, raise, flipflop_burst_from, true)
 			if token == _flipflop_token - 1 and doorway.corridor_view.visible:
-				_play_burst(flipflop_bush_point)
+				var burst := _burst_token + 1
+				await _play_burst(flipflop_bush_point)
+				if burst == _burst_token and doorway.corridor_view.visible:
+					_play_explosion()
 		_:
 			pass  # nobody there: she just stands there holding it
 
@@ -525,11 +540,37 @@ func _play_burst(at: Vector2) -> void:
 	flipflop_burst.hide()
 
 
+## The explosion on the bush (after the flip-flop's burst).
+func _play_explosion() -> void:
+	if explosion == null or explosion_frames.is_empty():
+		return
+	_burst_token += 1
+	var token := _burst_token
+	explosion.position = explosion_offset
+	explosion.show()
+	for index in explosion_frames.size():
+		# The bush is blown away as the last frame comes.
+		if index == explosion_frames.size() - 1:
+			_blow_bush_away()
+		explosion.texture = explosion_frames[index]
+		await get_tree().create_timer(1.0 / maxf(explosion_fps, 0.1), false).timeout
+		if token != _burst_token:
+			return
+	explosion.hide()
+
+
+func _blow_bush_away() -> void:
+	if outside_role and outside_role.knocker and outside_role.knocker.disguised:
+		outside_role.knocker.set_disguised(false)
+
+
 func _end_flipflop() -> void:
 	_flipflop_token += 1
 	_burst_token += 1
 	if flipflop_burst:
 		flipflop_burst.hide()
+	if explosion:
+		explosion.hide()
 	_flipflop_ready = false
 	if flipflop_hand:
 		flipflop_hand.hide()
