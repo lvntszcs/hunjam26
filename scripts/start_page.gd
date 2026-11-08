@@ -66,6 +66,9 @@ func _ready() -> void:
 			knob.pivot_offset = knob_center
 			knob.rotation_degrees = _angle_for(_volume(index))
 	visibility_changed.connect(_on_visibility_changed)
+	# Every clickable picture in the menu (play, the crank, the knobs) clicks.
+	for button in find_children("*", "PixelButton", true, false):
+		(button as PixelButton).pressed.connect(func() -> void: Sfx.play(Sfx.BUTTON_PRESS))
 
 
 ## _input, not _unhandled_input: main claims an unassigned gamepad on its
@@ -79,6 +82,7 @@ func _input(event: InputEvent) -> void:
 			if not zoomed and start_button:
 				start_button.pressed.emit()
 		JOY_BUTTON_B:  # Circle
+			Sfx.play(Sfx.BUTTON_PRESS)
 			set_zoomed(not zoomed)
 		JOY_BUTTON_DPAD_UP:
 			if zoomed:
@@ -144,6 +148,8 @@ func _change_volume(index: int, delta: float) -> void:
 	var knob := _knob(index)
 	if knob == null:
 		return
+	if not is_equal_approx(knob.rotation_degrees, _angle_for(volume)):
+		Sfx.play_random(Sfx.KNOB_TURNS)
 	if _knob_tweens[index]:
 		_knob_tweens[index].kill()
 	_knob_tweens[index] = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
@@ -167,6 +173,7 @@ func _wiggle(index: int) -> void:
 	var knob := _knob(index)
 	if knob == null:
 		return
+	Sfx.play_random(Sfx.KNOB_TURNS)
 	if _knob_tweens[index]:
 		_knob_tweens[index].kill()
 	var rest := _angle_for(_volume(index))

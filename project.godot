@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 FullscreenToggle="*res://scripts/fullscreen_toggle.gd"
+Sfx="*res://scenes/sfx.tscn"
 
 [display]
 

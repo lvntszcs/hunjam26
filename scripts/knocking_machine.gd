@@ -89,11 +89,14 @@ func is_active() -> bool:
 
 
 ## Seen through the peephole: it stops knocking and topples over, broken.
-func break_down() -> void:
+## With [param in_every_view] (the door was opened on it) it topples over in
+## every view instead of vanishing from all but the peephole.
+func break_down(in_every_view := false) -> void:
 	if broken or not visible:
 		return
 	broken = true
 	_stop()
+	Sfx.play(Sfx.MACHINE_BREAK)
 	if _break_tween:
 		_break_tween.kill()
 	_break_tween = create_tween().set_parallel()
@@ -103,7 +106,7 @@ func break_down() -> void:
 		# Then away, down out of the view.
 		_break_tween.tween_property(rect, "position:y", rect.position.y + rect.size.y, leave_time) 				.set_delay(break_time + leave_delay).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 		# Opening the door finds nothing: gone from every view but the peephole.
-		if rect != peephole_copy:
+		if rect != peephole_copy and not in_every_view:
 			rect.self_modulate.a = 0.0
 
 
@@ -137,7 +140,7 @@ func _start() -> void:
 			return
 		var pattern: Array = _knock_player.patterns.pick_random()
 		_knock_player.play_pattern(pattern)
-		var length := float(pattern[-1]) if not pattern.is_empty() else 0.0
+		var length := _knock_player.pattern_length(pattern)
 		await get_tree().create_timer(length + randf_range(pause_min, pause_max), false).timeout
 
 

@@ -155,6 +155,7 @@ func _ready() -> void:
 ## Shows the screen (cards back in their rows) and starts listening to the
 ## keys.
 func open() -> void:
+	Sfx.play(Sfx.CARD_CHOOSE)
 	for player in 2:
 		if _leave_tweens[player]:
 			_leave_tweens[player].kill()
@@ -260,6 +261,7 @@ func _choose(player: int, card: int) -> void:
 	_choice[player] = card
 	_locked[player] = true
 	_used[player].append(card)
+	Sfx.play(Sfx.CARD_SELECTED)
 	_leave(player)
 
 

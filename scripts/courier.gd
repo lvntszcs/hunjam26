@@ -74,6 +74,7 @@ func arrive() -> bool:
 func caught() -> void:
 	if not visible:
 		return
+	Sfx.play(Sfx.DELIVERY_GUY)
 	_generation += 1  # no more knocks, and the leave timer does nothing
 	_knock_player.stop()
 

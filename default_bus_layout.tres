@@ -12,6 +12,14 @@ damping = 0.8
 dry = 0.85
 wet = 0.2
 
+[sub_resource type="AudioEffectReverb" id="AudioEffectReverb_death"]
+resource_name = "Reverb"
+room_size = 0.75
+damping = 0.4
+spread = 0.8
+dry = 0.9
+wet = 0.45
+
 [resource]
 bus/1/name = &"SFX"
 bus/1/solo = false
@@ -35,3 +43,11 @@ bus/3/effect/0/effect = SubResource("AudioEffectLowPassFilter_muffled")
 bus/3/effect/0/enabled = true
 bus/3/effect/1/effect = SubResource("AudioEffectReverb_muffled")
 bus/3/effect/1/enabled = true
+bus/4/name = &"Death"
+bus/4/solo = false
+bus/4/mute = false
+bus/4/bypass_fx = false
+bus/4/volume_db = 0.0
+bus/4/send = &"SFX"
+bus/4/effect/0/effect = SubResource("AudioEffectReverb_death")
+bus/4/effect/0/enabled = true

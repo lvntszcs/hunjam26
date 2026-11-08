@@ -146,6 +146,8 @@ var _in_game := true
 var _see_through_tween: Tween
 ## True while the goggles are on and the wall blinks (the X-ray sees).
 var _seeing_through := false
+## The X-ray's sound, so a new round can cut it off.
+var _xray_sound: AudioStreamPlayer
 
 @onready var _health_hud: HealthHud = $HealthHud
 
@@ -525,6 +527,7 @@ func _play_burst(at: Vector2) -> void:
 		return
 	_burst_token += 1
 	var token := _burst_token
+	Sfx.play(Sfx.FLIPFLOP_HIT)
 	var half := Vector2.ONE * flipflop_burst_size / 2.0
 	flipflop_burst.position = at - half
 	flipflop_burst.size = half * 2.0
@@ -616,6 +619,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func start_see_through() -> void:
 	if _see_through_tween:
 		_see_through_tween.kill()
+	if _xray_sound:
+		_xray_sound.stop()
+	_xray_sound = Sfx.play(Sfx.XRAY)
 	_see_through_tween = create_tween()
 	# Granny puts the goggles on first...
 	var frame_time := _xray_frames_time()
@@ -640,6 +646,9 @@ func start_see_through() -> void:
 func stop_see_through() -> void:
 	if _see_through_tween:
 		_see_through_tween.kill()
+	if _xray_sound and _xray_sound.stream == Sfx.XRAY:
+		_xray_sound.stop()
+	_xray_sound = null
 	_seeing_through = false
 	_set_see_through_alpha(1.0)
 	if xray_glasses:
@@ -698,6 +707,7 @@ func _assign_roles_from_choice() -> void:
 func _on_player_defeated(loser: PlayerController) -> void:
 	if _round_over_pending:
 		return  # one winner per round
+	_play_death_sound(Sfx.DEATH_GRANNY if loser.role is InsideRole else Sfx.DEATH_KNOCKER)
 	if loser.role is InsideRole:
 		_knocker_wins += 1
 	else:
@@ -705,6 +715,16 @@ func _on_player_defeated(loser: PlayerController) -> void:
 	_match_over = maxi(_resident_wins, _knocker_wins) >= rounds_to_win
 	_round_over_pending = true
 	_show_wins()
+
+
+## The death sound waits for the hallway to show (the door swings open a
+## moment before), then plays with reverb (the "Death" bus).
+func _play_death_sound(stream: AudioStream) -> void:
+	var waited := 0.0
+	while not doorway.corridor_view.visible and doorway.is_open and waited < 3.0:
+		await get_tree().process_frame
+		waited += get_process_delta_time()
+	Sfx.play(stream, 0.0, &"Death")
 
 
 func _on_doorway_closed() -> void:
@@ -899,6 +919,12 @@ func _on_doorway_swung_open() -> void:
 		doorway.hold_open()
 	if courier and courier.is_active():
 		courier.caught()  # she opened to his knock: he stops and stays in view
+	# Opened on the knocking machine: it breaks there and then.
+	if machine and machine.is_active():
+		machine.break_down(true)
+	# Opened on the bush: it rustles.
+	if knocker_figure and knocker_figure.disguised:
+		Sfx.play(Sfx.BUSH)
 	if _muffin_on:
 		_resolve_muffin(_muffin_token)  # decided once the smell had its time
 		return

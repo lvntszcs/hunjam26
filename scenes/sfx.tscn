@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://dj8eettli1c1x"]
+
+[ext_resource type="Script" uid="uid://c3jicmfueb50f" path="res://scripts/audio/sfx.gd" id="1_sfx"]
+
+[node name="Sfx" type="Node" unique_id=864060602]
+script = ExtResource("1_sfx")
+card_selected_db = -1.5
+death_granny_db = -8.5
+death_knocker_db = -9.0
+machine_break_db = -3.5
+bush_db = -5.0
+button_press_db = -3.0
+delivery_guy_db = -7.5

@@ -2,8 +2,13 @@ class_name KnockPlayer
 extends Node
 ## Plays door-knock rhythms. [method play_random_pattern] picks one of
 ## [member patterns] and, on every hit, plays a random knock sample from
-## [constant SOUND_DIR] (files named knock_01.wav, knock_02.wav, ...).
-## Drop more knock_NN.wav files into the folder; they are picked up on start.
+## [constant SOUND_DIR] (files named knock_01.mp3, knock_02.mp3, ...; .wav
+## works too). Drop more knock_NN files into the folder; they are picked up on
+## start.
+##
+## With [member rhythm_sound] set, a pattern plays that one recording instead
+## (a whole rhythm, e.g. the knocking machine), and the hits only drive
+## [signal knocked].
 
 ## Emitted on every hit, e.g. for a door shake or debug display.
 signal knocked(hit_index: int)
@@ -11,7 +16,7 @@ signal knocked(hit_index: int)
 signal pattern_finished
 
 const SOUND_DIR := "res://assets/sfx/knock"
-const SOUND_FILE_PATTERN := "^knock_\\d+\\.wav$"
+const SOUND_FILE_PATTERN := "^knock_\\d+\\.(wav|mp3)$"
 
 ## Rhythm patterns: the time of each hit, in seconds from the first one.
 ## Keep them shorter than OutsideRole.release_delay, since the rhythm is cut
@@ -33,6 +38,9 @@ const SOUND_FILE_PATTERN := "^knock_\\d+\\.wav$"
 @export var bus: StringName = &"SFX"
 ## Simultaneous knocks allowed (hits can overlap the previous knock's tail).
 @export_range(1, 8) var voices := 3
+## A recording of a whole rhythm: played once at a pattern's start instead of
+## a sample per hit.
+@export var rhythm_sound: AudioStream
 
 var _sounds: Array[AudioStream] = []
 var _players: Array[AudioStreamPlayer] = []
@@ -103,16 +111,32 @@ func play_pattern(hit_times: Array) -> void:
 			elapsed = hit_time
 		if generation != _generation:
 			return  # stopped or replaced meanwhile
-		_play_hit()
+		if rhythm_sound:
+			if i == 0:
+				_play_stream(rhythm_sound, 1.0)
+		else:
+			_play_hit()
 		knocked.emit(i)
 	_active = false
 	pattern_finished.emit()
 
 
-## Cuts the current rhythm off; hits already sounding ring out.
+## Cuts the current rhythm off; hits already sounding ring out (a whole
+## [member rhythm_sound] stops at once).
 func stop() -> void:
 	_generation += 1
 	_active = false
+	if rhythm_sound:
+		for player in _players:
+			player.stop()
+
+
+## Seconds a pattern takes to sound (the rhythm recording's length, if set).
+func pattern_length(hit_times: Array) -> float:
+	var length := float(hit_times[-1]) if not hit_times.is_empty() else 0.0
+	if rhythm_sound:
+		length = maxf(length, rhythm_sound.get_length())
+	return length
 
 
 func _play_hit() -> void:
@@ -122,8 +146,12 @@ func _play_hit() -> void:
 	if _sounds.size() > 1 and index == _last_sound:
 		index = (index + 1 + randi() % (_sounds.size() - 1)) % _sounds.size()
 	_last_sound = index
+	_play_stream(_sounds[index], 1.0 + randf_range(-pitch_variation, pitch_variation))
+
+
+func _play_stream(stream: AudioStream, pitch: float) -> void:
 	var player := _players[_next_player]
 	_next_player = (_next_player + 1) % _players.size()
-	player.stream = _sounds[index]
-	player.pitch_scale = 1.0 + randf_range(-pitch_variation, pitch_variation)
+	player.stream = stream
+	player.pitch_scale = pitch
 	player.play()
