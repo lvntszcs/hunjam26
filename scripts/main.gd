@@ -12,8 +12,6 @@ const HealthHud := preload("res://scripts/health_hud.gd")
 @export var outside_role: OutsideRole
 @export var inside_role: InsideRole
 @export var players: Array[PlayerController] = []
-## Szerepcsere után ennyi másodpercig nem fogadunk inputot.
-@export var swap_wait := 2.0
 ## The start menu. While it is shown the players' game controls are off.
 @export var start_page: CanvasLayer
 ## Clicking it hides [member start_page] and turns the game controls on.
@@ -41,8 +39,16 @@ const HealthHud := preload("res://scripts/health_hud.gd")
 ## Seconds to ease back to opaque after the last blink.
 @export var see_through_fade_back := 0.4
 
-## Set when either player runs out of health; the swap waits until the door closes.
-var _swap_pending := false
+## Round wins needed to win the match (2 = best of 3).
+@export_range(1, 5) var rounds_to_win := 2
+
+## Set when either player runs out of health; once the door has closed the
+## next round starts, or, if the match is decided, back to the main menu.
+var _round_over_pending := false
+var _match_over := false
+## Rounds won in this match, per role.
+var _resident_wins := 0
+var _knocker_wins := 0
 var _input_lock_timer: SceneTreeTimer
 ## True while a menu transition runs; repeated presses are ignored meanwhile.
 var _transitioning := false
@@ -58,7 +64,7 @@ func _ready() -> void:
 	doorway.closed.connect(_on_doorway_closed)
 	for controller in players:
 		if controller.model:
-			controller.model.defeated.connect(_on_player_defeated)
+			controller.model.defeated.connect(_on_player_defeated.bind(controller))
 	_assign_joypads()
 	Input.joy_connection_changed.connect(_on_joy_connection_changed)
 	# Fall back to the default node names if the exports were left empty.
@@ -103,6 +109,7 @@ func _ready() -> void:
 			if item:
 				see_through.append(item)
 	_health_hud.setup(players)
+	_show_wins()
 	_sync_health_hud_visibility()
 	if OS.is_debug_build():
 		var debug_menu := preload("res://scenes/debug_menu.tscn").instantiate()
@@ -194,33 +201,90 @@ func _set_see_through_alpha(alpha: float) -> void:
 			item.modulate.a = alpha
 
 
-## Swaps the roles of the first two players. Meant to be called between
-## rounds, while nobody is mid-action.
-func swap_roles() -> void:
-	assert(players.size() >= 2, "swap_roles() needs two players")
-	var first_role := players[0].role
-	players[0].role = players[1].role
-	players[1].role = first_role
-	for controller in players:
-		if controller.role:
-			controller.role.reset_state()
-		# The new knocker starts at full health; a defeated player also needs
-		# full health if they are moving inside.
-		if controller.model and (controller.role == outside_role or controller.model.is_defeated()):
-			controller.model.reset()
-	print("swap")
+## Gives each player the role of the character they locked on the character
+## screen: Granny (left slot) plays inside the door, the Knocker (right slot)
+## outside, whichever controller they hold. The card screen's sides follow.
+func _assign_roles_from_choice() -> void:
+	if players.size() < 2 or character_chooser == null:
+		return
+	var sides: Array[int] = [0, 1]
+	for index in 2:
+		var granny := character_chooser.slot_of(index) == 0
+		players[index].role = inside_role if granny else outside_role
+		sides[index] = 0 if granny else 1
+	if card_chooser:
+		card_chooser.player_sides = sides
 
 
-func _on_player_defeated() -> void:
-	_swap_pending = true
+## [param loser] ran out of health: the other role wins the round.
+func _on_player_defeated(loser: PlayerController) -> void:
+	if _round_over_pending:
+		return  # one winner per round
+	if loser.role is InsideRole:
+		_knocker_wins += 1
+	else:
+		_resident_wins += 1
+	_match_over = maxi(_resident_wins, _knocker_wins) >= rounds_to_win
+	_round_over_pending = true
+	_show_wins()
 
 
 func _on_doorway_closed() -> void:
 	outside_role.let_go()
-	if _swap_pending:
-		_swap_pending = false
-		swap_roles()
-		await _block_input(swap_wait)
+	if _round_over_pending:
+		_round_over_pending = false
+		if _match_over:
+			_return_to_menu()
+		else:
+			_next_round()
+
+
+## A new match: no rounds won yet.
+func _start_match() -> void:
+	_resident_wins = 0
+	_knocker_wins = 0
+	_match_over = false
+	_round_over_pending = false
+	_show_wins()
+
+
+func _show_wins() -> void:
+	# Best of (2 * rounds_to_win - 1): each side has rounds_to_win circles.
+	_health_hud.show_wins(_resident_wins, _knocker_wins, rounds_to_win)
+
+
+## The round is decided but the match is not: through the dark red into a
+## fresh round, same roles, full health.
+func _next_round() -> void:
+	if _transitioning:
+		return
+	_set_player_input(false)
+	await _menu_transition(doorway.fader.cover_color, _reset_round)
+	if _in_game:
+		_set_player_input(true)
+
+
+func _reset_round() -> void:
+	for controller in players:
+		if controller.role:
+			controller.role.reset_state()
+		if controller.model:
+			controller.model.reset()
+
+
+## Someone is out of health: through the dark red back to the main menu, with
+## the roles and health reset for the next game.
+func _return_to_menu() -> void:
+	if _transitioning:
+		return
+	_in_game = false
+	_set_player_input(false)
+	await _menu_transition(doorway.fader.cover_color, func() -> void:
+		_reset_round()
+		if start_page.has_method("open"):
+			start_page.open()
+		else:
+			start_page.show())
 
 
 ## Start button: through the light colour to the character choose screen.
@@ -243,6 +307,7 @@ func _on_character_confirmed() -> void:
 	if _transitioning:
 		return
 	character_chooser.set_process_unhandled_input(false)  # no second Enter
+	_assign_roles_from_choice()
 	if card_chooser:
 		await _menu_transition(_splash_color(), func() -> void:
 			character_chooser.close()
@@ -263,6 +328,7 @@ func _on_card_confirmed() -> void:
 
 ## Hands the controls to the players.
 func _start_game() -> void:
+	_start_match()
 	_in_game = true
 	_set_player_input(true)
 

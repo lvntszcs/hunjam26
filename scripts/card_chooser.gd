@@ -3,12 +3,13 @@ class_name CardChooser
 extends CanvasLayer
 ## Card select screen, shown after the character select.
 ##
-## Three cards on the left for player 1 and three on the right for player 2,
+## Three cards on the left for Granny's player and three on the right for the
+## Knocker's (see [member player_sides]),
 ## each set laid out in a row, every card nudged a little off its spot so
 ## they look put down by hand. Under each card a D-pad picture shows the
 ## button that chooses it: left, down, right, from left to right on each side
 ## (gamepad D-pad; keyboard: A / S / D for player 1, the arrow keys for
-## player 2). Choosing is final and leaves no mark on the card (it is a
+## player 2, on whichever side they play). Choosing is final and leaves no mark on the card (it is a
 ## secret from the other player): that player's cards slide out of the
 ## screen, and once both players' cards are gone the screen confirms.
 ##
@@ -72,8 +73,11 @@ const PER_PLAYER := 3
 ## Seconds the cards take to slide out of the screen (down).
 @export var leave_time := 0.45
 
-## The two players (left side first), for their gamepads. Set by main.
+## The two players (player 1 first), for their gamepads. Set by main.
 var players: Array[PlayerController] = []
+## Per player (same order): their side, 0 = left (Granny), 1 = right
+## (Knocker). Set by main from the character choice.
+var player_sides: Array[int] = [0, 1]
 ## Index (0..2) of the card each player chose, within their own three.
 var _choice: Array[int] = [1, 1]
 var _locked: Array[bool] = [false, false]
@@ -155,22 +159,22 @@ func _unhandled_input(event: InputEvent) -> void:
 	if key and key.pressed and not key.echo:
 		match key.physical_keycode:
 			KEY_A:
-				player = 0
+				player = _side_of(0)
 				card = 0
 			KEY_S:
-				player = 0
+				player = _side_of(0)
 				card = 1
 			KEY_D:
-				player = 0
+				player = _side_of(0)
 				card = 2
 			KEY_LEFT:
-				player = 1
+				player = _side_of(1)
 				card = 0
 			KEY_DOWN:
-				player = 1
+				player = _side_of(1)
 				card = 1
 			KEY_RIGHT:
-				player = 1
+				player = _side_of(1)
 				card = 2
 	elif pad and pad.pressed:
 		match pad.button_index:
@@ -191,8 +195,13 @@ func _unhandled_input(event: InputEvent) -> void:
 func _player_of_joypad(device: int) -> int:
 	for player in mini(players.size(), 2):
 		if players[player] and players[player].joypad_id == device:
-			return player
+			return _side_of(player)
 	return -1
+
+
+## The side (0 = left, 1 = right) player [param player] (0 or 1) plays on.
+func _side_of(player: int) -> int:
+	return player_sides[player] if player < player_sides.size() else player
 
 
 ## [param player] chooses card [param card] (0..2) of their row (final):

@@ -10,6 +10,7 @@
 [ext_resource type="Shader" uid="uid://c47ps4srjwaxe" path="res://shaders/peephole.gdshader" id="4_1bvp3"]
 [ext_resource type="Script" uid="uid://bsxswm1u5tak6" path="res://scenes/knob.gd" id="6_muem4"]
 [ext_resource type="Script" uid="uid://bwaih7avvwvjy" path="res://scripts/screen_fader.gd" id="10_fader"]
+[ext_resource type="Texture2D" uid="uid://csu8dymg85b48" path="res://assets/Knocker/knocker2.png" id="10_txyw0"]
 [ext_resource type="Script" uid="uid://cjws0wqniyo14" path="res://scripts/doorway.gd" id="11_doorway"]
 [ext_resource type="Script" uid="uid://b8o4dhj5v2778" path="res://scripts/roles/inside_role.gd" id="12_inside"]
 [ext_resource type="Texture2D" uid="uid://b5w3a22kioabl" path="res://assets/back_wall.png" id="12_pm3ni"]
@@ -33,17 +34,18 @@
 [ext_resource type="Texture2D" uid="uid://u37gb0arwvow" path="res://assets/KopogoGep/kopogo-gep - 2.png" id="42_kopogo2"]
 [ext_resource type="Script" uid="uid://5xjnxmmlge5a" path="res://scripts/knocking_machine.gd" id="43_machine"]
 [ext_resource type="Texture2D" uid="uid://bgk45u7sd52mk" path="res://assets/Cards/kartya_1.png" id="44_card"]
-[ext_resource type="PackedScene" uid="uid://hlspx8t4i3lr" path="res://scenes/start_page.tscn" id="44_start_page"]
+[ext_resource type="PackedScene" path="res://scenes/start_page.tscn" id="44_start_page"]
 [ext_resource type="Script" uid="uid://bb8ti8ax50v4h" path="res://scripts/card_chooser.gd" id="45_card_chooser"]
 [ext_resource type="PackedScene" uid="uid://vujs57thlm7l" path="res://scenes/character_choose.tscn" id="45_character_choose"]
 [ext_resource type="Texture2D" uid="uid://bevctdqbm7g7c" path="res://assets/character_choose_door.png" id="46_card_door"]
-[ext_resource type="Texture2D" uid="uid://dlm2a4su6io6s" path="res://assets/Controls/dpad/dpad_left.png" id="51_dpad_left"]
-[ext_resource type="Texture2D" uid="uid://ckve2e161l4d5" path="res://assets/Controls/dpad/dpad_down.png" id="52_dpad_down"]
-[ext_resource type="Texture2D" uid="uid://buvd7yxxjds4u" path="res://assets/Controls/dpad/dpad_right.png" id="53_dpad_right"]
 [ext_resource type="Texture2D" uid="uid://cl5ojnrvli7pt" path="res://assets/Knocker/knocker_idle.png" id="47_knocker_idle"]
 [ext_resource type="Texture2D" uid="uid://s3i5hysh8adc" path="res://assets/Knocker/knocker_knock1.png" id="48_knocker_knock1"]
 [ext_resource type="Texture2D" uid="uid://canky3nvalojb" path="res://assets/Knocker/knocker_knock2.png" id="49_knocker_knock2"]
 [ext_resource type="Texture2D" uid="uid://dp7pkbybcnimm" path="res://assets/Knocker/knocker_caught.png" id="50_knocker_caught"]
+[ext_resource type="Texture2D" uid="uid://dlm2a4su6io6s" path="res://assets/Controls/dpad/dpad_left.png" id="51_dpad_left"]
+[ext_resource type="Texture2D" uid="uid://ckve2e161l4d5" path="res://assets/Controls/dpad/dpad_down.png" id="52_dpad_down"]
+[ext_resource type="Texture2D" uid="uid://buvd7yxxjds4u" path="res://assets/Controls/dpad/dpad_right.png" id="53_dpad_right"]
+[ext_resource type="Texture2D" uid="uid://c6lyi7d26eg4n" path="res://assets/Granny/granny1.png" id="54_granny1"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -127,6 +129,41 @@ mouse_filter = 2
 texture = ExtResource("46_card_door")
 expand_mode = 1
 
+[node name="Granny" type="TextureRect" parent="CardChoose" unique_id=1901739260]
+texture_filter = 4
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -160.0
+offset_top = -73.0
+offset_right = -160.0
+offset_bottom = -73.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.37, 0.37)
+pivot_offset = Vector2(731.5, 91)
+mouse_filter = 2
+texture = ExtResource("54_granny1")
+expand_mode = 1
+flip_h = true
+
+[node name="Knocker" type="TextureRect" parent="CardChoose" unique_id=1901739261]
+texture_filter = 4
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 50.0
+offset_top = -124.0
+offset_right = 50.0
+offset_bottom = -124.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.39, 0.39)
+pivot_offset = Vector2(760.5, 142)
+mouse_filter = 2
+texture = ExtResource("10_txyw0")
+expand_mode = 1
+
 [node name="Cards" type="Control" parent="CardChoose" unique_id=1901739252]
 texture_filter = 4
 layout_mode = 3
@@ -142,10 +179,10 @@ texture_filter = 4
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -509.0
-offset_top = 43.0
-offset_right = -509.0
-offset_bottom = 43.0
+offset_left = -510.0
+offset_top = 35.0
+offset_right = -510.0
+offset_bottom = 35.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.55, 0.55)
@@ -159,10 +196,10 @@ texture_filter = 4
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -311.0
-offset_top = 40.0
-offset_right = -311.0
-offset_bottom = 40.0
+offset_left = -317.0
+offset_top = 41.0
+offset_right = -317.0
+offset_bottom = 41.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.55, 0.55)
@@ -176,10 +213,10 @@ texture_filter = 4
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -121.0
-offset_top = 35.0
-offset_right = -121.0
-offset_bottom = 35.0
+offset_left = -119.0
+offset_top = 41.0
+offset_right = -119.0
+offset_bottom = 41.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.55, 0.55)
@@ -193,10 +230,10 @@ texture_filter = 4
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 133.0
-offset_top = 36.0
-offset_right = 133.0
-offset_bottom = 36.0
+offset_left = 136.0
+offset_top = 38.0
+offset_right = 136.0
+offset_bottom = 38.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.55, 0.55)
@@ -210,10 +247,10 @@ texture_filter = 4
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 324.0
-offset_top = 35.0
-offset_right = 324.0
-offset_bottom = 35.0
+offset_left = 325.0
+offset_top = 36.0
+offset_right = 325.0
+offset_bottom = 36.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.55, 0.55)
@@ -227,10 +264,10 @@ texture_filter = 4
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 520.0
-offset_top = 42.0
-offset_right = 520.0
-offset_bottom = 42.0
+offset_left = 514.0
+offset_top = 35.0
+offset_right = 514.0
+offset_bottom = 35.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.55, 0.55)
