@@ -40,6 +40,13 @@ const HealthHud := preload("res://scripts/health_hud.gd")
 @export var see_through_end_rate := 1.5
 ## Seconds to ease back to opaque after the last blink.
 @export var see_through_fade_back := 0.4
+## The X-ray goggles going on (full-screen frames, first to last): played
+## before the blink, held while it runs, then played backwards to take them off.
+@export var xray_frames: Array[Texture2D] = []
+## Goggle animation frames per second.
+@export var xray_fps := 12.0
+## Shows [member xray_frames] (full screen, over the room view only).
+@export var xray_glasses: TextureRect
 
 ## Round wins needed to win the match (2 = best of 3).
 @export_range(1, 5) var rounds_to_win := 2
@@ -67,6 +74,8 @@ var _transitioning := false
 ## False while the start page or the character choose screen is up.
 var _in_game := true
 var _see_through_tween: Tween
+## True while the goggles are on and the wall blinks (the X-ray sees).
+var _seeing_through := false
 
 @onready var _health_hud: HealthHud = $HealthHud
 
@@ -296,7 +305,7 @@ func _check_bush_seen() -> void:
 
 ## True while the wall and door blink see-through (the X-ray goggles).
 func is_see_through_on() -> bool:
-	return _see_through_tween != null and _see_through_tween.is_running()
+	return _seeing_through
 
 
 ## Granny looks through the peephole: a knocking machine out there gives
@@ -326,11 +335,46 @@ func start_see_through() -> void:
 	if _see_through_tween:
 		_see_through_tween.kill()
 	_see_through_tween = create_tween()
+	# Granny puts the goggles on first...
+	var frame_time := _xray_frames_time()
+	if frame_time > 0.0:
+		_see_through_tween.tween_callback(xray_glasses.show)
+		_see_through_tween.tween_method(_set_xray_frame, 0.0, float(xray_frames.size()), frame_time)
+	_see_through_tween.tween_callback(func() -> void:
+		_seeing_through = true
+		_check_bush_seen())
 	_see_through_tween.tween_method(_set_see_through_time, 0.0, see_through_duration, see_through_duration)
 	# The last wave may stop halfway; ease back to opaque instead of popping.
 	_see_through_tween.tween_method(_set_see_through_alpha, _see_through_alpha_at(see_through_duration), 1.0, see_through_fade_back) \
 			.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_check_bush_seen()
+	_see_through_tween.tween_callback(func() -> void: _seeing_through = false)
+	# ...and takes them off again.
+	if frame_time > 0.0:
+		_see_through_tween.tween_method(_set_xray_frame, float(xray_frames.size()), 0.0, frame_time)
+		_see_through_tween.tween_callback(xray_glasses.hide)
+
+
+## Stops the X-ray at once: goggles off, wall and door opaque.
+func stop_see_through() -> void:
+	if _see_through_tween:
+		_see_through_tween.kill()
+	_seeing_through = false
+	_set_see_through_alpha(1.0)
+	if xray_glasses:
+		xray_glasses.hide()
+
+
+## Seconds the goggle animation takes one way (0 if there is none).
+func _xray_frames_time() -> float:
+	if xray_glasses == null or xray_frames.is_empty() or xray_fps <= 0.0:
+		return 0.0
+	return xray_frames.size() / xray_fps
+
+
+## Shows goggle frame [param t] (0..frame count; the last one holds).
+func _set_xray_frame(t: float) -> void:
+	var index := clampi(int(t), 0, xray_frames.size() - 1)
+	xray_glasses.texture = xray_frames[index]
 
 
 ## Blink at [param t] seconds into the effect. The rate grows linearly from
@@ -426,6 +470,7 @@ func _next_round() -> void:
 
 
 func _reset_round() -> void:
+	stop_see_through()
 	_bush_token += 1  # a bush countdown from the last round does nothing
 	if doorway.prank:
 		doorway.prank.hide()  # the knocking machine goes with the round
