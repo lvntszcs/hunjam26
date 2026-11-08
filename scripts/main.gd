@@ -49,6 +49,27 @@ const HealthHud := preload("res://scripts/health_hud.gd")
 @export var xray_glasses: TextureRect
 ## The courier modifier's figure (knocks at a neighbour's door).
 @export var courier: Courier
+## The muffin: Granny's arm bringing it out (frames, first to last), then she
+## opens the door.
+@export var muffin_frames: Array[Texture2D] = []
+@export var muffin_fps := 8.0
+## Seconds the last muffin frame holds before the door opens.
+@export var muffin_hold := 0.5
+## Shows [member muffin_frames] (over the room view only).
+@export var muffin_hand: TextureRect
+## The muffin held out in the hallway once the door is open (last frame).
+@export var muffin_hallway: TextureRect
+## Once the door is open: seconds a hooked Knocker takes to walk up in front of
+## the doorframe, and seconds until the muffin's outcome (caught / Granny
+## loses a life) is decided.
+@export var muffin_lure_time := 2.0
+@export var muffin_wait := 2.6
+## True if the smell hooked the Knocker when the muffin came out.
+var _muffin_lured := false
+## Bumped by every muffin and round reset, so an old one stops.
+var _muffin_token := 0
+## True from the muffin until the door has closed again.
+var _muffin_on := false
 
 ## Round wins needed to win the match (2 = best of 3).
 @export_range(1, 5) var rounds_to_win := 2
@@ -319,6 +340,77 @@ func send_courier() -> bool:
 	return courier.arrive()
 
 
+## The muffin: Granny brings out the deadly smelling cupcake and opens the
+## door. A Knocker anywhere in the corridor is drawn to the door by the smell
+## and caught (he loses a life); with nobody there, she loses one. False if
+## she can't open the door right now.
+func serve_muffin() -> bool:
+	if muffin_hand == null or muffin_frames.is_empty() or _muffin_on or doorway.is_open:
+		return false
+	if inside_role == null or not inside_role.can_open_now():
+		return false
+	_muffin_on = true
+	_muffin_token += 1
+	_play_muffin(_muffin_token)
+	return true
+
+
+func _play_muffin(token: int) -> void:
+	inside_role.set_locked(true)
+	# The smell: a Knocker in range (anywhere in the corridor) as she brings
+	# it out stops, hooked; once the door is open he walks up to it.
+	_muffin_lured = outside_role.lure()
+	if _muffin_lured:
+		print("The muffin smell hooks the Knocker")
+	muffin_hand.texture = muffin_frames[0]
+	muffin_hand.show()
+	for frame in muffin_frames:
+		muffin_hand.texture = frame
+		await get_tree().create_timer(1.0 / maxf(muffin_fps, 0.1), false).timeout
+		if token != _muffin_token:
+			return
+	await get_tree().create_timer(muffin_hold, false).timeout
+	if token != _muffin_token:
+		return
+	inside_role.set_locked(false)
+	inside_role.open_now()
+
+
+## The door is open with the muffin held out in the hallway: a hooked
+## Knocker walks up in front of the doorframe and is caught; with nobody
+## coming, Granny loses a life.
+func _resolve_muffin(token: int) -> void:
+	if muffin_hallway:
+		muffin_hallway.texture = muffin_frames[-1]
+		muffin_hallway.show()
+	if _muffin_lured:
+		outside_role.draw_in(muffin_lure_time)
+	await get_tree().create_timer(muffin_wait, false).timeout
+	if token != _muffin_token:
+		return
+	if _muffin_lured:
+		outside_role.freeze()
+		if outside_role.player:
+			outside_role.player.take_damage(1)
+		print("Elkapva (muffin)")
+	else:
+		if inside_role and inside_role.player:
+			inside_role.player.take_damage(1)
+		print("Muffin: nobody came")
+
+
+func _end_muffin() -> void:
+	_muffin_token += 1
+	_muffin_on = false
+	_muffin_lured = false
+	if inside_role:
+		inside_role.set_locked(false)
+	if muffin_hand:
+		muffin_hand.hide()
+	if muffin_hallway:
+		muffin_hallway.hide()
+
+
 ## Granny looks through the peephole: a knocking machine out there gives
 ## itself away and breaks.
 func _on_granny_peeked() -> void:
@@ -440,6 +532,8 @@ func _on_doorway_closed() -> void:
 	outside_role.let_go()
 	if courier:
 		courier.leave()  # gone once the door is shut again
+	if _muffin_on:
+		_end_muffin()
 	if _round_over_pending:
 		_round_over_pending = false
 		if _match_over:
@@ -486,6 +580,7 @@ func _reset_round() -> void:
 	stop_see_through()
 	if courier:
 		courier.leave()
+	_end_muffin()
 	_bush_token += 1  # a bush countdown from the last round does nothing
 	if doorway.prank:
 		doorway.prank.hide()  # the knocking machine goes with the round
@@ -614,8 +709,17 @@ func _input_lock_time_left() -> float:
 
 ## Caught if even one pixel of the knocker shows in the opened doorway.
 func _on_doorway_swung_open() -> void:
+	# A modifier played out at this opening: let the corridor be seen longer.
+	var machine := doorway.prank as KnockingMachine
+	var knocker_figure := outside_role.knocker
+	if _muffin_on or (courier and courier.is_active()) or (machine and machine.visible) \
+			or (knocker_figure and knocker_figure.disguised):
+		doorway.hold_open()
 	if courier and courier.is_active():
 		courier.caught()  # she opened to his knock: he stops and stays in view
+	if _muffin_on:
+		_resolve_muffin(_muffin_token)  # decided once the smell had its time
+		return
 	if outside_role.is_in_doorway():
 		outside_role.freeze()
 		if outside_role.player:

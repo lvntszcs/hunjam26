@@ -37,6 +37,12 @@
 [ext_resource type="Resource" path="res://modifiers/xray.tres" id="58_xray"]
 [ext_resource type="Resource" path="res://modifiers/auto_knocker.tres" id="59_auto_knocker"]
 [ext_resource type="Resource" path="res://modifiers/bush.tres" id="60_bush"]
+[ext_resource type="Texture2D" uid="uid://duco4thdjqjba" path="res://assets/muffin/muffin_anim_01.png" id="80_muffin"]
+[ext_resource type="Texture2D" uid="uid://656eyjkftln5" path="res://assets/muffin/muffin_anim_02.png" id="81_muffin"]
+[ext_resource type="Texture2D" uid="uid://dxdwnbap435jf" path="res://assets/muffin/muffin_anim_03.png" id="82_muffin"]
+[ext_resource type="Texture2D" uid="uid://b821wn4hb6rkp" path="res://assets/muffin/muffin_anim_04.png" id="83_muffin"]
+[ext_resource type="Texture2D" uid="uid://cdnmfk0ddk4pi" path="res://assets/muffin/muffin_anim_05.png" id="84_muffin"]
+[ext_resource type="Resource" path="res://modifiers/muffin.tres" id="85_muffin"]
 [ext_resource type="Resource" path="res://modifiers/courier.tres" id="61_courier"]
 [ext_resource type="Script" uid="uid://botgw6ef7qg43" path="res://scripts/courier.gd" id="62_courier"]
 [ext_resource type="Texture2D" uid="uid://o7wbvd1y255u" path="res://assets/delivery/delivery.png" id="63_delivery"]
@@ -98,7 +104,7 @@ script = ExtResource("16_profile")
 script = ExtResource("15_model")
 display_name = "Player 2"
 
-[node name="Main" type="Control" unique_id=1249313363 node_paths=PackedStringArray("courier", "xray_glasses", "doorway", "outside_role", "inside_role", "players", "start_page", "start_button", "character_chooser", "card_chooser")]
+[node name="Main" type="Control" unique_id=1249313363 node_paths=PackedStringArray("muffin_hallway", "muffin_hand", "courier", "xray_glasses", "doorway", "outside_role", "inside_role", "players", "start_page", "start_button", "character_chooser", "card_chooser")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -110,6 +116,9 @@ script = ExtResource("1_0xm2m")
 xray_frames = Array[Texture2D]([ExtResource("70_xray"), ExtResource("71_xray"), ExtResource("72_xray"), ExtResource("73_xray"), ExtResource("74_xray"), ExtResource("75_xray"), ExtResource("76_xray"), ExtResource("77_xray")])
 xray_glasses = NodePath("XrayGlasses/Glasses")
 courier = NodePath("Corridor/Courier")
+muffin_frames = Array[Texture2D]([ExtResource("80_muffin"), ExtResource("81_muffin"), ExtResource("82_muffin"), ExtResource("83_muffin"), ExtResource("84_muffin")])
+muffin_hand = NodePath("XrayGlasses/Muffin")
+muffin_hallway = NodePath("Corridor/Muffin")
 doorway = NodePath("Doorway")
 outside_role = NodePath("Roles/OutsideRole")
 inside_role = NodePath("Roles/InsideRole")
@@ -131,7 +140,7 @@ script = ExtResource("45_card_chooser")
 cards = [NodePath("Cards/Card1"), NodePath("Cards/Card2"), NodePath("Cards/Card3"), NodePath("Cards/Card4"), NodePath("Cards/Card5"), NodePath("Cards/Card6")]
 button_textures = Array[Texture2D]([ExtResource("51_dpad_left"), ExtResource("52_dpad_down"), ExtResource("53_dpad_right")])
 unavailable_texture = ExtResource("56_no_interaction")
-granny_modifiers = Array[Modifier]([ExtResource("58_xray")])
+granny_modifiers = Array[Modifier]([ExtResource("58_xray"), ExtResource("85_muffin")])
 knocker_modifiers = Array[Modifier]([ExtResource("59_auto_knocker"), ExtResource("60_bush"), ExtResource("61_courier")])
 
 [node name="Wall" type="ColorRect" parent="CardChoose" unique_id=1901739251]
@@ -425,6 +434,23 @@ mouse_filter = 2
 texture = ExtResource("70_xray")
 expand_mode = 1
 
+[node name="Muffin" type="TextureRect" parent="XrayGlasses" unique_id=1873402130]
+visible = false
+texture_filter = 4
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -760.0
+offset_top = -628.0
+offset_right = -74.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+texture = ExtResource("80_muffin")
+expand_mode = 1
+
 [node name="Peephole" type="CanvasLayer" parent="." unique_id=2061978330]
 visible = false
 
@@ -548,6 +574,23 @@ peephole_copy = NodePath("../../Peephole/Prank")
 
 [node name="KnockPlayer" type="Node" parent="Corridor/Prank" unique_id=1580244743]
 script = ExtResource("30_knock_player")
+
+[node name="Muffin" type="TextureRect" parent="Corridor" unique_id=1873402131]
+visible = false
+texture_filter = 4
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -760.0
+offset_top = -628.0
+offset_right = -74.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+texture = ExtResource("84_muffin")
+expand_mode = 1
 
 [node name="PostFx" type="CanvasLayer" parent="." unique_id=2119104863]
 layer = 5
