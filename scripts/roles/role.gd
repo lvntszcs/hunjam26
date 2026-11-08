@@ -24,6 +24,11 @@ func release(_command: StringName) -> void:
 	pass
 
 
+## Called when the combined hold of the controller triggers changes.
+func set_trigger_held(_held: bool) -> void:
+	pass
+
+
 ## Drops any in-progress input state (e.g. a held key). Called when the role
 ## changes hands, since the old player's key releases no longer reach it.
 func reset_state() -> void:

@@ -2,7 +2,7 @@ class_name InsideRole
 extends Role
 ## The player inside the flat: looks through the peephole and opens the door.
 
-enum State { FAR, MOVING, PEEKING, AT_KNOB, OPEN }
+enum State { FAR, MOVING, PEEKING, AT_KNOB, OPEN, GRABBING_KNOB, RELEASING_KNOB }
 
 const APPROACH := &"approach"
 const APPROACH_DOORKNOB := &"approach_doorknob"
@@ -17,14 +17,35 @@ const COMMANDS: Array[StringName] = [APPROACH, APPROACH_DOORKNOB, STEP_BACK, OPE
 @export var doorway: Doorway
 
 var state := State.FAR
+var _trigger_held := false
+var _release_after_grab := false
+var _open_after_grab := false
 
 
 func get_commands() -> Array[StringName]:
 	return COMMANDS
 
 
+func set_trigger_held(held: bool) -> void:
+	_trigger_held = held
+	if held:
+		_release_after_grab = false
+		if state == State.FAR:
+			_enter_doorknob()
+		elif state == State.PEEKING:
+			_exit_peephole()
+	elif state == State.GRABBING_KNOB:
+		_release_after_grab = true
+	elif state == State.AT_KNOB:
+		_exit_doorknob()
+
+
 func press(command: StringName) -> void:
-	if state == State.MOVING or state == State.OPEN:
+	if state == State.GRABBING_KNOB:
+		if _trigger_held and command == OPEN_DOOR:
+			_open_after_grab = true
+		return
+	if state == State.MOVING or state == State.RELEASING_KNOB or state == State.OPEN:
 		return  # animáció / nyitott ajtó közben nem reagálunk
 	match command:
 		OPEN_DOOR:
@@ -36,7 +57,7 @@ func press(command: StringName) -> void:
 		STEP_BACK:
 			if state == State.PEEKING:
 				_exit_peephole()
-			elif state == State.AT_KNOB:
+			elif state == State.AT_KNOB and not _trigger_held:
 				_exit_doorknob()
 		APPROACH_DOORKNOB:
 			if state == State.FAR:
@@ -50,27 +71,36 @@ func _can_open_door() -> bool:
 
 
 func _enter_doorknob() -> void:
-	state = State.MOVING
+	state = State.GRABBING_KNOB
 	await doorway.approach_doorknob()
 	state = State.AT_KNOB
+	var release_after_grab := _release_after_grab
+	_release_after_grab = false
+	if _open_after_grab:
+		_open_after_grab = false
+		_open_door()
+	elif release_after_grab:
+		_exit_doorknob()
 
 
 func _exit_doorknob() -> void:
-	state = State.MOVING
+	state = State.RELEASING_KNOB
 	await doorway.leave_doorknob()
-	state = State.FAR
+	_return_to_far()
 
 
 func _enter_peephole() -> void:
 	state = State.MOVING
 	await doorway.approach_peephole()
 	state = State.PEEKING
+	if _trigger_held:
+		_exit_peephole()
 
 
 func _exit_peephole() -> void:
 	state = State.MOVING
 	await doorway.leave_peephole()
-	state = State.FAR
+	_return_to_far()
 
 
 func _open_door() -> void:
@@ -79,4 +109,16 @@ func _open_door() -> void:
 	await doorway.open(from_knob)
 	state = State.OPEN
 	await doorway.closed  # az ajtó magától csukódik be
+	_return_to_far()
+
+
+func _return_to_far() -> void:
 	state = State.FAR
+	if _trigger_held:
+		_enter_doorknob()
+
+
+func reset_state() -> void:
+	_trigger_held = false
+	_release_after_grab = false
+	_open_after_grab = false

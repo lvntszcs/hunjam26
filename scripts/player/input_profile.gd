@@ -13,6 +13,7 @@ extends Resource
 	&"step_back": &"step_back",
 	&"open_door": &"open_door",
 	&"knock": &"knock",
+	&"knock_at_door": &"knock_at_door",
 	&"place_prank": &"place_prank",
 	&"disguise": &"disguise",
 }
