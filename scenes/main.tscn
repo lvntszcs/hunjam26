@@ -37,6 +37,13 @@
 [ext_resource type="Resource" path="res://modifiers/xray.tres" id="58_xray"]
 [ext_resource type="Resource" path="res://modifiers/auto_knocker.tres" id="59_auto_knocker"]
 [ext_resource type="Resource" path="res://modifiers/bush.tres" id="60_bush"]
+[ext_resource type="Texture2D" uid="uid://dtutcoo2nmeug" path="res://assets/explosion/explosion_01.png" id="120_explosion"]
+[ext_resource type="Texture2D" uid="uid://fsm3c460o5ne" path="res://assets/explosion/explosion_02.png" id="121_explosion"]
+[ext_resource type="Texture2D" uid="uid://deipeoylg4scy" path="res://assets/explosion/explosion_03.png" id="122_explosion"]
+[ext_resource type="Texture2D" uid="uid://beake8f8od3hn" path="res://assets/explosion/explosion_04.png" id="123_explosion"]
+[ext_resource type="Texture2D" uid="uid://b7oe1xowgedju" path="res://assets/explosion/explosion_05.png" id="124_explosion"]
+[ext_resource type="Texture2D" uid="uid://b7ek47gv8ivwe" path="res://assets/explosion/explosion_06.png" id="125_explosion"]
+[ext_resource type="Texture2D" uid="uid://l7yngj6l0yn6" path="res://assets/explosion/explosion_07.png" id="126_explosion"]
 [ext_resource type="Texture2D" uid="uid://c4hha18ib718o" path="res://assets/flipflop/frame_01.png" id="900_flipflop"]
 [ext_resource type="Texture2D" uid="uid://c3lmo13b8ma8k" path="res://assets/flipflop/frame_03.png" id="901_flipflop"]
 [ext_resource type="Texture2D" uid="uid://cpxtrraaphsm8" path="res://assets/flipflop/frame_05.png" id="902_flipflop"]
@@ -119,7 +126,7 @@ script = ExtResource("16_profile")
 script = ExtResource("15_model")
 display_name = "Player 2"
 
-[node name="Main" type="Control" unique_id=1249313363 node_paths=PackedStringArray("flipflop_burst", "flipflop_hand", "flipflop_hallway", "muffin_hallway", "muffin_hand", "courier", "xray_glasses", "doorway", "outside_role", "inside_role", "players", "start_page", "start_button", "character_chooser", "card_chooser")]
+[node name="Main" type="Control" unique_id=1249313363 node_paths=PackedStringArray("explosion", "flipflop_burst", "flipflop_hand", "flipflop_hallway", "muffin_hallway", "muffin_hand", "courier", "xray_glasses", "doorway", "outside_role", "inside_role", "players", "start_page", "start_button", "character_chooser", "card_chooser")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -138,6 +145,8 @@ flipflop_frames = Array[Texture2D]([ExtResource("900_flipflop"), ExtResource("90
 flipflop_hand = NodePath("XrayGlasses/Flipflop")
 flipflop_hallway = NodePath("Corridor/Flipflop")
 flipflop_burst = NodePath("Corridor/FlipflopBurst")
+explosion_frames = Array[Texture2D]([ExtResource("120_explosion"), ExtResource("121_explosion"), ExtResource("122_explosion"), ExtResource("123_explosion"), ExtResource("124_explosion"), ExtResource("125_explosion"), ExtResource("126_explosion")])
+explosion = NodePath("Corridor/Explosion")
 doorway = NodePath("Doorway")
 outside_role = NodePath("Roles/OutsideRole")
 inside_role = NodePath("Roles/InsideRole")
@@ -629,6 +638,17 @@ texture_filter = 4
 offset_right = 300.0
 offset_bottom = 300.0
 mouse_filter = 2
+expand_mode = 1
+
+[node name="Explosion" type="TextureRect" parent="Corridor" unique_id=1873402143]
+visible = false
+texture_filter = 4
+offset_left = 365.0
+offset_top = 12.0
+offset_right = 1645.0
+offset_bottom = 732.0
+mouse_filter = 2
+texture = ExtResource("120_explosion")
 expand_mode = 1
 
 [node name="Flipflop" type="TextureRect" parent="Corridor" unique_id=1873402141]
