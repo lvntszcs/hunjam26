@@ -71,6 +71,7 @@ expand_mode = 1
 flip_h = true
 
 [node name="Controller" type="TextureRect" parent="." unique_id=172830134]
+texture_filter = 4
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -97,6 +98,7 @@ texture = ExtResource("45_button_x")
 expand_mode = 1
 
 [node name="Controller2" type="TextureRect" parent="." unique_id=172830135]
+texture_filter = 4
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
