@@ -51,6 +51,14 @@
 [ext_resource type="Texture2D" uid="uid://buvd7yxxjds4u" path="res://assets/Controls/dpad/dpad_right.png" id="53_dpad_right"]
 [ext_resource type="Texture2D" uid="uid://kpkyqapem0p" path="res://assets/Controls/no_interaction.png" id="56_no_interaction"]
 [ext_resource type="Texture2D" uid="uid://c6lyi7d26eg4n" path="res://assets/Granny/granny1.png" id="54_granny1"]
+[ext_resource type="Texture2D" uid="uid://dg2jgi5jj3kqv" path="res://assets/xray/xray_anim_01.png" id="70_xray"]
+[ext_resource type="Texture2D" uid="uid://bkfdqnbvfyvf4" path="res://assets/xray/xray_anim_02.png" id="71_xray"]
+[ext_resource type="Texture2D" uid="uid://bnqld5toxn18f" path="res://assets/xray/xray_anim_03.png" id="72_xray"]
+[ext_resource type="Texture2D" uid="uid://dh33nh15v7wi7" path="res://assets/xray/xray_anim_04.png" id="73_xray"]
+[ext_resource type="Texture2D" uid="uid://ckd5g3560dh16" path="res://assets/xray/xray_anim_05.png" id="74_xray"]
+[ext_resource type="Texture2D" uid="uid://hklasfmqor47" path="res://assets/xray/xray_anim_06.png" id="75_xray"]
+[ext_resource type="Texture2D" uid="uid://btb2avxg4v34g" path="res://assets/xray/xray_anim_07.png" id="76_xray"]
+[ext_resource type="Texture2D" uid="uid://b5c21rwwvvemg" path="res://assets/xray/xray_anim_08.png" id="77_xray"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -87,7 +95,7 @@ script = ExtResource("16_profile")
 script = ExtResource("15_model")
 display_name = "Player 2"
 
-[node name="Main" type="Control" unique_id=1249313363 node_paths=PackedStringArray("doorway", "outside_role", "inside_role", "players", "start_page", "start_button", "character_chooser", "card_chooser")]
+[node name="Main" type="Control" unique_id=1249313363 node_paths=PackedStringArray("xray_glasses", "doorway", "outside_role", "inside_role", "players", "start_page", "start_button", "character_chooser", "card_chooser")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -96,6 +104,8 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 4
 script = ExtResource("1_0xm2m")
+xray_frames = Array[Texture2D]([ExtResource("70_xray"), ExtResource("71_xray"), ExtResource("72_xray"), ExtResource("73_xray"), ExtResource("74_xray"), ExtResource("75_xray"), ExtResource("76_xray"), ExtResource("77_xray")])
+xray_glasses = NodePath("XrayGlasses/Glasses")
 doorway = NodePath("Doorway")
 outside_role = NodePath("Roles/OutsideRole")
 inside_role = NodePath("Roles/InsideRole")
@@ -389,6 +399,20 @@ script = ExtResource("31_hand")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=435261660]
 script = ExtResource("1_ig7tw")
+
+[node name="XrayGlasses" type="CanvasLayer" parent="." unique_id=1873402115]
+
+[node name="Glasses" type="TextureRect" parent="XrayGlasses" unique_id=1873402116]
+visible = false
+texture_filter = 4
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("70_xray")
+expand_mode = 1
 
 [node name="Peephole" type="CanvasLayer" parent="." unique_id=2061978330]
 visible = false
