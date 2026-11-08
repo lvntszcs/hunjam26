@@ -11,7 +11,6 @@
 [ext_resource type="Texture2D" uid="uid://ctdqqc2pmbet3" path="res://assets/jack_in_box.png" id="5_prank"]
 [ext_resource type="Script" uid="uid://bsxswm1u5tak6" path="res://scenes/knob.gd" id="6_muem4"]
 [ext_resource type="Script" uid="uid://bwaih7avvwvjy" path="res://scripts/screen_fader.gd" id="10_fader"]
-[ext_resource type="Texture2D" uid="uid://b4bof8xbwl1yy" path="res://assets/snowleopard_nobg.png" id="10_jscy8"]
 [ext_resource type="Script" uid="uid://cjws0wqniyo14" path="res://scripts/doorway.gd" id="11_doorway"]
 [ext_resource type="Script" uid="uid://b8o4dhj5v2778" path="res://scripts/roles/inside_role.gd" id="12_inside"]
 [ext_resource type="Texture2D" uid="uid://b5w3a22kioabl" path="res://assets/back_wall.png" id="12_pm3ni"]
@@ -39,6 +38,10 @@
 [ext_resource type="Texture2D" uid="uid://bgk45u7sd52mk" path="res://assets/Cards/kartya_1.png" id="44_card"]
 [ext_resource type="Script" path="res://scripts/card_chooser.gd" id="45_card_chooser"]
 [ext_resource type="Texture2D" uid="uid://bevctdqbm7g7c" path="res://assets/character_choose_door.png" id="46_card_door"]
+[ext_resource type="Texture2D" uid="uid://cl5ojnrvli7pt" path="res://assets/Knocker/knocker_idle.png" id="47_knocker_idle"]
+[ext_resource type="Texture2D" uid="uid://s3i5hysh8adc" path="res://assets/Knocker/knocker_knock1.png" id="48_knocker_knock1"]
+[ext_resource type="Texture2D" uid="uid://canky3nvalojb" path="res://assets/Knocker/knocker_knock2.png" id="49_knocker_knock2"]
+[ext_resource type="Texture2D" uid="uid://dp7pkbybcnimm" path="res://assets/Knocker/knocker_caught.png" id="50_knocker_caught"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
 shader = ExtResource("3_272bh")
@@ -203,14 +206,9 @@ visible = false
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 334.0
-offset_top = 7.0
-offset_right = -320.0
-offset_bottom = 4.0
 mouse_filter = 2
-texture = ExtResource("10_jscy8")
+texture = ExtResource("47_knocker_idle")
 expand_mode = 1
-stretch_mode = 5
 
 [node name="Prank" type="TextureRect" parent="RoomCorridor" unique_id=1580244744]
 visible = false
@@ -323,14 +321,9 @@ visible = false
 anchors_preset = -1
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 334.0
-offset_top = 7.0
-offset_right = -320.0
-offset_bottom = 4.0
 mouse_filter = 2
-texture = ExtResource("10_jscy8")
+texture = ExtResource("47_knocker_idle")
 expand_mode = 1
-stretch_mode = 5
 
 [node name="SkeletonRunner" type="Node2D" parent="Peephole" unique_id=633268502 node_paths=PackedStringArray("doorway")]
 visible = false
@@ -373,14 +366,9 @@ visible = false
 anchors_preset = -1
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 334.0
-offset_top = 7.0
-offset_right = -320.0
-offset_bottom = 4.0
 mouse_filter = 2
-texture = ExtResource("10_jscy8")
+texture = ExtResource("47_knocker_idle")
 expand_mode = 1
-stretch_mode = 5
 
 [node name="Prank" type="TextureRect" parent="Corridor" unique_id=1580244742 node_paths=PackedStringArray("copies")]
 visible = false
@@ -446,6 +434,9 @@ hand = NodePath("../Hand")
 [node name="Knocker" type="Node" parent="." unique_id=1113584781 node_paths=PackedStringArray("figures", "room_figure", "doorway_wall")]
 script = ExtResource("32_knocker")
 figures = [NodePath("../RoomCorridor/Knocker"), NodePath("../Peephole/Knocker"), NodePath("../Corridor/Knocker")]
+idle_texture = ExtResource("47_knocker_idle")
+knock_frames = Array[Texture2D]([ExtResource("48_knocker_knock1"), ExtResource("49_knocker_knock2")])
+caught_texture = ExtResource("50_knocker_caught")
 room_figure = NodePath("../RoomCorridor/Knocker")
 doorway_wall = NodePath("../Wall")
 disguise_frames = Array[Texture2D]([ExtResource("37_tuja1"), ExtResource("38_tuja2")])

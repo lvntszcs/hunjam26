@@ -9,6 +9,10 @@ extends Node
 ##
 ## When the door opens, [method is_in_doorway] tells whether any of it shows in
 ## the doorway; [method freeze] then pins it in place.
+##
+## Poses (same picture in every view): [member idle_texture] while walking or
+## standing, [member knock_frames] looped while knocking at the door
+## ([method set_knocking]), [member caught_texture] while frozen.
 
 ## One figure per outside view; all move together.
 @export var figures: Array[Control] = []
@@ -21,6 +25,14 @@ extends Node
 @export var slide_in_duration := 0.35
 ## Used by [method slide_out] when no duration is given.
 @export var slide_out_duration := 1.5
+## Shown while walking up or away, or standing without knocking.
+@export var idle_texture: Texture2D
+## Looped while knocking at the door.
+@export var knock_frames: Array[Texture2D] = []
+## Knock animation frames per second.
+@export var knock_fps := 6.0
+## Shown while caught in the doorway (frozen).
+@export var caught_texture: Texture2D
 ## Disguise (see [method set_disguised]): full-screen frames shown in place
 ## (no sliding) instead of the figures, cycled as an animation.
 @export var disguise_frames: Array[Texture2D] = []
@@ -45,9 +57,14 @@ var presence := 0.0:
 var _rest_offsets: Array[Vector2] = []  # (offset_left, offset_right) per figure
 var _tween: Tween
 var _frozen := false
-## Per texture row: Vector2i(first, last) opaque / transparent column, or (-1, -1).
-var _figure_rows: Array[Vector2i] = []
-var _doorway_rows: Array[Vector2i] = []
+## Doorway test data per picture: {"rows": Array[Vector2i], "size": Vector2},
+## see [method _row_spans]. Figure pictures are scanned once, up front.
+var _figure_spans := {}
+var _doorway_spans := {}
+## True while the knocking phase runs (see [method set_knocking]).
+var knocking := false
+var _knock_frame := 0
+var _knock_time := 0.0
 
 ## True while the knocker is gone and the disguise shows instead.
 var disguised := false
@@ -68,10 +85,46 @@ func _ready() -> void:
 			_disguise_rects.append(rect)
 	set_process(false)
 	set_presence(0.0)
-	if room_figure and room_figure.texture:
-		_figure_rows = _row_spans(room_figure.texture, true)
+	var poses: Array[Texture2D] = [idle_texture]
+	poses.append_array(knock_frames)
+	if room_figure:
+		poses.append(room_figure.texture)
+	for texture in poses:
+		if texture and not _figure_spans.has(texture):
+			_figure_spans[texture] = _row_spans(texture, true)
 	if doorway_wall and doorway_wall.texture:
-		_doorway_rows = _row_spans(doorway_wall.texture, false)
+		_doorway_spans = _row_spans(doorway_wall.texture, false)
+
+
+## Starts / stops the knock animation (it only plays while the knocker stands
+## at the door; walking shows the idle picture).
+func set_knocking(on: bool) -> void:
+	if on == knocking:
+		return
+	knocking = on
+	_knock_frame = 0
+	_knock_time = 0.0
+	_update_process()
+	_update_pose()
+
+
+func _update_process() -> void:
+	set_process(disguised or (knocking and not knock_frames.is_empty()))
+
+
+## Puts the picture for the current state on every figure.
+func _update_pose() -> void:
+	var texture := idle_texture
+	if _frozen and caught_texture:
+		texture = caught_texture
+	elif knocking and presence >= 1.0 and not knock_frames.is_empty():
+		texture = knock_frames[_knock_frame % knock_frames.size()]
+	if texture == null:
+		return  # no poses set: keep the scene's picture
+	for figure in figures:
+		var rect := figure as TextureRect
+		if rect and rect.texture != texture:
+			rect.texture = texture
 
 
 ## On: the knocker vanishes at once (no slide) and the disguise animation
@@ -88,20 +141,26 @@ func set_disguised(on: bool) -> void:
 	_disguise_frame = 0
 	_disguise_time = 0.0
 	_show_disguise_frame()
-	set_process(on)
+	_update_process()
 	set_presence(presence)
 
 
-## Cycles the disguise frames.
+## Cycles the disguise and knock frames.
 func _process(delta: float) -> void:
-	if disguise_fps <= 0.0:
-		return
-	_disguise_time += delta
-	var frame_length := 1.0 / disguise_fps
-	if _disguise_time >= frame_length:
-		_disguise_time = fmod(_disguise_time, frame_length)
-		_disguise_frame = (_disguise_frame + 1) % disguise_frames.size()
-		_show_disguise_frame()
+	if disguised and disguise_fps > 0.0:
+		_disguise_time += delta
+		var frame_length := 1.0 / disguise_fps
+		if _disguise_time >= frame_length:
+			_disguise_time = fmod(_disguise_time, frame_length)
+			_disguise_frame = (_disguise_frame + 1) % disguise_frames.size()
+			_show_disguise_frame()
+	if knocking and knock_fps > 0.0 and not _frozen:
+		_knock_time += delta
+		var knock_length := 1.0 / knock_fps
+		if _knock_time >= knock_length:
+			_knock_time = fmod(_knock_time, knock_length)
+			_knock_frame = (_knock_frame + 1) % maxi(knock_frames.size(), 1)
+			_update_pose()
 
 
 func _show_disguise_frame() -> void:
@@ -131,6 +190,7 @@ func set_presence(value: float) -> void:
 		figures[i].offset_left = _rest_offsets[i].x + shift
 		figures[i].offset_right = _rest_offsets[i].y + shift
 		figures[i].visible = presence > 0.0 and not disguised
+	_update_pose()
 	for rect in _disguise_rects:
 		# The picture is drawn as big as its parent view (the screen), scaled.
 		var view_size := Vector2(1280, 720)
@@ -171,6 +231,7 @@ func hide_now() -> void:
 	if _tween:
 		_tween.kill()
 	_frozen = false
+	set_knocking(false)
 	presence = 0.0
 
 
@@ -179,11 +240,13 @@ func freeze() -> void:
 	if _tween:
 		_tween.kill()
 	_frozen = true
+	_update_pose()
 
 
 ## Lets it move again; the caller decides where it goes next.
 func unfreeze() -> void:
 	_frozen = false
+	_update_pose()
 
 
 ## True if even one opaque pixel of the room figure lies inside the doorway
@@ -191,16 +254,20 @@ func unfreeze() -> void:
 ## never caught.
 func is_in_doorway() -> bool:
 	var figure := room_figure
-	var figure_rows := _figure_rows
-	if disguised or not is_present() or figure_rows.is_empty() or _doorway_rows.is_empty():
+	if disguised or not is_present() or figure == null or figure.texture == null or _doorway_spans.is_empty():
 		return false
+	if not _figure_spans.has(figure.texture):
+		_figure_spans[figure.texture] = _row_spans(figure.texture, true)
+	var figure_spans: Dictionary = _figure_spans[figure.texture]
+	var figure_rows: Array[Vector2i] = figure_spans.rows
+	var doorway_rows: Array[Vector2i] = _doorway_spans.rows
 	var figure_draw := _drawn_rect(figure)
 	var wall_draw := doorway_wall.get_global_rect()
-	var figure_size := Vector2(figure.texture.get_size())
-	var wall_size := Vector2(doorway_wall.texture.get_size())
-	# Walk the doorway one wall texture row at a time.
-	for wall_y in _doorway_rows.size():
-		var door := _doorway_rows[wall_y]
+	var figure_size: Vector2 = figure_spans.size
+	var wall_size: Vector2 = _doorway_spans.size
+	# Walk the doorway one scanned wall row at a time.
+	for wall_y in doorway_rows.size():
+		var door := doorway_rows[wall_y]
 		if door.x < 0:
 			continue
 		var screen_y := wall_draw.position.y + (wall_y + 0.5) * wall_draw.size.y / wall_size.y
@@ -247,19 +314,31 @@ static func _drawn_rect(rect: TextureRect) -> Rect2:
 
 
 ## Per row, the first and last column whose pixel is opaque ([param opaque])
-## or transparent; (-1, -1) for rows with none.
-static func _row_spans(texture: Texture2D, opaque: bool) -> Array[Vector2i]:
+## or transparent; (-1, -1) for rows with none. Pictures wider than the
+## 1280 design width are scanned at half size (still one design pixel).
+## Returns {"rows": ..., "size": the scanned size}.
+static func _row_spans(texture: Texture2D, opaque: bool) -> Dictionary:
 	var img := texture.get_image()
 	if img.is_compressed():
 		img.decompress()
+	if img.get_width() > 1280:
+		img.resize(img.get_width() / 2, img.get_height() / 2, Image.INTERPOLATE_NEAREST)
+	img.convert(Image.FORMAT_RGBA8)
+	var data := img.get_data()
+	var width := img.get_width()
 	var rows: Array[Vector2i] = []
 	for y in img.get_height():
+		var row := y * width * 4 + 3  # alpha of the row's first pixel
 		var first := -1
+		for x in width:
+			if (data[row + x * 4] >= 128) == opaque:
+				first = x
+				break
 		var last := -1
-		for x in img.get_width():
-			if (img.get_pixel(x, y).a >= 0.5) == opaque:
-				if first < 0:
-					first = x
-				last = x
+		if first >= 0:
+			for x in range(width - 1, first - 1, -1):
+				if (data[row + x * 4] >= 128) == opaque:
+					last = x
+					break
 		rows.append(Vector2i(first, last))
-	return rows
+	return {"rows": rows, "size": Vector2(img.get_size())}

@@ -121,6 +121,8 @@ func _on_release_timer_timeout() -> void:
 
 func _start_knocking() -> void:
 	phase = Phase.KNOCKING
+	if knocker:
+		knocker.set_knocking(true)
 	_knock_player.play_random_pattern()
 	print("Outer-KNOCKING")
 
@@ -130,6 +132,8 @@ func _stop_knocking() -> void:
 	if phase == Phase.KNOCKING:
 		phase = Phase.IDLE
 		_knock_player.stop()  # no knocking heard once the knocker is idle
+		if knocker:
+			knocker.set_knocking(false)
 		print("Outer-IDLE")
 
 
