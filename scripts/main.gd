@@ -250,11 +250,11 @@ func _on_character_confirmed() -> void:
 	_start_game()
 
 
-## Enter on the card choose screen: through the dark red into the game.
+## Both cards chosen (and slid away): through the dark red into the game.
 func _on_card_confirmed() -> void:
 	if _transitioning:
 		return
-	card_chooser.set_process_unhandled_input(false)  # no second Enter
+	card_chooser.set_process_unhandled_input(false)
 	await _menu_transition(doorway.fader.cover_color, card_chooser.close)
 	_start_game()
 
