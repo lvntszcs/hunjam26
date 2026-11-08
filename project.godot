@@ -17,6 +17,10 @@ boot_splash/bg_color=Color(0.76862746, 0.83137256, 0.8666667, 1)
 boot_splash/image="uid://copepsfort1op"
 config/icon="res://icon.svg"
 
+[autoload]
+
+FullscreenToggle="*res://scripts/fullscreen_toggle.gd"
+
 [display]
 
 window/size/viewport_width=1280
