@@ -37,6 +37,21 @@ extends Node
 @export var knock_hit_duration := 0.1
 ## Shown while caught in the doorway (frozen).
 @export var caught_texture: Texture2D
+## How big the knocker is in the room view (seen through the open door), so he
+## fits in the door frame: shrunk towards [member room_anchor_x] /
+## [member room_anchor_y] (design pixels, 1280x720; where his feet stand).
+@export_range(0.3, 1.0, 0.01) var room_scale := 0.9:
+	set(value):
+		room_scale = value
+		_apply_room_fit()
+@export var room_anchor_x := 660.0:
+	set(value):
+		room_anchor_x = value
+		_apply_room_fit()
+@export var room_anchor_y := 720.0:
+	set(value):
+		room_anchor_y = value
+		_apply_room_fit()
 ## The figure seen through the peephole: drawn as a close-up (enlarged
 ## around [member close_up_focus_x] / [member close_up_focus_y], which lands
 ## in the middle of the view), so the fisheye is full of the knocker.
@@ -111,6 +126,7 @@ func _ready() -> void:
 			_disguise_rects.append(rect)
 	set_process(false)
 	_apply_close_up()
+	_apply_room_fit()
 	set_presence(0.0)
 	var poses: Array[Texture2D] = [idle_texture, knock_ready_texture, knock_hit_texture]
 	if room_figure:
@@ -120,6 +136,23 @@ func _ready() -> void:
 			_figure_spans[texture] = _row_spans(texture, true)
 	if doorway_wall and doorway_wall.texture:
 		_doorway_spans = _row_spans(doorway_wall.texture, false)
+
+
+## Shrinks the room figure towards its anchor (by its offsets, not scale, so
+## the doorway catch, which reads the rect, sees the same size).
+func _apply_room_fit() -> void:
+	var index := figures.find(room_figure)
+	if index < 0 or index >= _scene_offsets.size():
+		return  # not ready yet
+	var view := Vector2(1280, 720)
+	var anchor := Vector2(room_anchor_x, room_anchor_y)
+	var shrink := 1.0 - room_scale
+	var base := _scene_offsets[index]
+	room_figure.offset_top = base.y + anchor.y * shrink
+	room_figure.offset_bottom = base.w - (view.y - anchor.y) * shrink
+	_rest_offsets[index] = Vector2(base.x + anchor.x * shrink,
+			base.z - (view.x - anchor.x) * shrink)
+	set_presence(presence)
 
 
 ## Enlarges the peephole figure around the focus point and moves that point

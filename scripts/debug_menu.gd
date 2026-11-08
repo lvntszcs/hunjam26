@@ -41,6 +41,7 @@ const CLOSE_UP_ROWS := [
 	["Knocker zoom", "knocker", "close_up_zoom", 0.1, 1.0, 5.0, "%.1fx"],
 	["Focus x", "knocker", "close_up_focus_x", 10.0, 0.0, 1280.0, "%.0f px"],
 	["Focus y", "knocker", "close_up_focus_y", 10.0, 0.0, 720.0, "%.0f px"],
+	["Knocker in door", "knocker", "room_scale", 0.01, 0.3, 1.0, "%.2fx"],
 ]
 ## Lens presets to compare quickly; "Scene" restores what main.tscn has.
 const LENS_PRESETS := {
