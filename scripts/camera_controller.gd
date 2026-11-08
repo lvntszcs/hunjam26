@@ -9,8 +9,9 @@ var home_position: Vector2
 
 func _ready() -> void:
 	# The window can change size after startup (resizing, fullscreen, the
-	# editor's embedded game view); with stretch aspect "expand" the visible
-	# area changes with it, so the home view and limits must follow.
+	# editor's embedded game view). Inside scenes/game_frame.tscn the game's
+	# viewport stays 1280x720 (dark-red bars fill the rest), but follow it
+	# anyway in case main.tscn is run on its own.
 	get_viewport().size_changed.connect(_fit_to_viewport)
 	_fit_to_viewport()
 	position = home_position
