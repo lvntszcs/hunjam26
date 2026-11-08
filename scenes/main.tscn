@@ -34,7 +34,10 @@
 [ext_resource type="Texture2D" uid="uid://u37gb0arwvow" path="res://assets/KopogoGep/kopogo-gep - 2.png" id="42_kopogo2"]
 [ext_resource type="Script" uid="uid://5xjnxmmlge5a" path="res://scripts/knocking_machine.gd" id="43_machine"]
 [ext_resource type="Texture2D" uid="uid://bgk45u7sd52mk" path="res://assets/Cards/kartya_1.png" id="44_card"]
+[ext_resource type="Resource" path="res://modifiers/xray.tres" id="58_xray"]
+[ext_resource type="Resource" path="res://modifiers/auto_knocker.tres" id="59_auto_knocker"]
 [ext_resource type="PackedScene" path="res://scenes/start_page.tscn" id="44_start_page"]
+[ext_resource type="PackedScene" path="res://scenes/victory.tscn" id="57_victory"]
 [ext_resource type="Script" uid="uid://bb8ti8ax50v4h" path="res://scripts/card_chooser.gd" id="45_card_chooser"]
 [ext_resource type="PackedScene" uid="uid://vujs57thlm7l" path="res://scenes/character_choose.tscn" id="45_character_choose"]
 [ext_resource type="Texture2D" uid="uid://bevctdqbm7g7c" path="res://assets/character_choose_door.png" id="46_card_door"]
@@ -45,6 +48,7 @@
 [ext_resource type="Texture2D" uid="uid://dlm2a4su6io6s" path="res://assets/Controls/dpad/dpad_left.png" id="51_dpad_left"]
 [ext_resource type="Texture2D" uid="uid://ckve2e161l4d5" path="res://assets/Controls/dpad/dpad_down.png" id="52_dpad_down"]
 [ext_resource type="Texture2D" uid="uid://buvd7yxxjds4u" path="res://assets/Controls/dpad/dpad_right.png" id="53_dpad_right"]
+[ext_resource type="Texture2D" uid="uid://kpkyqapem0p" path="res://assets/Controls/no_interaction.png" id="56_no_interaction"]
 [ext_resource type="Texture2D" uid="uid://c6lyi7d26eg4n" path="res://assets/Granny/granny1.png" id="54_granny1"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_272bh"]
@@ -104,11 +108,16 @@ card_chooser = NodePath("CardChoose")
 
 [node name="CharacterChoose" parent="." unique_id=1901739246 instance=ExtResource("45_character_choose")]
 
+[node name="Victory" parent="." unique_id=1901739262 instance=ExtResource("57_victory")]
+
 [node name="CardChoose" type="CanvasLayer" parent="." unique_id=1901739250 node_paths=PackedStringArray("cards")]
 visible = false
 script = ExtResource("45_card_chooser")
 cards = [NodePath("Cards/Card1"), NodePath("Cards/Card2"), NodePath("Cards/Card3"), NodePath("Cards/Card4"), NodePath("Cards/Card5"), NodePath("Cards/Card6")]
 button_textures = Array[Texture2D]([ExtResource("51_dpad_left"), ExtResource("52_dpad_down"), ExtResource("53_dpad_right")])
+unavailable_texture = ExtResource("56_no_interaction")
+granny_modifiers = Array[Modifier]([ExtResource("58_xray")])
+knocker_modifiers = Array[Modifier]([ExtResource("59_auto_knocker")])
 
 [node name="Wall" type="ColorRect" parent="CardChoose" unique_id=1901739251]
 anchors_preset = 15
@@ -410,6 +419,17 @@ mouse_filter = 2
 texture = ExtResource("47_knocker_idle")
 expand_mode = 1
 
+[node name="Prank" type="TextureRect" parent="Peephole" unique_id=1580244745]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("41_kopogo1")
+expand_mode = 1
+
 [node name="SkeletonRunner" type="Node2D" parent="Peephole" unique_id=633268502 node_paths=PackedStringArray("doorway")]
 visible = false
 script = ExtResource("41_skeleton")
@@ -455,7 +475,7 @@ mouse_filter = 2
 texture = ExtResource("47_knocker_idle")
 expand_mode = 1
 
-[node name="Prank" type="TextureRect" parent="Corridor" unique_id=1580244742 node_paths=PackedStringArray("copies")]
+[node name="Prank" type="TextureRect" parent="Corridor" unique_id=1580244742 node_paths=PackedStringArray("copies", "peephole_copy")]
 visible = false
 anchors_preset = 15
 anchor_right = 1.0
@@ -467,7 +487,8 @@ texture = ExtResource("41_kopogo1")
 expand_mode = 1
 script = ExtResource("43_machine")
 frames = Array[Texture2D]([ExtResource("41_kopogo1"), ExtResource("42_kopogo2")])
-copies = [NodePath("../../RoomCorridor/Prank")]
+copies = [NodePath("../../RoomCorridor/Prank"), NodePath("../../Peephole/Prank")]
+peephole_copy = NodePath("../../Peephole/Prank")
 
 [node name="KnockPlayer" type="Node" parent="Corridor/Prank" unique_id=1580244743]
 script = ExtResource("30_knock_player")

@@ -9,6 +9,7 @@ extends Resource
 ## Command name -> InputMap action name.
 @export var bindings: Dictionary[StringName, StringName] = {
 	&"approach": &"approach",
+	&"peek_hold": &"peek_hold",
 	&"approach_doorknob": &"approach_doorknob",
 	&"step_back": &"step_back",
 	&"open_door": &"open_door",
@@ -16,6 +17,7 @@ extends Resource
 	&"knock_at_door": &"knock_at_door",
 	&"place_prank": &"place_prank",
 	&"disguise": &"disguise",
+	&"use_modifier": &"use_modifier",
 }
 
 

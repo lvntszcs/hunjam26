@@ -1,0 +1,48 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://cqqftlwp55bvv" path="res://scripts/victory_screen.gd" id="1_victory"]
+[ext_resource type="Texture2D" uid="uid://c6lyi7d26eg4n" path="res://assets/Granny/granny1.png" id="2_granny"]
+[ext_resource type="Texture2D" uid="uid://beg41v0upul02" path="res://assets/Knocker/knocker1.png" id="3_knocker"]
+[ext_resource type="Texture2D" uid="uid://bqvsy7a5pq8mv" path="res://assets/confetti/confetti_0.png" id="4_confetti0"]
+[ext_resource type="Texture2D" uid="uid://co2ns6661wfv" path="res://assets/confetti/confetti_1.png" id="5_confetti1"]
+[ext_resource type="Texture2D" uid="uid://cxneeuvelq113" path="res://assets/confetti/confetti_2.png" id="6_confetti2"]
+[ext_resource type="Texture2D" uid="uid://dwm02kskqk0hk" path="res://assets/confetti/confetti_3.png" id="7_confetti3"]
+[ext_resource type="Texture2D" uid="uid://4asftl67mayf" path="res://assets/confetti/confetti_4.png" id="8_confetti4"]
+
+[node name="Victory" type="CanvasLayer"]
+layer = 4
+visible = false
+script = ExtResource("1_victory")
+confetti_frames = Array[Texture2D]([ExtResource("4_confetti0"), ExtResource("5_confetti1"), ExtResource("6_confetti2"), ExtResource("7_confetti3"), ExtResource("8_confetti4")])
+granny_texture = ExtResource("2_granny")
+knocker_texture = ExtResource("3_knocker")
+
+[node name="Wall" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.76862746, 0.83137256, 0.8666667, 1)
+
+[node name="Winner" type="TextureRect" parent="."]
+texture_filter = 4
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_granny")
+expand_mode = 1
+
+[node name="Confetti" type="TextureRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_confetti0")
+expand_mode = 1

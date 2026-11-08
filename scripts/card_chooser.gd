@@ -13,11 +13,28 @@ extends CanvasLayer
 ## secret from the other player): that player's cards slide out of the
 ## screen, and once both players' cards are gone the screen confirms.
 ##
+## The screen comes before every round of a match: a card a side chose in an
+## earlier round of the match stays in its row (to learn from) but cannot be
+## chosen again; [member unavailable_texture] replaces its D-pad picture (see
+## [method start_match]).
+##
 ## The cards are laid out by this script (also in the editor): change the
 ## rows with the exports below, not by moving the cards.
 
 ## Emitted once both players chose a card and their cards left the screen.
 signal confirmed
+
+## The modifier on each of Granny's cards (left row, left to right) and the
+## Knocker's (right row). A card with a modifier shows its card picture; an
+## empty slot shows the card's own picture and does nothing in the round.
+@export var granny_modifiers: Array[Modifier] = []:
+	set(value):
+		granny_modifiers = value
+		_layout(true)
+@export var knocker_modifiers: Array[Modifier] = []:
+	set(value):
+		knocker_modifiers = value
+		_layout(true)
 
 ## Cards per player.
 const PER_PLAYER := 3
@@ -53,6 +70,18 @@ const PER_PLAYER := 3
 	set(value):
 		button_textures = value
 		_layout(true)
+## Shown in place of the D-pad picture under a card that cannot be chosen
+## (chosen in an earlier round of the match).
+@export var unavailable_texture: Texture2D:
+	set(value):
+		unavailable_texture = value
+		_layout(true)
+## Size of [member unavailable_texture] (its square; its art fills the
+## picture, the D-pad's does not).
+@export var unavailable_size := 72.0:
+	set(value):
+		unavailable_size = value
+		_layout(true)
 ## Size of a D-pad picture (its square, in design pixels).
 @export var button_size := 110.0:
 	set(value):
@@ -86,6 +115,10 @@ var _buttons: Array[TextureRect] = []
 ## Per player: the slide out of the screen, and whether it has finished.
 var _leave_tweens: Array[Tween] = [null, null]
 var _gone: Array[bool] = [false, false]
+## Per side: the cards (0..2) it chose in earlier rounds of this match.
+var _used: Array[Array] = [[], []]
+## Per card: its picture from the scene, shown when its slot has no modifier.
+var _card_textures: Array[Texture2D] = []
 ## Per card: a fixed random nudge, -1..1 on each axis.
 var _nudge: Array[Vector2] = []
 
@@ -102,6 +135,7 @@ func _ready() -> void:
 		push_warning("CardChooser: needs %d cards" % (PER_PLAYER * 2))
 		return
 	for card in cards:
+		_card_textures.append((card as TextureRect).texture if card is TextureRect else null)
 		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		# The card picture is shrunk to about a quarter: without mipmaps its
 		# fine dithering turns into a moire that changes with the zoom.
@@ -132,10 +166,24 @@ func open() -> void:
 	set_process_unhandled_input(true)
 
 
+## A new match: every card is available again.
+func start_match() -> void:
+	_used = [[], []]
+	_layout(true)
+
+
 ## Hides the screen and stops listening to the keys.
 func close() -> void:
 	_set_shown(false)
 	set_process_unhandled_input(false)
+
+
+## The modifier on the card side [param side] (0 = Granny, 1 = Knocker) chose
+## this round, or null.
+func modifier_of(side: int) -> Modifier:
+	var list := granny_modifiers if side == 0 else knocker_modifiers
+	var card := _choice[side]
+	return list[card] if card < list.size() else null
 
 
 ## The card (0..2, left to right within their own row) player
@@ -207,10 +255,11 @@ func _side_of(player: int) -> int:
 ## [param player] chooses card [param card] (0..2) of their row (final):
 ## nothing marks it, their cards just slide out of the screen.
 func _choose(player: int, card: int) -> void:
-	if cards.size() < PER_PLAYER * 2 or _locked[player]:
+	if cards.size() < PER_PLAYER * 2 or _locked[player] or _used[player].has(card):
 		return
 	_choice[player] = card
 	_locked[player] = true
+	_used[player].append(card)
 	_leave(player)
 
 
@@ -274,10 +323,24 @@ func _layout(_instant: bool) -> void:
 			card.rotation = 0.0
 			card.scale = Vector2.ONE * size
 			card.modulate = Color.WHITE
+			var list := granny_modifiers if player == 0 else knocker_modifiers
+			var modifier: Modifier = list[i] if i < list.size() else null
+			# Not in the editor: the swapped picture would be saved into the scene.
+			if card is TextureRect and not Engine.is_editor_hint():
+				if modifier and modifier.card_texture:
+					(card as TextureRect).texture = modifier.card_texture
+				elif index < _card_textures.size():
+					(card as TextureRect).texture = _card_textures[index]
+			# Chosen in an earlier round of this match: stays, but can't be chosen.
+			var available := not _used[player].has(i)
 			if index < _buttons.size():
 				var button := _buttons[index]
-				button.texture = button_textures[i] if i < button_textures.size() else null
-				button.size = Vector2.ONE * button_size
+				if available or unavailable_texture == null:
+					button.texture = button_textures[i] if i < button_textures.size() else null
+					button.size = Vector2.ONE * button_size
+				else:
+					button.texture = unavailable_texture
+					button.size = Vector2.ONE * unavailable_size
 				button.position = (card_center + Vector2(0.0, button_offset)
 						- button.size / 2.0).round()
 
