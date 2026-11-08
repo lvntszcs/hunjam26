@@ -9,8 +9,9 @@ var home_position: Vector2
 
 func _ready() -> void:
 	# The window can change size after startup (resizing, fullscreen, the
-	# editor's embedded game view); with stretch aspect "expand" the visible
-	# area changes with it, so the home view and limits must follow.
+	# editor's embedded game view). With stretch aspect "keep" the visible
+	# area stays 1280x720 (bars fill the rest), but follow it anyway in case
+	# the stretch settings change.
 	get_viewport().size_changed.connect(_fit_to_viewport)
 	_fit_to_viewport()
 	position = home_position
