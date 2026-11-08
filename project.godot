@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="hunjam26"
-run/main_scene="uid://c6cihrf11y440"
+run/main_scene="res://scenes/game_frame.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 boot_splash/bg_color=Color(0.76862746, 0.83137256, 0.8666667, 1)
 boot_splash/image="uid://copepsfort1op"
@@ -22,7 +22,7 @@ config/icon="res://icon.svg"
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
+window/stretch/aspect="expand"
 
 [dotnet]
 
