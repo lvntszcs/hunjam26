@@ -4,8 +4,8 @@ extends CanvasLayer
 ## Card select screen, shown after the character select.
 ##
 ## Three cards on the left for player 1 and three on the right for player 2,
-## each set laid out in a row, every card a little askew so they look put
-## down by hand. A player moves between their own cards
+## each set laid out in a row, every card nudged a little off its spot so
+## they look put down by hand. A player moves between their own cards
 ## (player 1: A / D, player 2: arrow keys); the card they are on is lifted.
 ## S (player 1) / Down (player 2) locks it, pressing again
 ## unlocks. Enter confirms once both players have locked a card.
@@ -37,13 +37,9 @@ const PER_PLAYER := 3
 	set(value):
 		card_spacing = value
 		_layout(true)
-## Each card is turned by a random angle up to this much either way (degrees),
-## so the row doesn't look machine-placed.
-@export var max_tilt_degrees := 2.5:
-	set(value):
-		max_tilt_degrees = value
-		_layout(true)
-## Each card is nudged by a random amount up to this much (design pixels).
+## Each card is nudged by a random amount up to this much (design pixels), so
+## the row doesn't look machine-placed. No rotation or scaling: either one
+## breaks the dithering.
 @export var max_nudge := Vector2(4, 6):
 	set(value):
 		max_nudge = value
@@ -63,8 +59,7 @@ const PER_PLAYER := 3
 var _choice: Array[int] = [1, 1]
 var _locked: Array[bool] = [false, false]
 var _tweens: Array[Tween] = []
-## Per card: a fixed random value in -1..1 for the tilt, and for the nudge.
-var _tilt: Array[float] = []
+## Per card: a fixed random nudge, -1..1 on each axis.
 var _nudge: Array[Vector2] = []
 
 
@@ -81,7 +76,6 @@ func _ready() -> void:
 		return
 	for card in cards:
 		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_tilt.append(randf_range(-1.0, 1.0))
 		_nudge.append(Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)))
 	_layout(true)
 
@@ -158,7 +152,7 @@ func _set_locked(player: int, locked: bool) -> void:
 ## Places every card in its row; the chosen ones lifted.
 ## [param instant] skips the slide (first layout, editor).
 func _layout(instant: bool) -> void:
-	if cards.size() < PER_PLAYER * 2 or _tilt.size() < cards.size() or not is_inside_tree():
+	if cards.size() < PER_PLAYER * 2 or _nudge.size() < cards.size() or not is_inside_tree():
 		return
 	for tween in _tweens:
 		if tween:
@@ -174,8 +168,7 @@ func _layout(instant: bool) -> void:
 			var index := player * PER_PLAYER + i
 			var card := cards[index]
 			var chosen := i == _choice[player] and not Engine.is_editor_hint()
-			# Side by side, each slightly askew and off its spot.
-			var angle := deg_to_rad(max_tilt_degrees) * _tilt[index]
+			# Side by side, each slightly off its spot.
 			var spot := center + Vector2((i - (PER_PLAYER - 1) / 2.0) * card_spacing, 0.0)
 			spot += _nudge[index] * max_nudge
 			var lift := Vector2(0.0, -hover_lift if chosen else 0.0)
@@ -191,7 +184,7 @@ func _layout(instant: bool) -> void:
 				card.offset_right = shift.x
 				card.offset_top = shift.y
 				card.offset_bottom = shift.y
-				card.rotation = angle
+				card.rotation = 0.0
 				card.scale = Vector2.ONE * size
 				card.modulate = tint
 			else:
@@ -200,7 +193,6 @@ func _layout(instant: bool) -> void:
 				tween.tween_property(card, "offset_right", shift.x, move_time)
 				tween.tween_property(card, "offset_top", shift.y, move_time)
 				tween.tween_property(card, "offset_bottom", shift.y, move_time)
-				tween.tween_property(card, "rotation", angle, move_time)
 				tween.tween_property(card, "scale", Vector2.ONE * size, move_time)
 				tween.tween_property(card, "modulate", tint, move_time)
 				_tweens.append(tween)
