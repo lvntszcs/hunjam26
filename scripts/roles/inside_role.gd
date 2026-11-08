@@ -2,13 +2,19 @@ class_name InsideRole
 extends Role
 ## The player inside the flat: looks through the peephole and opens the door.
 
+## Granny got to the peephole and looks through it.
+signal peeked
+
 enum State { FAR, MOVING, PEEKING, AT_KNOB, OPEN, GRABBING_KNOB, RELEASING_KNOB }
 
 const APPROACH := &"approach"
 const APPROACH_DOORKNOB := &"approach_doorknob"
 const STEP_BACK := &"step_back"
 const OPEN_DOOR := &"open_door"
-const COMMANDS: Array[StringName] = [APPROACH, APPROACH_DOORKNOB, STEP_BACK, OPEN_DOOR]
+## Held to look through the peephole (left stick up): stepping up on the push,
+## back on the let-go.
+const PEEK_HOLD := &"peek_hold"
+const COMMANDS: Array[StringName] = [APPROACH, PEEK_HOLD, APPROACH_DOORKNOB, STEP_BACK, OPEN_DOOR]
 
 ## Ki lehet-e nyitni az ajtót a szoba közepéről (messziről).
 @export var can_open_from_far := true
@@ -20,6 +26,9 @@ var state := State.FAR
 var _trigger_held := false
 var _release_after_grab := false
 var _open_after_grab := false
+## The peek was let go while still walking up: step back once there.
+var _leave_after_peek := false
+var _walking_to_peephole := false
 
 
 func get_commands() -> Array[StringName]:
@@ -51,8 +60,9 @@ func press(command: StringName) -> void:
 		OPEN_DOOR:
 			if _can_open_door():
 				_open_door()
-		APPROACH:
+		APPROACH, PEEK_HOLD:
 			if state == State.FAR:
+				_leave_after_peek = false
 				_enter_peephole()
 		STEP_BACK:
 			if state == State.PEEKING:
@@ -91,10 +101,25 @@ func _exit_doorknob() -> void:
 
 func _enter_peephole() -> void:
 	state = State.MOVING
+	_walking_to_peephole = true
 	await doorway.approach_peephole()
+	_walking_to_peephole = false
 	state = State.PEEKING
-	if _trigger_held:
+	peeked.emit()
+	if _trigger_held or _leave_after_peek:
+		_leave_after_peek = false
 		_exit_peephole()
+
+
+## Letting go of the peek (left stick back): step back from the peephole, or
+## right after getting there if still walking up.
+func release(command: StringName) -> void:
+	if command != PEEK_HOLD:
+		return
+	if state == State.PEEKING:
+		_exit_peephole()
+	elif _walking_to_peephole:
+		_leave_after_peek = true
 
 
 func _exit_peephole() -> void:
@@ -120,5 +145,7 @@ func _return_to_far() -> void:
 
 func reset_state() -> void:
 	_trigger_held = false
+	_leave_after_peek = false
+	_walking_to_peephole = false
 	_release_after_grab = false
 	_open_after_grab = false

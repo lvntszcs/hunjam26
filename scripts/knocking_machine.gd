@@ -1,6 +1,14 @@
 class_name KnockingMachine
 extends TextureRect
-## The prank left at the door: a knocking machine.
+## The prank left at the door: a knocking machine (the Knocker's auto-knocker
+## modifier card).
+##
+## If Granny looks through the peephole while it knocks, it gives itself away:
+## [method break_down] stops it and it topples over, broken. She sees it lying
+## there through the peephole only ([member peephole_copy]), then it slides
+## away out of the view; opening the door
+## finds nothing (it is gone from the room and corridor views) until it is
+## taken away when the door closes (or the round ends).
 ##
 ## While shown (from [method Doorway.place_prank] until the door closes) it
 ## keeps knocking: a random rhythm from its KnockPlayer child, a pause, the
@@ -17,8 +25,26 @@ extends TextureRect
 @export var pause_min := 0.6
 @export var pause_max := 1.5
 ## The same machine drawn in other views (e.g. behind the opening door in
-## the room). They follow this node's picture and visibility.
+## the room, through the peephole). They follow this node's picture,
+## visibility and toppling.
 @export var copies: Array[TextureRect] = []
+## The copy seen through the peephole: the only view that still shows the
+## machine once it is broken.
+@export var peephole_copy: TextureRect
+## Where the machine stands in its (full-screen, 1280x720) picture: it
+## topples over around this point.
+@export var foot_point := Vector2(638, 670)
+## How far it tips over when it breaks (degrees) and how long that takes.
+@export var broken_tilt := 38.0
+@export var break_time := 0.35
+## After toppling it lies there for [member leave_delay] seconds, then slides
+## down out of the view in [member leave_time] seconds.
+@export var leave_delay := 0.4
+@export var leave_time := 0.6
+
+## True once it gave itself away (see [method break_down]).
+var broken := false
+var _break_tween: Tween
 
 var _running := false
 ## Bumped by every start/stop, so an older knocking loop knows to stop.
@@ -48,11 +74,56 @@ func _on_visibility_changed() -> void:
 	for copy in copies:
 		if copy:
 			copy.visible = visible
+	if not visible:
+		_mend()
 	var stepped_out := _view != null and _view.visible
-	if visible and not stepped_out:
+	if visible and not stepped_out and not broken:
 		_start()
 	else:
 		_stop()
+
+
+## True while it is out there knocking (placed and not broken).
+func is_active() -> bool:
+	return visible and not broken
+
+
+## Seen through the peephole: it stops knocking and topples over, broken.
+func break_down() -> void:
+	if broken or not visible:
+		return
+	broken = true
+	_stop()
+	if _break_tween:
+		_break_tween.kill()
+	_break_tween = create_tween().set_parallel()
+	for rect in _all_rects():
+		rect.pivot_offset = foot_point
+		_break_tween.tween_property(rect, "rotation", deg_to_rad(broken_tilt), break_time) 				.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		# Then away, down out of the view.
+		_break_tween.tween_property(rect, "position:y", rect.position.y + rect.size.y, leave_time) 				.set_delay(break_time + leave_delay).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		# Opening the door finds nothing: gone from every view but the peephole.
+		if rect != peephole_copy:
+			rect.self_modulate.a = 0.0
+
+
+## Back to new (taken away when the door closes or the round ends).
+func _mend() -> void:
+	broken = false
+	if _break_tween:
+		_break_tween.kill()
+	for rect in _all_rects():
+		rect.rotation = 0.0
+		rect.position.y = 0.0
+		rect.self_modulate.a = 1.0
+
+
+func _all_rects() -> Array[TextureRect]:
+	var rects: Array[TextureRect] = [self]
+	for copy in copies:
+		if copy:
+			rects.append(copy)
+	return rects
 
 
 func _start() -> void:

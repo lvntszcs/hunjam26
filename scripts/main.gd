@@ -48,6 +48,10 @@ const HealthHud := preload("res://scripts/health_hud.gd")
 ## next round starts, or, if the match is decided, back to the main menu.
 var _round_over_pending := false
 var _match_over := false
+## Per player: the modifier they picked for this round (or none), and
+## whether they used it already (once per round).
+var _modifiers: Dictionary[PlayerController, Modifier] = {}
+var _modifier_used: Dictionary[PlayerController, bool] = {}
 ## Rounds won in this match, per role.
 var _resident_wins := 0
 var _knocker_wins := 0
@@ -67,6 +71,9 @@ func _ready() -> void:
 	for controller in players:
 		if controller.model:
 			controller.model.defeated.connect(_on_player_defeated.bind(controller))
+		controller.modifier_requested.connect(_on_modifier_requested)
+	if inside_role:
+		inside_role.peeked.connect(_on_granny_peeked)
 	_assign_joypads()
 	Input.joy_connection_changed.connect(_on_joy_connection_changed)
 	# Fall back to the default node names if the exports were left empty.
@@ -170,14 +177,89 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-## [member see_through_key] starts the wall and door blink (in game only).
-## Pressing it again mid-blink starts it over.
+## Each player gets the modifier on the card they picked (their side's), for
+## the coming round, unused.
+func _give_modifiers() -> void:
+	_modifiers.clear()
+	_modifier_used.clear()
+	if card_chooser == null:
+		return
+	for index in players.size():
+		var side: int = card_chooser.player_sides[index] if index < card_chooser.player_sides.size() else index
+		var modifier := card_chooser.modifier_of(side)
+		if modifier:
+			_modifiers[players[index]] = modifier
+		_modifier_used[players[index]] = false
+
+
+## D-pad up / Q: the player uses the modifier they picked this round, once.
+## Q is shared by every keyboard player: it goes to a player without a
+## gamepad, Granny's if neither has one.
+func _on_modifier_requested(controller: PlayerController, from_keyboard: bool) -> void:
+	if from_keyboard:
+		if controller.has_joypad():
+			return
+		var all_keyboard := players.all(func(c: PlayerController) -> bool: return not c.has_joypad())
+		if all_keyboard and not controller.role is InsideRole:
+			return
+	use_modifier(controller)
+
+
+## Activates [param controller]'s modifier for this round. Nothing happens if
+## they have none, used it already, or it isn't for the role they play.
+## Returns true if it was used.
+func use_modifier(controller: PlayerController) -> bool:
+	if not _in_game or _transitioning:
+		return false
+	# Nobody uses a modifier while Granny looks through the peephole.
+	if inside_role and inside_role.state == InsideRole.State.PEEKING:
+		return false
+	var modifier: Modifier = _modifiers.get(controller)
+	if modifier == null or _modifier_used.get(controller, false):
+		return false
+	if not modifier.fits(controller.role):
+		return false
+	if not modifier.activate(self, controller):
+		return false  # couldn't take effect now: still theirs to use
+	_modifier_used[controller] = true
+	print("%s used %s" % [controller.model.display_name if controller.model else "?", modifier.display_name])
+	return true
+
+
+## The auto-knocker: the knocking machine at the door starts knocking. False
+## if it can't be placed now (the door is open, or it is already there).
+func place_knocking_machine() -> bool:
+	var machine := doorway.prank
+	if machine == null or doorway.is_open or machine.visible:
+		return false
+	doorway.place_prank()
+	return true
+
+
+## Granny looks through the peephole: a knocking machine out there gives
+## itself away and breaks.
+func _on_granny_peeked() -> void:
+	var machine := doorway.prank as KnockingMachine
+	if machine and machine.is_active():
+		machine.break_down()
+		print("Knocking machine spotted")
+
+
+## [member see_through_key] starts the wall and door blink (in game, debug
+## builds only: in the game it is the X-ray goggles modifier).
 func _unhandled_key_input(event: InputEvent) -> void:
 	var key := event as InputEventKey
-	if not _in_game or key == null or not key.pressed or key.echo:
+	if not _in_game or not OS.is_debug_build() or key == null or not key.pressed or key.echo:
 		return
 	if key.physical_keycode != see_through_key:
 		return
+	start_see_through()
+	get_viewport().set_input_as_handled()
+
+
+## The wall and door blink see-through (the X-ray goggles). Starting it again
+## mid-blink starts it over.
+func start_see_through() -> void:
 	if _see_through_tween:
 		_see_through_tween.kill()
 	_see_through_tween = create_tween()
@@ -185,7 +267,6 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	# The last wave may stop halfway; ease back to opaque instead of popping.
 	_see_through_tween.tween_method(_set_see_through_alpha, _see_through_alpha_at(see_through_duration), 1.0, see_through_fade_back) \
 			.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	get_viewport().set_input_as_handled()
 
 
 ## Blink at [param t] seconds into the effect. The rate grows linearly from
@@ -281,6 +362,8 @@ func _next_round() -> void:
 
 
 func _reset_round() -> void:
+	if doorway.prank:
+		doorway.prank.hide()  # the knocking machine goes with the round
 	for controller in players:
 		if controller.role:
 			controller.role.reset_state()
@@ -366,6 +449,7 @@ func _on_card_confirmed() -> void:
 	if _transitioning:
 		return
 	card_chooser.set_process_unhandled_input(false)
+	_give_modifiers()
 	await _menu_transition(doorway.fader.cover_color, func() -> void:
 		card_chooser.close()
 		_reset_round())

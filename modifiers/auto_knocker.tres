@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="AutoKnockerModifier" format=3]
+
+[ext_resource type="Script" uid="uid://vrqbc2yjc8y3" path="res://scripts/modifiers/auto_knocker_modifier.gd" id="1_auto"]
+[ext_resource type="Texture2D" uid="uid://c14curo7cbue7" path="res://assets/Cards/card_knocker.png" id="2_card"]
+
+[resource]
+script = ExtResource("1_auto")
+display_name = "Knocking machine"
+card_texture = ExtResource("2_card")
+owner = 1

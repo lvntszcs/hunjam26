@@ -8,7 +8,9 @@ const KNOCK := &"knock"
 const KNOCK_AT_DOOR := &"knock_at_door"
 const PLACE_PRANK := &"place_prank"
 const DISGUISE := &"disguise"
-const COMMANDS: Array[StringName] = [KNOCK, KNOCK_AT_DOOR, PLACE_PRANK, DISGUISE]
+## PLACE_PRANK is not a command any more: the knocking machine is the
+## auto-knocker modifier card (see AutoKnockerModifier).
+const COMMANDS: Array[StringName] = [KNOCK, KNOCK_AT_DOOR, DISGUISE]
 
 ## Knocking state-ben töltött idő kopogás után (másodperc).
 @export var release_delay := 1.5
