@@ -76,6 +76,9 @@ func _ready() -> void:
 		return
 	for card in cards:
 		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		# The card picture is shrunk to about a quarter: without mipmaps its
+		# fine dithering turns into a moire that changes with the zoom.
+		card.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 		_nudge.append(Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)))
 	_layout(true)
 
