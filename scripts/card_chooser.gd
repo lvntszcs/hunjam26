@@ -6,8 +6,8 @@ extends CanvasLayer
 ## Three cards on the left for player 1 and three on the right for player 2,
 ## each set laid out in a row, every card a little askew so they look put
 ## down by hand. A player moves between their own cards
-## (player 1: A / D, player 2: arrow keys); the card they are on is lifted
-## and enlarged. S (player 1) / Down (player 2) locks it, pressing again
+## (player 1: A / D, player 2: arrow keys); the card they are on is lifted.
+## S (player 1) / Down (player 2) locks it, pressing again
 ## unlocks. Enter confirms once both players have locked a card.
 ##
 ## The cards are laid out by this script (also in the editor): change the
@@ -53,8 +53,7 @@ const PER_PLAYER := 3
 	set(value):
 		card_scale = value
 		_layout(true)
-## The card a player is on: this much bigger and lifted this many pixels.
-@export var hover_scale := 1.15
+## The card a player is on is lifted this many pixels.
 @export var hover_lift := 40.0
 @export var move_time := 0.12
 ## Tint of a card once its player has locked it.
@@ -156,7 +155,7 @@ func _set_locked(player: int, locked: bool) -> void:
 	_layout(false)
 
 
-## Places every card in its row; the chosen ones lifted and enlarged.
+## Places every card in its row; the chosen ones lifted.
 ## [param instant] skips the slide (first layout, editor).
 func _layout(instant: bool) -> void:
 	if cards.size() < PER_PLAYER * 2 or _tilt.size() < cards.size() or not is_inside_tree():
@@ -183,7 +182,7 @@ func _layout(instant: bool) -> void:
 			var card_center := spot + lift
 			# The card is drawn in the middle of its full-screen picture.
 			var shift := card_center - view / 2.0
-			var size := card_scale * (hover_scale if chosen else 1.0)
+			var size := card_scale  # all the same size: scaling apart breaks the dithering
 			var tint := locked_color if chosen and _locked[player] else Color.WHITE
 			card.pivot_offset = view / 2.0
 			card.z_index = 1 if chosen else 0
