@@ -66,6 +66,41 @@ const HealthHud := preload("res://scripts/health_hud.gd")
 @export var muffin_wait := 2.6
 ## True if the smell hooked the Knocker when the muffin came out.
 var _muffin_lured := false
+## The flip-flop (full-screen frames): Granny raises it, swings, and throws.
+@export var flipflop_frames: Array[Texture2D] = []
+@export var flipflop_fps := 12.0
+## Frames [0, raise) lift it up when the card is used; the last of them holds
+## until the door opens.
+@export var flipflop_raise_frames := 4
+## A hit plays frames [raise, hit_end); a throw (into the bush) plays the rest
+## to the end, the flip-flop flying off.
+@export var flipflop_hit_end := 9
+## Seconds she stands in the hallway holding it up before swinging / throwing.
+@export var flipflop_swing_delay := 0.4
+## Lives the Knocker loses when the flip-flop hits him in the doorway.
+@export var flipflop_damage := 2
+## Shows the flip-flop in the room view and in the hallway.
+@export var flipflop_hand: TextureRect
+@export var flipflop_hallway: TextureRect
+## The burst where the flip-flop lands (the last frames of the animation,
+## from [member flipflop_burst_from], cut to [member flipflop_burst_region]
+## in the frames' own pixels). It is drawn by [member flipflop_burst],
+## centred on whoever got hit.
+@export var flipflop_burst: TextureRect
+@export var flipflop_burst_from := 10
+@export var flipflop_burst_region := Rect2(1155, 150, 400, 400)
+## Size of the burst on screen (design pixels).
+@export var flipflop_burst_size := 300.0
+## Where the burst goes (design pixels, 1280x720 hallway): on the caught
+## Knocker, or on the bush he hides in.
+@export var flipflop_hit_point := Vector2(660, 230)
+@export var flipflop_bush_point := Vector2(1060, 330)
+## Bumped by every burst and round reset, so an old burst stops.
+var _burst_token := 0
+## True from the card until the next door opening.
+var _flipflop_ready := false
+## Bumped by every flip-flop animation and round reset, so an old one stops.
+var _flipflop_token := 0
 ## Bumped by every muffin and round reset, so an old one stops.
 var _muffin_token := 0
 ## True from the muffin until the door has closed again.
@@ -399,6 +434,109 @@ func _resolve_muffin(token: int) -> void:
 		print("Muffin: nobody came")
 
 
+## The flip-flop: Granny's next door opening is powered up; she raises the
+## flip-flop and holds it until then. False if it is already up or the door
+## is open.
+func ready_flipflop() -> bool:
+	if flipflop_hand == null or flipflop_frames.is_empty() or _flipflop_ready or doorway.is_open:
+		return false
+	_flipflop_ready = true
+	_play_flipflop(flipflop_hand, 0, mini(flipflop_raise_frames, flipflop_frames.size()), false)
+	return true
+
+
+## Plays flip-flop frames [from, to) on [param rect]; hides it afterwards if
+## [param hide_after], otherwise the last frame stays.
+func _play_flipflop(rect: TextureRect, from: int, to: int, hide_after: bool) -> void:
+	_flipflop_token += 1
+	var token := _flipflop_token
+	rect.texture = flipflop_frames[clampi(from, 0, flipflop_frames.size() - 1)]
+	rect.show()
+	for index in range(from, mini(to, flipflop_frames.size())):
+		rect.texture = flipflop_frames[index]
+		await get_tree().create_timer(1.0 / maxf(flipflop_fps, 0.1), false).timeout
+		if token != _flipflop_token:
+			return
+	if hide_after:
+		rect.hide()
+
+
+## The door opened with the flip-flop up: [param outcome] is "hit", "throw"
+## (into the bush) or "broken" (nobody there). It plays in the hallway once
+## that shows; the flip-flop stays in her hand there until the door closes
+## (unless thrown).
+func _flipflop_in_hallway(outcome: String) -> void:
+	_flipflop_ready = false
+	_flipflop_token += 1
+	var token := _flipflop_token
+	var waited := 0.0
+	while not doorway.corridor_view.visible and waited < 2.0:
+		await get_tree().process_frame
+		waited += get_process_delta_time()
+		if token != _flipflop_token:
+			return
+	flipflop_hand.hide()
+	if flipflop_hallway == null:
+		return
+	# She steps out holding it up, as in the room...
+	var raise := mini(flipflop_raise_frames, flipflop_frames.size())
+	var held := flipflop_frames[maxi(raise - 1, 0)]
+	flipflop_hallway.texture = held
+	flipflop_hallway.show()
+	await get_tree().create_timer(flipflop_swing_delay, false).timeout
+	if token != _flipflop_token:
+		return
+	match outcome:
+		"hit":
+			# ...swings at him: the burst lands on him, and she holds it up
+			# again until the door closes.
+			await _play_flipflop(flipflop_hallway, raise, flipflop_hit_end, false)
+			if flipflop_hallway.visible:
+				flipflop_hallway.texture = held
+				_play_burst(flipflop_hit_point)
+		"throw":
+			# ...throws it (up to the frame it leaves her hand), and it
+			# bursts on the bush.
+			await _play_flipflop(flipflop_hallway, raise, flipflop_burst_from, true)
+			if token == _flipflop_token - 1 and doorway.corridor_view.visible:
+				_play_burst(flipflop_bush_point)
+		_:
+			pass  # nobody there: she just stands there holding it
+
+
+## The flip-flop's burst, centred on [param at] (design pixels).
+func _play_burst(at: Vector2) -> void:
+	if flipflop_burst == null or flipflop_burst_from >= flipflop_frames.size():
+		return
+	_burst_token += 1
+	var token := _burst_token
+	var half := Vector2.ONE * flipflop_burst_size / 2.0
+	flipflop_burst.position = at - half
+	flipflop_burst.size = half * 2.0
+	flipflop_burst.show()
+	for index in range(flipflop_burst_from, flipflop_frames.size()):
+		var piece := AtlasTexture.new()
+		piece.atlas = flipflop_frames[index]
+		piece.region = flipflop_burst_region
+		flipflop_burst.texture = piece
+		await get_tree().create_timer(1.0 / maxf(flipflop_fps, 0.1), false).timeout
+		if token != _burst_token:
+			return
+	flipflop_burst.hide()
+
+
+func _end_flipflop() -> void:
+	_flipflop_token += 1
+	_burst_token += 1
+	if flipflop_burst:
+		flipflop_burst.hide()
+	_flipflop_ready = false
+	if flipflop_hand:
+		flipflop_hand.hide()
+	if flipflop_hallway:
+		flipflop_hallway.hide()
+
+
 func _end_muffin() -> void:
 	_muffin_token += 1
 	_muffin_on = false
@@ -534,6 +672,8 @@ func _on_doorway_closed() -> void:
 		courier.leave()  # gone once the door is shut again
 	if _muffin_on:
 		_end_muffin()
+	if not _flipflop_ready:
+		_end_flipflop()  # the flip-flop used at this opening goes away
 	if _round_over_pending:
 		_round_over_pending = false
 		if _match_over:
@@ -581,6 +721,7 @@ func _reset_round() -> void:
 	if courier:
 		courier.leave()
 	_end_muffin()
+	_end_flipflop()
 	_bush_token += 1  # a bush countdown from the last round does nothing
 	if doorway.prank:
 		doorway.prank.hide()  # the knocking machine goes with the round
@@ -712,7 +853,7 @@ func _on_doorway_swung_open() -> void:
 	# A modifier played out at this opening: let the corridor be seen longer.
 	var machine := doorway.prank as KnockingMachine
 	var knocker_figure := outside_role.knocker
-	if _muffin_on or (courier and courier.is_active()) or (machine and machine.visible) \
+	if _muffin_on or _flipflop_ready or (courier and courier.is_active()) or (machine and machine.visible) \
 			or (knocker_figure and knocker_figure.disguised):
 		doorway.hold_open()
 	if courier and courier.is_active():
@@ -720,14 +861,28 @@ func _on_doorway_swung_open() -> void:
 	if _muffin_on:
 		_resolve_muffin(_muffin_token)  # decided once the smell had its time
 		return
+	var flipflop := _flipflop_ready
 	if outside_role.is_in_doorway():
 		outside_role.freeze()
 		if outside_role.player:
+			outside_role.player.take_damage(flipflop_damage if flipflop else 1)
+		if flipflop:
+			_flipflop_in_hallway("hit")
+		print("Elkapva" + (" (flip-flop)" if flipflop else ""))
+	elif flipflop and outside_role.knocker and outside_role.knocker.disguised:
+		# She would have caught him, but he is the bush: she throws the
+		# flip-flop into it like a boomerang. He loses a life, she doesn't.
+		_spend_bush()
+		if outside_role.player:
 			outside_role.player.take_damage(1)
-		print("Elkapva")
+		_flipflop_in_hallway("throw")
+		print("Flip-flop into the bush")
 	else:
 		if outside_role.knocker and outside_role.knocker.disguised:
 			_spend_bush()  # Granny saw the bush
+		if flipflop:
+			_flipflop_in_hallway("broken")
+			print("The flip-flop broke")
 		if inside_role and inside_role.player:
 			inside_role.player.take_damage(1)
 		print("Pranked")
