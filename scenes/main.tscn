@@ -36,6 +36,7 @@
 [ext_resource type="Texture2D" uid="uid://bgk45u7sd52mk" path="res://assets/Cards/kartya_1.png" id="44_card"]
 [ext_resource type="Resource" path="res://modifiers/xray.tres" id="58_xray"]
 [ext_resource type="Resource" path="res://modifiers/auto_knocker.tres" id="59_auto_knocker"]
+[ext_resource type="Resource" path="res://modifiers/bush.tres" id="60_bush"]
 [ext_resource type="PackedScene" path="res://scenes/start_page.tscn" id="44_start_page"]
 [ext_resource type="PackedScene" path="res://scenes/victory.tscn" id="57_victory"]
 [ext_resource type="Script" uid="uid://bb8ti8ax50v4h" path="res://scripts/card_chooser.gd" id="45_card_chooser"]
@@ -117,7 +118,7 @@ cards = [NodePath("Cards/Card1"), NodePath("Cards/Card2"), NodePath("Cards/Card3
 button_textures = Array[Texture2D]([ExtResource("51_dpad_left"), ExtResource("52_dpad_down"), ExtResource("53_dpad_right")])
 unavailable_texture = ExtResource("56_no_interaction")
 granny_modifiers = Array[Modifier]([ExtResource("58_xray")])
-knocker_modifiers = Array[Modifier]([ExtResource("59_auto_knocker")])
+knocker_modifiers = Array[Modifier]([ExtResource("59_auto_knocker"), ExtResource("60_bush")])
 
 [node name="Wall" type="ColorRect" parent="CardChoose" unique_id=1901739251]
 anchors_preset = 15

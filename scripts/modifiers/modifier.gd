@@ -35,3 +35,10 @@ func fits(role: Role) -> bool:
 ## up). Override this.
 func activate(_game: Node, _player: PlayerController) -> bool:
 	return true
+
+
+## True if activating the card uses it up at once. A card that only counts
+## as used once something happens (e.g. the bush, when Granny sees it)
+## returns false and Main spends it later (Main.spend_modifier).
+func spent_on_activate() -> bool:
+	return true

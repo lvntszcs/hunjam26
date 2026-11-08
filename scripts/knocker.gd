@@ -119,7 +119,8 @@ func _ready() -> void:
 		_scene_offsets.append(Vector4(figure.offset_left, figure.offset_top,
 				figure.offset_right, figure.offset_bottom))
 		figure.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		if not disguise_frames.is_empty():
+		# No disguise in the peephole: Granny sees an empty corridor there.
+		if not disguise_frames.is_empty() and figure != close_up_figure:
 			var rect := _make_disguise_rect()
 			# Right above the figure, in the same view.
 			figure.add_sibling.call_deferred(rect)

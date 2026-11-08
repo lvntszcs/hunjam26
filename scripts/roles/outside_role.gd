@@ -8,9 +8,9 @@ const KNOCK := &"knock"
 const KNOCK_AT_DOOR := &"knock_at_door"
 const PLACE_PRANK := &"place_prank"
 const DISGUISE := &"disguise"
-## PLACE_PRANK is not a command any more: the knocking machine is the
-## auto-knocker modifier card (see AutoKnockerModifier).
-const COMMANDS: Array[StringName] = [KNOCK, KNOCK_AT_DOOR, DISGUISE]
+## PLACE_PRANK and DISGUISE are not commands any more: the knocking machine
+## and the bush are modifier cards (AutoKnockerModifier, BushModifier).
+const COMMANDS: Array[StringName] = [KNOCK, KNOCK_AT_DOOR]
 
 ## Knocking state-ben töltött idő kopogás után (másodperc).
 @export var release_delay := 1.5
@@ -99,10 +99,7 @@ func press(command: StringName) -> void:
 			if not doorway.is_open:
 				doorway.place_prank()  # placeholder csali: csak a nyitott ajtón át látszik
 		DISGUISE:
-			# The knocker standing at the door vanishes at once and the disguise
-			# (tuja) plays in its place until the door has closed again.
-			if knocker and knocker.is_present():
-				knocker.set_disguised(true)
+			disguise()
 
 
 func release(command: StringName) -> void:
@@ -145,6 +142,16 @@ func _stop_knocking() -> void:
 func _on_knocked(_hit_index: int) -> void:
 	if knocker:
 		knocker.knock_hit()
+
+
+## The knocker standing at the door vanishes at once and the disguise (tuja)
+## plays in its place until the door has closed again; it works from far
+## away too. False if it can't now (the door is open, or already disguised).
+func disguise() -> bool:
+	if knocker == null or doorway.is_open or knocker.disguised or knocker.is_frozen():
+		return false
+	knocker.set_disguised(true)
+	return knocker.disguised
 
 
 ## True when the knocker stands right behind the door (fully slid in, not
