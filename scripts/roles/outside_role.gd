@@ -27,6 +27,17 @@ var _trigger_held := false
 func _ready() -> void:
 	_release_timer.one_shot = true
 	_release_timer.timeout.connect(_on_release_timer_timeout)
+	set_process(false)
+
+
+## While KNOCK is held but the knocker is still walking up: knocks as soon as
+## it stands at the door.
+func _process(_delta: float) -> void:
+	if not _knock_held or phase == Phase.KNOCKING or doorway.is_open:
+		set_process(false)
+	elif is_at_door():
+		set_process(false)
+		_start_knocking()
 
 
 func get_commands() -> Array[StringName]:
@@ -68,10 +79,15 @@ func press(command: StringName) -> void:
 			if knocker:
 				knocker.set_disguised(false)  # knocking again drops the disguise
 				knocker.slide_in()
+			# Only a knocker standing at the door can knock; until it gets
+			# there, _process waits (no sound, no knocking phase).
 			if phase != Phase.KNOCKING:
-				_start_knocking()
+				if is_at_door():
+					_start_knocking()
+				else:
+					set_process(true)
 		KNOCK_AT_DOOR:
-			if not doorway.is_open and _trigger_held and is_in_doorway():
+			if not doorway.is_open and _trigger_held and is_at_door():
 				_start_knocking()
 				if not _knock_held:
 					_release_timer.start(release_delay)
@@ -94,6 +110,8 @@ func release(command: StringName) -> void:
 			# visible, opening the door catches it.
 			if knocker and not _trigger_held:
 				knocker.slide_out(release_delay)
+		elif knocker and not _trigger_held:
+			knocker.slide_out()  # let go before reaching the door: never knocked
 
 
 func _on_release_timer_timeout() -> void:
@@ -113,6 +131,12 @@ func _stop_knocking() -> void:
 		phase = Phase.IDLE
 		_knock_player.stop()  # no knocking heard once the knocker is idle
 		print("Outer-IDLE")
+
+
+## True when the knocker stands right behind the door (fully slid in, not
+## disguised): only then can it knock.
+func is_at_door() -> bool:
+	return knocker == null or (not knocker.disguised and knocker.presence >= 1.0)
 
 
 ## True if any of the knocker shows in the doorway right now.
@@ -138,6 +162,8 @@ func let_go() -> void:
 	knocker.unfreeze()
 	if _trigger_held or _knock_held:
 		knocker.slide_in()
+		if _knock_held and phase != Phase.KNOCKING:
+			set_process(true)  # still held: knocks once back at the door
 	elif not _release_timer.is_stopped():
 		knocker.slide_out(_release_timer.time_left / maxf(knocker.presence, 0.01))
 	else:
@@ -145,6 +171,7 @@ func let_go() -> void:
 
 
 func reset_state() -> void:
+	set_process(false)
 	_knock_held = false
 	_trigger_held = false
 	_release_timer.paused = false
